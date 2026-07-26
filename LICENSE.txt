@@ -1,0 +1,28 @@
+Observatorio Forestal (Peri)urbano de Morelia
+© 2026 Héctor Eduardo Zavala Solís (M.C.S.)
+Posgrado en Geografía — Centro de Investigaciones en Geografía Ambiental (CIGA), UNAM.
+
+Esta obra (código, visualización interactiva, datos derivados y documentación) se distribuye bajo la licencia
+Creative Commons Atribución-NoComercial-SinDerivadas 4.0 Internacional (CC BY-NC-ND 4.0).
+
+Usted es libre de:
+  • Compartir — copiar y redistribuir el material en cualquier medio o formato,
+    otorgando el crédito apropiado al autor.
+
+Bajo los siguientes términos:
+  • Atribución — Debe reconocer la autoría de Héctor Eduardo Zavala Solís (CIGA-UNAM),
+    enlazar a la licencia e indicar si se hicieron cambios.
+  • NoComercial — No puede utilizar el material con fines comerciales.
+  • SinObrasDerivadas — Si remezcla, transforma o construye a partir del material,
+    no puede distribuir el material modificado.
+  • Sin restricciones adicionales — No puede aplicar términos legales ni medidas
+    tecnológicas que restrinjan legalmente a otros hacer cualquier uso permitido por la licencia.
+
+Texto legal completo: https://creativecommons.org/licenses/by-nc-nd/4.0/legalcode.es
+Resumen legible:      https://creativecommons.org/licenses/by-nc-nd/4.0/deed.es
+
+Las fuentes de datos de terceros conservan sus respectivas licencias (ver README.md).
+
+Cómo citar:
+Zavala Solís, H. E. (2026). Observatorio Forestal (Peri)urbano de Morelia.
+Posgrado en Geografía, CIGA-UNAM.

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Moderación · Observatorio Forestal de Morelia</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./sb-config.js"></script>
+<style>
+  :root{--bg:#0f1720;--panel:#16212e;--panel2:#1e2c3c;--ink:#e8eef4;--muted:#9fb2c4;
+        --line:#2b3d4f;--accent:#3fb27f;--accent2:#f0a020;--danger:#b2323f;}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+  .wrap{max-width:860px;margin:0 auto;padding:22px 18px 60px}
+  h1{font-size:20px;margin:0 0 2px}
+  .sub{color:var(--muted);font-size:13px;margin-bottom:18px}
+  input{background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:8px 10px;font-size:13px}
+  button{cursor:pointer;border:none;border-radius:8px;padding:8px 13px;font-size:13px;font-weight:600}
+  .btn{background:var(--accent);color:#06231a}
+  .btn.sec{background:var(--panel2);color:var(--ink);border:1px solid var(--line);font-weight:500}
+  .btn.rej{background:var(--danger);color:#fff}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:14px 16px;margin-bottom:12px}
+  .card .top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+  .card b.tipo{font-size:15px;text-transform:capitalize}
+  .meta{color:var(--muted);font-size:12px;margin:4px 0 8px;line-height:1.5}
+  .desc{font-size:13px;line-height:1.5;margin-bottom:10px}
+  .acts{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .acts input{flex:1;min-width:160px}
+  img.foto{max-width:180px;border-radius:8px;border:1px solid var(--line);margin-bottom:10px;display:block}
+  .msg{font-size:13px;margin:10px 0}.msg.err{color:#ff8a95}
+  .hidden{display:none!important}
+  #login{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;max-width:380px}
+  #login label{display:block;font-size:12px;color:var(--muted);margin:8px 0 4px}
+  #login input{width:100%}
+  a{color:var(--accent2)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Panel de moderación</h1>
+  <div class="sub">Observatorio Forestal (Peri)urbano de Morelia · <a href="./aportes.html">← volver a aportes</a></div>
+
+  <div id="login">
+    <b>Acceso de moderador</b>
+    <label>Correo</label><input id="email" type="email" />
+    <label>Contraseña</label><input id="pass" type="password" />
+    <div style="margin-top:12px"><button class="btn" id="btnLogin">Entrar</button></div>
+    <div class="msg err" id="loginMsg"></div>
+  </div>
+
+  <div id="panel" class="hidden">
+    <div class="sub">Sesión: <b id="who"></b> · <button class="btn sec" id="btnLogout">Salir</button></div>
+    <div id="noauth" class="msg err hidden">Tu cuenta no tiene rol de moderador. Pide que te asignen el rol.</div>
+    <div id="stats" class="sub"></div>
+    <div id="lista"></div>
+  </div>
+</div>
+
+<script>
+const { url, key } = window.SB_CONFIG;
+const sb = supabase.createClient(url, key);
+const $ = id => document.getElementById(id);
+let user=null;
+
+$('btnLogin').onclick = async ()=>{
+  const {error} = await sb.auth.signInWithPassword({email:$('email').value.trim(),password:$('pass').value});
+  if(error) $('loginMsg').textContent = error.message;
+};
+$('btnLogout').onclick = ()=> sb.auth.signOut();
+
+sb.auth.onAuthStateChange((_e,s)=>handle(s));
+sb.auth.getSession().then(({data})=>handle(data.session));
+
+async function handle(session){
+  user = session?.user||null;
+  $('login').classList.toggle('hidden', !!user);
+  $('panel').classList.toggle('hidden', !user);
+  if(!user) return;
+  $('who').textContent = user.email;
+  const {data:prof} = await sb.from('profiles').select('role').eq('id',user.id).maybeSingle();
+  const esMod = prof && (prof.role==='moderator'||prof.role==='admin');
+  $('noauth').classList.toggle('hidden', esMod);
+  if(esMod) cargar(); else $('lista').innerHTML='';
+}
+
+async function cargar(){
+  const {data, error} = await sb.from('aportes')
+    .select('id,tipo,descripcion,estado,created_at,user_id,geom,aporte_fotos(storage_path)')
+    .eq('estado','pendiente').order('created_at',{ascending:true});
+  if(error){ $('lista').innerHTML=`<div class="msg err">${error.message}</div>`; return; }
+  $('stats').textContent = `${(data||[]).length} aporte(s) pendiente(s) de revisión.`;
+  if(!data || !data.length){ $('lista').innerHTML='<div class="sub">Nada pendiente. 🎉</div>'; return; }
+  $('lista').innerHTML='';
+  for(const a of data){
+    const c = a.geom ? a.geom.coordinates : null;
+    const div = document.createElement('div'); div.className='card';
+    div.innerHTML = `<div class="top"><b class="tipo">${a.tipo}</b>
+        <span class="sub">${new Date(a.created_at).toLocaleString('es-MX')}</span></div>
+      <div class="meta">${c?`📍 ${c[1].toFixed(5)}, ${c[0].toFixed(5)} · `:''}autor: ${a.user_id.slice(0,8)}…</div>
+      <div class="desc">${a.descripcion||'<i>sin descripción</i>'}</div>
+      <div class="fotos"></div>
+      <div class="acts">
+        <button class="btn" data-ok="${a.id}">Validar</button>
+        <input placeholder="motivo de rechazo (opcional)" data-motivo="${a.id}" />
+        <button class="btn rej" data-no="${a.id}">Rechazar</button>
+      </div>`;
+    $('lista').appendChild(div);
+    // fotos con URL firmada
+    for(const f of (a.aporte_fotos||[])){
+      const {data:signed} = await sb.storage.from('aportes-fotos').createSignedUrl(f.storage_path,120);
+      if(signed){ const img=document.createElement('img'); img.className='foto'; img.src=signed.signedUrl;
+        div.querySelector('.fotos').appendChild(img);}
+    }
+  }
+  $('lista').querySelectorAll('[data-ok]').forEach(b=>b.onclick=()=>moderar(b.dataset.ok,'validado'));
+  $('lista').querySelectorAll('[data-no]').forEach(b=>b.onclick=()=>{
+    const m=$('lista').querySelector(`[data-motivo="${b.dataset.no}"]`).value;
+    moderar(b.dataset.no,'rechazado',m);});
+}
+
+async function moderar(id,estado,motivo){
+  const {error} = await sb.rpc('moderar_aporte',{p_aporte_id:id,p_estado:estado,p_motivo:motivo||null});
+  if(error) alert(error.message); else cargar();
+}
+</script>
+</body>
+</html>

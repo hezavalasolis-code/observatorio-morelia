@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Aportes ciudadanos · Observatorio Forestal de Morelia</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./sb-config.js"></script>
+<style>
+  :root{--bg:#0f1720;--panel:#16212e;--panel2:#1e2c3c;--ink:#e8eef4;--muted:#9fb2c4;
+        --line:#2b3d4f;--accent:#3fb27f;--accent2:#f0a020;--danger:#b2323f;}
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+  #app{display:flex;height:100vh;overflow:hidden}
+  #side{width:380px;min-width:380px;background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;overflow-y:auto}
+  header{padding:16px 18px 12px;border-bottom:1px solid var(--line)}
+  h1{font-size:17px;margin:0 0 3px}
+  .sub{font-size:12px;color:var(--muted);line-height:1.4}
+  .block{padding:14px 18px;border-top:1px solid var(--line)}
+  .block h2{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 10px}
+  label{font-size:12px;color:var(--muted);display:block;margin:8px 0 4px}
+  input,select,textarea{width:100%;background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:8px 10px;font-size:13px;font-family:inherit}
+  textarea{resize:vertical;min-height:64px}
+  button{cursor:pointer;border:none;border-radius:8px;padding:9px 14px;font-size:13px;font-weight:600}
+  .btn{background:var(--accent);color:#06231a}
+  .btn:hover{filter:brightness(1.08)}
+  .btn.sec{background:var(--panel2);color:var(--ink);border:1px solid var(--line);font-weight:500}
+  .btn.wide{width:100%;margin-top:10px}
+  .row{display:flex;gap:8px}
+  .muted{color:var(--muted);font-size:12px;line-height:1.5}
+  .hint{background:rgba(240,160,32,.12);border:1px solid rgba(240,160,32,.35);color:#f0c060;border-radius:8px;padding:9px 11px;font-size:12px;line-height:1.45;margin-bottom:10px}
+  #map{flex:1}
+  .hidden{display:none!important}
+  .msg{font-size:12px;margin-top:8px;line-height:1.4}
+  .msg.ok{color:var(--accent)}.msg.err{color:#ff8a95}
+  .aporte{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:9px 11px;margin-bottom:7px;font-size:12px}
+  .aporte .top{display:flex;justify-content:space-between;gap:8px}
+  .tag{font-size:10px;padding:2px 7px;border-radius:20px;font-weight:700;white-space:nowrap}
+  .tag.pendiente{background:rgba(240,160,32,.2);color:#f0c060}
+  .tag.validado{background:rgba(63,178,127,.2);color:var(--accent)}
+  .tag.rechazado{background:rgba(178,50,63,.25);color:#ff8a95}
+  .who{font-size:12px;color:var(--muted)}
+  .who b{color:var(--ink)}
+  a.modlink{color:var(--accent2);font-size:12px}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="side">
+    <header>
+      <h1>Aportes ciudadanos</h1>
+      <div class="sub">Observatorio Forestal (Peri)urbano de Morelia · piloto</div>
+    </header>
+
+    <!-- LOGIN -->
+    <div class="block" id="loginBlock">
+      <h2>Ingresar</h2>
+      <div class="hint">Piloto interno (CIGA). Regístrate con tu correo para dejar aportes sobre los puntos de pérdida.</div>
+      <label>Correo</label>
+      <input id="email" type="email" placeholder="tucorreo@ejemplo.com" autocomplete="email" />
+      <label>Contraseña</label>
+      <input id="pass" type="password" placeholder="mínimo 6 caracteres" autocomplete="current-password" />
+      <div class="row" style="margin-top:10px">
+        <button class="btn" style="flex:1" id="btnLogin">Entrar</button>
+        <button class="btn sec" style="flex:1" id="btnSignup">Registrarme</button>
+      </div>
+      <button class="btn sec wide" id="btnMagic">Enviarme un enlace mágico</button>
+      <div class="msg" id="loginMsg"></div>
+    </div>
+
+    <!-- SESIÓN -->
+    <div class="block hidden" id="sessionBlock">
+      <h2>Sesión</h2>
+      <div class="who">Conectado como <b id="userEmail"></b> <span id="modBadge"></span></div>
+      <div class="row" style="margin-top:8px">
+        <button class="btn sec" id="btnLogout">Cerrar sesión</button>
+        <a class="modlink hidden" id="modLink" href="./moderacion.html">Ir a moderación →</a>
+      </div>
+    </div>
+
+    <!-- FORMULARIO DE APORTE -->
+    <div class="block hidden" id="formBlock">
+      <h2>Nuevo aporte</h2>
+      <div class="hint" id="pickHint">1) Haz clic en el mapa para ubicar el punto que quieres reportar.</div>
+      <div id="formFields" class="hidden">
+        <div class="muted" id="coordLbl"></div>
+        <label>Tipo de observación</label>
+        <select id="tipo">
+          <option value="tala">Tala</option>
+          <option value="incendio">Incendio</option>
+          <option value="construccion">Construcción</option>
+          <option value="cambio_agricola">Cambio agrícola</option>
+          <option value="invasion">Invasión</option>
+          <option value="plaga">Plaga</option>
+          <option value="otro">Otro</option>
+        </select>
+        <label>Descripción</label>
+        <textarea id="desc" placeholder="¿Qué observaste? ¿Cuándo? Detalles útiles."></textarea>
+        <label>Foto (opcional)</label>
+        <input id="foto" type="file" accept="image/*" />
+        <button class="btn wide" id="btnEnviar">Enviar aporte</button>
+        <div class="msg" id="formMsg"></div>
+      </div>
+    </div>
+
+    <!-- MIS APORTES -->
+    <div class="block hidden" id="misBlock">
+      <h2>Mis aportes</h2>
+      <div id="misLista"><div class="muted">Aún no has enviado aportes.</div></div>
+    </div>
+  </div>
+  <div id="map"></div>
+</div>
+
+<script>
+const { url, key } = window.SB_CONFIG;
+const sb = supabase.createClient(url, key);
+let user = null, pickMarker = null, pick = null, esMod = false;
+
+// ── Mapa ──
+const map = L.map('map',{zoomControl:true,minZoom:9,maxZoom:19}).setView([19.66,-101.19],11);
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+  {attribution:'Esri World Imagery', maxZoom:19}).addTo(map);
+const aportesLayer = L.layerGroup().addTo(map);
+
+fetch('./data/anps.geojson').then(r=>r.json()).then(g=>{
+  L.geoJSON(g,{style:{color:'#3fb27f',weight:2,fill:false},
+    onEachFeature:(f,l)=>l.bindTooltip(f.properties.cerro,{sticky:true})}).addTo(map);
+}).catch(()=>{});
+
+map.on('click', e=>{
+  if(!user) return;
+  pick = e.latlng;
+  if(pickMarker) pickMarker.setLatLng(pick);
+  else pickMarker = L.marker(pick,{draggable:true}).addTo(map)
+        .on('dragend',ev=>{pick=ev.target.getLatLng();showCoord();});
+  showCoord();
+  document.getElementById('formFields').classList.remove('hidden');
+  document.getElementById('pickHint').textContent='2) Completa los datos y envía. Puedes arrastrar el marcador para ajustar.';
+});
+function showCoord(){document.getElementById('coordLbl').textContent=
+  `Ubicación: ${pick.lat.toFixed(5)}, ${pick.lng.toFixed(5)}`;}
+
+// ── Auth ──
+const $ = id => document.getElementById(id);
+function setMsg(el,txt,ok){el.textContent=txt;el.className='msg '+(ok?'ok':'err');}
+
+$('btnSignup').onclick = async ()=>{
+  const {error} = await sb.auth.signUp({email:$('email').value.trim(), password:$('pass').value});
+  setMsg($('loginMsg'), error? error.message : 'Cuenta creada. Revisa tu correo para confirmar y luego entra.', !error);
+};
+$('btnLogin').onclick = async ()=>{
+  const {error} = await sb.auth.signInWithPassword({email:$('email').value.trim(), password:$('pass').value});
+  if(error) setMsg($('loginMsg'), error.message, false);
+};
+$('btnMagic').onclick = async ()=>{
+  const {error} = await sb.auth.signInWithOtp({email:$('email').value.trim(),
+    options:{emailRedirectTo:window.location.href}});
+  setMsg($('loginMsg'), error? error.message : 'Te enviamos un enlace de acceso a tu correo.', !error);
+};
+$('btnLogout').onclick = ()=> sb.auth.signOut();
+
+sb.auth.onAuthStateChange((_e,session)=>{ handleSession(session); });
+sb.auth.getSession().then(({data})=>handleSession(data.session));
+
+async function handleSession(session){
+  user = session?.user || null;
+  const on = !!user;
+  $('loginBlock').classList.toggle('hidden', on);
+  ['sessionBlock','formBlock','misBlock'].forEach(id=>$(id).classList.toggle('hidden',!on));
+  if(!on){ if(pickMarker){map.removeLayer(pickMarker);pickMarker=null;} return; }
+  $('userEmail').textContent = user.email;
+  // ¿es moderador?
+  const {data:prof} = await sb.from('profiles').select('role').eq('id',user.id).maybeSingle();
+  esMod = prof && (prof.role==='moderator' || prof.role==='admin');
+  $('modBadge').textContent = esMod ? '· moderador' : '';
+  $('modLink').classList.toggle('hidden', !esMod);
+  cargarAportes();
+}
+
+// ── Enviar aporte ──
+$('btnEnviar').onclick = async ()=>{
+  if(!pick){ setMsg($('formMsg'),'Primero marca un punto en el mapa.',false); return; }
+  $('btnEnviar').disabled = true;
+  const {data:id, error} = await sb.rpc('crear_aporte',{
+    p_tipo:$('tipo').value, p_descripcion:$('desc').value,
+    p_lon:pick.lng, p_lat:pick.lat, p_punto_perdida_id:null});
+  if(error){ setMsg($('formMsg'),error.message,false); $('btnEnviar').disabled=false; return; }
+  // foto opcional
+  const file = $('foto').files[0];
+  if(file){
+    const path = `${user.id}/${id}/${file.name}`;
+    const up = await sb.storage.from('aportes-fotos').upload(path,file,{upsert:false});
+    if(!up.error) await sb.from('aporte_fotos').insert({aporte_id:id, storage_path:path});
+  }
+  setMsg($('formMsg'),'¡Gracias! Tu aporte quedó pendiente de revisión.',true);
+  $('desc').value=''; $('foto').value=''; document.getElementById('formFields').classList.add('hidden');
+  if(pickMarker){map.removeLayer(pickMarker);pickMarker=null;} pick=null;
+  $('btnEnviar').disabled=false;
+  cargarAportes();
+};
+
+// ── Cargar aportes (propios + validados) ──
+async function cargarAportes(){
+  aportesLayer.clearLayers();
+  // validados (visibles para todos por RLS)
+  const {data:val} = await sb.from('aportes').select('id,tipo,descripcion,estado,geom').eq('estado','validado');
+  (val||[]).forEach(a=>marcar(a,'#3fb27f'));
+  // propios
+  const {data:mios} = await sb.from('aportes')
+    .select('id,tipo,descripcion,estado,created_at,geom').eq('user_id',user.id)
+    .order('created_at',{ascending:false});
+  const cont = $('misLista');
+  if(!mios || !mios.length){ cont.innerHTML='<div class="muted">Aún no has enviado aportes.</div>'; }
+  else cont.innerHTML = mios.map(a=>`<div class="aporte"><div class="top">
+      <b>${a.tipo}</b><span class="tag ${a.estado}">${a.estado}</span></div>
+      <div class="muted">${(a.descripcion||'').slice(0,120)}</div></div>`).join('');
+  (mios||[]).forEach(a=>{ if(a.estado!=='validado') marcar(a, a.estado==='rechazado'?'#b2323f':'#f0a020'); });
+}
+function marcar(a,color){
+  if(!a.geom) return;
+  const c = a.geom.coordinates; // GeoJSON [lon,lat]
+  L.circleMarker([c[1],c[0]],{radius:7,color:'#fff',weight:1.5,fillColor:color,fillOpacity:.9})
+    .bindPopup(`<b>${a.tipo}</b><br>${(a.descripcion||'').slice(0,160)}<br><i>${a.estado}</i>`)
+    .addTo(aportesLayer);
+}
+</script>
+</body>
+</html>
