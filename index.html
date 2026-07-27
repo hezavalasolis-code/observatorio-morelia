@@ -35,6 +35,18 @@
   #sidebar .sub{font-size:12px;color:var(--muted);line-height:1.35}
   .block{padding:14px 18px;border-top:1px solid var(--line)}
   .block h2{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 10px}
+  /* Secciones densas (metodología, créditos, metadatos): plegadas por defecto.
+     El texto permanece en la página —imprimible, buscable y accesible—, solo deja de competir
+     visualmente con los datos. */
+  details.fold>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:7px;
+    font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;
+    padding:2px 0;user-select:none}
+  details.fold>summary::-webkit-details-marker{display:none}
+  details.fold>summary::before{content:'▸';font-size:11px;line-height:1;display:inline-block;transition:transform .15s ease}
+  details.fold[open]>summary::before{transform:rotate(90deg)}
+  details.fold>summary:hover{color:var(--ink)}
+  details.fold>summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
+  details.fold .fold-body{margin-top:11px}
   .stat{background:linear-gradient(135deg,#7a1f2b,#b2323f);border-radius:10px;padding:14px 16px;margin-bottom:6px}
   .stat-sec{background:rgba(240,160,32,.14);border:1px solid rgba(240,160,32,.38);border-radius:10px;padding:9px 12px;margin-bottom:6px;color:#f0c060;font-size:12px;line-height:1.4}
   .stat-sec .rate{font-size:11px;color:#d9a94e;margin-top:3px}
@@ -45,7 +57,11 @@
   .mini div{flex:1;background:var(--panel2);border-radius:8px;padding:9px 10px}
   .mini .n{font-size:17px;font-weight:700}
   .mini .t{font-size:10.5px;color:var(--muted);margin-top:2px}
-  canvas{max-width:100%}
+  /* Solo las gráficas del panel se ajustan al ancho. OJO: una regla global
+     `canvas{max-width:100%}` colapsa a 0 px el canvas del renderizador de Leaflet
+     (sus panes miden 0), dejando invisibles las capas vectoriales. */
+  #sidebar canvas{max-width:100%}
+  .leaflet-container canvas{max-width:none!important;max-height:none!important}
   .chartwrap{background:var(--panel2);border-radius:10px;padding:10px 12px 6px}
   select{width:100%;background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:7px 9px;font-size:12px;margin-bottom:8px}
   .credits{font-size:11px;color:var(--muted);line-height:1.5}
@@ -108,8 +124,13 @@
   /* Rincón superior izquierdo: capas + leyendas (columna izq.) y botones (columna der.) */
   .leaflet-top.leaflet-left{display:flex;flex-direction:row;align-items:flex-start;gap:6px;padding:10px}
   .leaflet-top.leaflet-left .leaflet-control{margin:0}
-  .ctl-left,.ctl-right{display:flex;flex-direction:column;gap:6px}
+  /* Los contenedores propios cuelgan del rincón de Leaflet, que tiene
+     pointer-events:none; sin esto los deslizadores de las leyendas no reciben clic. */
+  .ctl-left,.ctl-right{display:flex;flex-direction:column;gap:6px;pointer-events:auto}
+  /* Ancho fijo: sin él, la leyenda más larga estiraba la columna y descuadraba el bloque. */
+  .ctl-left{width:256px;max-width:46vw}
   .ctl-left .legend{position:static;left:auto;top:auto;right:auto;width:100%}
+  .ctl-left .leaflet-control-layers{width:100%}
   .legend h3{margin:0 0 7px;font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
   .grad{height:11px;border-radius:5px;background:linear-gradient(90deg,#440154,#3b528b,#21918c,#5ec962,#fde725);margin-bottom:3px}
   .grad-lbl{display:flex;justify-content:space-between;color:var(--muted);font-size:10px}
@@ -159,7 +180,8 @@
     .leaflet-control-zoom,.fs-ctl{display:none}
     .leaflet-control-scale{display:none}
     /* leyendas compactas */
-    .ctl-left .legend{width:150px!important;font-size:9.5px;padding:7px 9px}
+    details.fold>summary{min-height:44px;align-items:center}  /* área táctil cómoda en móvil */
+    .ctl-left .legend{width:100%!important;font-size:9.5px;padding:7px 9px}
     .ctl-left .legend h3{font-size:10px;margin-bottom:4px}
     /* línea de tiempo por encima de la hoja colapsada */
     #timebar{bottom:calc(74px + env(safe-area-inset-bottom))}
@@ -293,21 +315,26 @@
     </div>
 
     <div class="block">
-      <h2>Metodología</h2>
-      <details class="credits" open>
-        <summary style="cursor:pointer;color:var(--ink);font-weight:600;margin-bottom:6px">Cómo se obtuvieron y agruparon los datos</summary>
-        <p style="margin:7px 0"><b>Detección de pérdida.</b> La pérdida de vegetación se estimó con el algoritmo LandTrendr sobre series anuales del índice NBR (Landsat 5–9, reflectancia superficial, composiciones de temporada seca enero–marzo, 1990–2023). Para cada píxel se tomó el segmento de mayor caída del NBR que superara un umbral de magnitud (caída de NBR ≈ 0.25, calibrado para acotar la degradación marginal cercana al límite de detección) y de cobertura vegetal previa, con duración menor a cinco años. Las cifras corresponden a la corrida validada (v8): matriz de confusión sobre 150 puntos, exactitud global 78.7%, kappa 0.68. Los cambios fechados en 1989 —previo al inicio de la serie— se descartaron por corresponder al vértice inicial del modelo. Las cuatro ANP se identificaron individualmente por su <i>objectid</i> en el shapefile del PMDU/IMPLAN, y la detección se validó visualmente en QGIS contra imagen satelital.</p>
-        <p style="margin:7px 0"><b>Clasificación deforestación / degradación (v8).</b> La capa <i>Pérdida clasificada v8</i> separa cada píxel de pérdida en <b>deforestación</b> (conversión persistente: la cobertura se perdió y no se recuperó) o <b>degradación</b> (pérdida parcial o reversible), según la magnitud del cambio y el estado final de la cobertura. Se validó por fotointerpretación de 150 puntos (muestreo estratificado, 50 por clase) en imagen de alta resolución: <b>exactitud global 78.7% · kappa 0.68</b> (concordancia sustancial); la deforestación es la clase más confiable (88% del usuario, 86% del productor). La fotointerpretación reveló una firma de proceso recurrente: apertura de <i>caminos</i> que degradan el bosque antes de su conversión a huertos de aguacate de hileras simétricas.</p>
+      <details class="fold">
+        <summary>Metodología · cómo se obtuvieron los datos</summary>
+        <div class="fold-body credits">
+        <!-- Bloque generado desde data/manifest.json. No escribir aquí cifras de exactitud
+             ni de versión a mano: se desincronizan del mapa en cuanto cambia el umbral. -->
+        <div id="metaValidacion"></div>
+        <p style="margin:7px 0"><b>Detección de pérdida.</b> La pérdida de vegetación se estimó con el algoritmo LandTrendr sobre series anuales del índice NBR (Landsat 5–9, reflectancia superficial, composiciones de temporada seca enero–marzo, 1990–2023). Para cada píxel se tomó el segmento de mayor caída del NBR que superara un umbral de magnitud y de cobertura vegetal previa, con duración menor a cinco años. Los cambios fechados en 1989 —previo al inicio de la serie— correspondían al vértice inicial del algoritmo y se corrigieron en el propio modelo. Las cuatro ANP se identificaron individualmente por su <i>objectid</i> en el shapefile del PMDU/IMPLAN.</p>
+        <p style="margin:7px 0"><b>Clasificación deforestación / degradación.</b> La capa <i>Pérdida clasificada</i> separa cada píxel de pérdida en <b>deforestación</b> (conversión persistente: la cobertura se perdió y no se recuperó) o <b>degradación</b> (pérdida parcial o reversible), según la magnitud del cambio y el estado final de la cobertura. La fotointerpretación de validación reveló una firma de proceso recurrente: apertura de <i>caminos</i> que degradan el bosque antes de su conversión a huertos de aguacate de hileras simétricas. Ese hallazgo proviene de las notas de interpretación y es independiente del umbral adoptado.</p>
         <p style="margin:7px 0"><b>Comparación entre cerros.</b> Las cuatro ANP difieren mucho en superficie (116 a 10 854 ha), por lo que compararlas solo en hectáreas favorece a las más extensas. La pérdida se expresa también como porcentaje de la superficie de cada ANP y como tasa media anual (%/año), que miden la intensidad del proceso con independencia del tamaño.</p>
         <p style="margin:7px 0"><b>Riesgo de pérdida futura (susceptibilidad).</b> La capa de riesgo proviene de un modelo Random Forest (AUC general 0.70, moderado) entrenado con variables espaciales estáticas: pendiente, distancia (con signo) al borde del ANP, distancia a la mancha urbana (GHSL) y categoría de zonificación secundaria del PMDU; se excluyó la elevación por generar artefactos. El mapa de probabilidad se recortó a las ANP + 500 m de margen y, además, se enmascararon los píxeles con pérdida ya registrada (1990–2023), de modo que la capa señala riesgo solo donde aún hay vegetación en pie. Es una medida de <i>susceptibilidad espacial</i> —qué tan parecidas son las condiciones de un píxel a las de zonas ya deforestadas—, no una fecha futura ni una certeza.</p>
         <p style="margin:7px 0"><b>Limitación del modelo de riesgo.</b> El modelo es estático, no una serie de tiempo: estima la similitud del terreno de cada píxel con el de zonas que ya perdieron cobertura, no una fecha ni una certeza. Aquí se enmascararon los píxeles ya deforestados para mitigarlo; aun así, para leer el riesgo real conviene contrastar esta capa con el deslizador histórico y atender las zonas de alta probabilidad que todavía no muestran pérdida registrada.</p>
         <p style="margin:7px 0"><b>Zonificación de usos.</b> Las 20 clases de la zonificación secundaria del PMDU se agruparon en cinco categorías: <b>Natural/Forestal</b> (conservación o mantenimiento de cobertura vegetal: ANP-Protección, Aprovechamiento especial, Área verde urbana, Corredor verde y Recuperación); <b>Agrícola</b> (producción primaria: Aprovechamiento sustentable y Agroindustria); <b>Urbano</b> (suelo construido: Habitacional mixto en sus ocho modalidades, Equipamiento, Industria y Vialidad); <b>Prevención/Riesgo</b> (suelo restringido por riesgo); y <b>Agua</b> (cuerpos de agua).</p>
+        </div>
       </details>
     </div>
 
     <div class="block">
-      <h2>Créditos</h2>
-      <div class="credits">
+      <details class="fold">
+        <summary>Créditos</summary>
+      <div class="credits fold-body">
         <div><b>Autor:</b> M.C.S. Héctor Eduardo Zavala Solís</div>
         <div><b>Asesor principal:</b> Dr. Jaime Paneque-Gálvez</div>
         <div style="margin-top:5px"><b>Programa:</b> Posgrado en Geografía, UNAM — Centro de Investigaciones en Geografía Ambiental (CIGA)</div>
@@ -316,19 +343,23 @@
           Zonificación secundaria PMDU Morelia (IMPLAN).
         </div>
       </div>
+      </details>
     </div>
     <div class="block">
-      <h2>Datos y metadatos</h2>
-      <div class="dl-row">
+      <details class="fold">
+        <summary>Datos y metadatos · descargas</summary>
+      <div class="dl-row fold-body">
         <button class="dlbtn" data-dl="loss" aria-label="Descargar pérdida en GeoJSON">Pérdida (GeoJSON)</button>
         <button class="dlbtn" data-dl="stats" aria-label="Descargar estadísticas por cerro en JSON">Estadísticas (JSON)</button>
         <button class="dlbtn" data-dl="zon" aria-label="Descargar zonificación en GeoJSON">Zonificación (GeoJSON)</button>
+        <button class="dlbtn" data-dl="manifest" aria-label="Descargar el manifiesto de la corrida en JSON">Manifiesto de la corrida (JSON)</button>
       </div>
       <div class="credits" style="margin-top:9px">
         <div><b>Cómo citar:</b> Zavala Solís, H. E. (2026). <i>Observatorio Forestal (Peri)urbano de Morelia</i>. Posgrado en Geografía, CIGA-UNAM.</div>
         <div style="margin-top:5px"><b>Elaboración:</b> julio 2026 · Periodo analizado 1990–2023.</div>
         <div style="margin-top:5px">© 2026 H. E. Zavala Solís · Licencia <b>CC BY-NC-ND 4.0</b> · Ref. HZS-OFM-2026-e4372558ba98</div>
       </div>
+      </details>
     </div>
   </aside>
 
@@ -339,7 +370,7 @@
       <p>Pérdida de vegetación 1990–2023 en las 4 ANP periurbanas de Morelia. Cómo explorarlo:</p>
       <ul>
         <li><b>Línea de tiempo</b> (abajo): recorre la <i>pérdida detectada</i>, año por año o acumulada.</li>
-        <li><b>Capas</b> (arriba izq.): activa pérdida, límites, zonificación y riesgo; ajusta su opacidad.</li>
+        <li><b>Capas</b> (arriba izq.): activa pérdida, límites, zonificación y susceptibilidad; ajusta su opacidad.</li>
         <li><b>Comparar 2003 ↔ 2025</b> (arriba): desliza entre dos <i>imágenes satelitales</i> para ver el cambio real del terreno.</li>
         <li><b>Cerros</b> (arriba): encuadra cada ANP o Morelia; haz clic en un cerro del mapa para ver sus cifras.</li>
       </ul>
@@ -352,9 +383,9 @@
       <div class="op-row"><span>Opac.</span><input type="range" id="zonOpacity" min="0.1" max="1" step="0.05" value="0.4"></div>
     </div>
     <div class="legend" id="legendRF">
-      <h3>Riesgo de pérdida (modelo RF)</h3>
+      <h3>Susceptibilidad del terreno</h3>
       <div class="grad" style="background:linear-gradient(90deg,#ffffcc,#fd8d3c,#bd0026,#800026)"></div>
-      <div class="grad-lbl"><span>baja</span><span>alta</span></div>
+      <div class="grad-lbl"><span>menor</span><span>mayor</span></div>
       <div style="margin-top:7px;display:flex;align-items:center;gap:6px">
         <span style="color:var(--muted);font-size:10px">Opacidad</span>
         <input type="range" id="rfOpacity" min="0.2" max="1" step="0.05" value="0.75" style="flex:1;accent-color:var(--accent)">
@@ -398,7 +429,46 @@
 
 <script>
 const YMIN=1990, YMAX=2023;
-const CERRO_COLORS={PICO:'#e0563b',AGUI:'#e8a33d',QUIN:'#7d5bd6',PUNH:'#2aa39a'};
+// Gráficas: un solo color. La comparación entre cerros es de magnitud, no de categorías;
+// con un color por cerro el ojo lee cuatro cosas distintas en vez de cuatro tamaños de lo mismo.
+const BAR_COLOR='#c2603f', BAR_HOVER='#d97a56';
+
+// ── Exactitud y versión: se leen del manifiesto, nunca se escriben en el HTML ──────────
+// Una exactitud pertenece a un mapa concreto, no a un método. Tenerla escrita a mano hizo
+// que sobreviviera a un cambio de umbral y quedara atribuida al mapa equivocado.
+const pct=v=>(v==null?'—':(100*v).toFixed(1)+'%');
+function textoExactitud(mf){
+  if(!mf||!mf.validacion) return null;
+  const v=mf.validacion;
+  if(v.estado==='pendiente') return {tono:'aviso',html:'<b>Sin validar.</b> Esta versión del mapa aún no tiene validación por fotointerpretación. No se reporta exactitud.'};
+  const mismo=v.coincide_con_publicado!==false;
+  if(mismo) return {tono:'ok',html:`<b>Exactitud.</b> Validado con ${v.n_puntos} puntos por fotointerpretación (${v.diseno}). Exactitud global ${pct(v.exactitud_global_mapa_publicado)} (IC 95% ${pct(v.ic95_mapa_publicado[0])}–${pct(v.ic95_mapa_publicado[1])}), estimador de ${v.estimador}.`};
+  const c=v.por_clase_mapa_publicado||{};
+  return {tono:'aviso',html:
+    `<b>Sobre la exactitud de este mapa.</b> La validación (${v.n_puntos} puntos, ${v.diseno}) se midió sobre el mapa <b>${v.mapa_validado}</b>, mientras que las cifras aquí publicadas provienen del mapa <b>${v.mapa_publicado}</b>. `+
+    `Reevaluada con el estimador de ${v.estimador} sobre el mapa publicado, la exactitud global es <b>${pct(v.exactitud_global_mapa_publicado)}</b> (IC 95% ${pct(v.ic95_mapa_publicado[0])}–${pct(v.ic95_mapa_publicado[1])}), frente a ${pct(v.exactitud_global_mapa_validado)} del mapa validado.<br>`+
+    `Por clase, en el mapa publicado: <b>deforestación</b> ${pct(c.deforestacion&&c.deforestacion.usuario)} de exactitud de usuario —cuando el mapa dice deforestación, casi siempre acierta—; <b>degradación</b> ${pct(c.degradacion&&c.degradacion.productor)} de exactitud del productor, es decir que el mapa capta solo una fracción de la degradación que la muestra de referencia encuentra.<br>`+
+    `<b>Léanse las superficies como cotas inferiores</b>, no como estimaciones: la validación detectó omisión sistemática de degradación sutil.`};
+}
+// Etiqueta corta para el tooltip de la capa clasificada. Reporta la exactitud de usuario de
+// deforestación, que es la única que no cambia con el umbral, y evita el titular global.
+function tooltipClase(){
+  const v=window.MANIFEST&&window.MANIFEST.validacion;
+  if(!v||v.estado==='pendiente') return 'Sin validar';
+  const u=v.por_clase_mapa_publicado&&v.por_clase_mapa_publicado.deforestacion;
+  return u? `Deforestación: ${pct(u.usuario)} de exactitud de usuario` : 'Validado';
+}
+function pintarMetodologia(mf){
+  const cont=document.getElementById('metaValidacion'); if(!cont) return;
+  const t=textoExactitud(mf);
+  if(!t){cont.innerHTML='';return;}
+  const col=t.tono==='ok'?'var(--accent)':'#d9a441';
+  const bg=t.tono==='ok'?'rgba(63,178,127,.10)':'rgba(217,164,65,.10)';
+  cont.innerHTML=`<div style="border-left:3px solid ${col};background:${bg};border-radius:0 8px 8px 0;padding:9px 11px;margin:2px 0 10px;line-height:1.5">${t.html}</div>`;
+  const p=mf&&mf.parametros;
+  if(p) cont.insertAdjacentHTML('beforeend',
+    `<p style="margin:7px 0"><b>Versión y parámetros.</b> Corrida <b>${mf.version}</b> (${mf.corrida}); umbral de magnitud <b>${(p.MAG_MIN/1000).toFixed(2)}</b> de caída de NBR; ventana estacional ${p.ventana_estacional}; periodo ${p.periodo[0]}–${p.periodo[1]}. ${(mf.avisos&&mf.avisos.umbral)||''}</p>`);
+}
 const CERRO_SVG={"PUNH":"M23.8 18.7 L37.0 14.9 L32.6 20.0 L9.0 28.1 L3.0 20.2 L8.1 13.3 L21.3 11.9 L23.8 18.7Z","QUIN":"M14.9 22.2 L12.6 21.0 L11.1 15.3 L6.8 15.8 L10.7 11.5 L10.9 8.7 L14.2 8.7 L16.2 3.1 L23.0 6.9 L24.5 5.9 L23.4 4.1 L25.9 3.0 L30.5 5.4 L35.0 14.2 L36.0 27.1 L34.4 29.3 L24.7 37.0 L10.0 31.0 L9.5 27.7 L4.0 28.6 L5.7 24.9 L11.7 26.0 L14.9 22.2Z","AGUI":"M15.8 6.9 L24.3 9.1 L22.7 11.2 L23.6 12.4 L26.4 11.3 L25.9 9.7 L29.2 9.8 L30.9 11.8 L37.0 15.4 L34.5 16.0 L32.4 19.2 L30.6 19.8 L31.2 23.6 L29.4 23.8 L29.0 26.2 L26.0 28.4 L20.3 26.0 L18.7 26.5 L21.3 30.2 L20.8 32.4 L17.1 33.1 L9.3 32.1 L7.5 29.5 L14.2 20.2 L3.0 16.7 L3.1 14.5 L4.6 14.9 L5.5 12.3 L7.4 13.3 L9.2 11.8 L10.5 13.3 L11.7 12.6 L11.1 9.6 L12.2 9.8 L15.8 6.9Z","PICO":"M18.3 24.0 L18.6 24.8 L19.9 25.2 L19.1 25.7 L18.7 27.0 L19.3 28.4 L20.6 27.7 L22.5 28.3 L23.7 27.7 L23.6 28.8 L21.3 30.4 L20.4 32.2 L18.7 32.4 L18.6 33.4 L17.9 33.4 L17.0 31.1 L15.8 30.7 L13.8 32.4 L13.0 32.3 L12.4 33.4 L11.0 33.8 L10.4 35.6 L9.2 35.5 L9.3 31.9 L10.0 30.5 L9.6 30.0 L8.8 29.9 L5.8 31.6 L5.5 30.8 L4.6 31.6 L3.0 31.3 L4.5 29.3 L4.5 27.7 L6.1 24.7 L8.0 24.0 L10.4 19.6 L8.2 19.1 L9.4 19.2 L8.9 17.7 L10.5 17.5 L9.7 16.6 L10.9 16.5 L11.4 15.0 L15.0 13.0 L15.9 13.5 L14.6 14.8 L15.1 15.5 L13.9 16.8 L15.2 17.0 L15.6 15.9 L16.9 17.5 L18.6 17.3 L19.9 17.8 L20.7 16.3 L19.5 14.1 L20.6 13.3 L20.7 12.3 L20.1 11.7 L20.7 10.0 L23.0 8.1 L23.5 8.6 L24.8 8.0 L23.9 7.6 L24.5 5.7 L23.8 5.5 L24.7 4.5 L26.0 5.2 L26.8 4.4 L28.4 4.7 L28.9 6.7 L29.4 6.9 L28.9 7.5 L29.8 10.3 L31.9 13.0 L31.8 14.2 L32.5 14.7 L33.6 14.3 L34.3 15.6 L35.2 16.3 L35.7 16.1 L34.9 17.1 L35.4 18.3 L36.6 18.8 L36.3 19.6 L35.5 19.2 L35.1 20.6 L36.0 20.7 L35.1 22.3 L37.0 23.2 L35.7 23.7 L33.2 22.1 L32.2 23.2 L29.2 21.7 L28.3 20.8 L26.1 21.0 L24.5 20.1 L22.4 20.8 L19.4 24.1 L18.3 24.0Z"};
 const MORELIA_SVG="M3.0 18.6 L3.5 18.0 L5.2 19.0 L5.9 18.5 L6.8 18.9 L8.6 18.3 L8.7 17.8 L7.9 17.4 L8.1 16.8 L9.3 16.5 L11.6 17.1 L12.4 16.6 L11.8 15.9 L12.2 15.4 L13.0 15.4 L14.1 16.0 L15.6 15.5 L17.1 15.6 L17.2 14.8 L16.0 14.4 L16.5 13.7 L17.1 13.7 L17.3 14.8 L18.7 14.2 L19.6 12.6 L21.1 11.5 L21.3 10.2 L22.2 9.8 L25.2 11.1 L27.5 10.8 L28.4 11.1 L28.9 10.1 L33.7 8.8 L34.6 9.8 L34.4 10.6 L33.8 11.0 L33.8 11.9 L36.5 12.4 L37.0 13.2 L36.9 13.9 L35.8 15.4 L35.4 17.7 L34.0 18.3 L32.8 18.2 L32.0 18.7 L30.3 18.3 L29.1 18.8 L29.1 19.8 L30.3 19.9 L30.4 20.9 L31.2 21.5 L32.0 21.5 L32.5 20.2 L33.7 21.0 L33.4 21.5 L32.2 21.9 L31.6 22.6 L29.5 22.8 L28.5 24.3 L27.8 24.5 L27.1 23.6 L26.2 24.3 L25.2 23.9 L24.8 22.8 L24.0 22.5 L21.7 23.3 L21.4 23.8 L21.7 24.5 L21.3 24.8 L18.2 23.3 L17.4 25.6 L15.1 25.3 L14.8 24.5 L13.2 24.3 L13.0 24.8 L13.8 25.2 L14.1 26.8 L14.6 26.9 L15.1 26.3 L15.6 26.9 L17.0 27.2 L16.9 28.9 L16.4 29.0 L15.9 28.2 L14.5 28.2 L12.9 29.2 L12.8 30.3 L11.8 30.4 L10.8 31.2 L10.4 30.7 L11.5 29.8 L11.7 28.7 L13.6 27.3 L13.1 25.5 L12.6 25.5 L12.2 26.1 L11.4 25.6 L11.6 24.6 L12.2 23.7 L13.3 23.9 L13.7 23.4 L14.8 23.3 L14.9 22.8 L13.5 21.7 L12.0 22.4 L10.5 21.7 L9.8 22.6 L9.3 22.4 L9.5 20.7 L10.7 21.6 L12.2 20.7 L10.3 18.6 L8.5 19.2 L8.5 20.4 L6.2 20.1 L4.3 20.7 L3.5 20.3 L3.0 18.6Z";
 const ZON_COLORS={'Natural/Forestal':'#2e7d32','Agrícola':'#c9a227','Urbano':'#8a94a0','Prevención/Riesgo':'#d98a3d','Agua':'#3f7fd0'};
@@ -423,24 +493,41 @@ const baseSat=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/
 baseDark.addTo(map);
 // Los controles de la esquina derecha (capas → buscador → zoom → pantalla completa)
 // se agregan en secuencia dentro del .then, para que queden en ese orden vertical.
-['timebar','legendYears','legendZon','legendRF','swipeBtn'].forEach(id=>{const el=document.getElementById(id);if(el){L.DomEvent.disableClickPropagation(el);L.DomEvent.disableScrollPropagation(el);}});
+['timebar','legendYears','legendZon','legendRF','legendClas','swipeBtn'].forEach(id=>{const el=document.getElementById(id);if(el){L.DomEvent.disableClickPropagation(el);L.DomEvent.disableScrollPropagation(el);}});
+
+// Lo que aporta la ciudadanía va encima de todo lo demás: es la capa que el usuario reconoce
+// como suya y no debe quedar tapada por las capas de datos.
+map.createPane('partPane'); map.getPane('partPane').style.zIndex=480;
 
 let lossLayer,anpLayer,zonLayer,statsData={},serieTotal={},lossOpacity=0.85,zonOpacity=0.4,cerroBounds={};
 const overlays={};
 
+/*DATA:BEGIN*/
 Promise.all([
   fetch('./data/perdida_por_anio.geojson').then(r=>r.json()),
   fetch('./data/anps.geojson').then(r=>r.json()),
   fetch('./data/zonif_clases.geojson').then(r=>r.json()),
   fetch('./data/stats_cerros.json').then(r=>r.json()),
-  fetch('./data/perdida_clasificada_v8.geojson').then(r=>r.json()).catch(()=>null)
-]).then(([loss,anps,zon,stats,v8])=>{
+  fetch('./data/perdida_clasificada.geojson').then(r=>r.json()).catch(()=>null),
+  fetch('./data/manifest.json').then(r=>r.json()).catch(()=>null)
+]).then(([loss,anps,zon,stats,v8,manifest])=>{
+/*DATA:END*/
+  window.MANIFEST=manifest; pintarMetodologia(manifest);
   statsData=stats;
 
+  // Renderizadores de canvas separados, cada uno en su propio pane, para que el
+  // orden de dibujo sea estable: zonificación de fondo → pérdida → clasificada.
+  // (Con un solo canvas compartido, la capa que se encendía después tapaba a las demás.)
+  map.createPane('zonPane');  map.getPane('zonPane').style.zIndex=395;
+  map.createPane('clasPane'); map.getPane('clasPane').style.zIndex=405;
+  map.createPane('anpPane');  map.getPane('anpPane').style.zIndex=410; // los límites, siempre visibles
+  const cvZon =L.canvas({padding:0.2,pane:'zonPane'});
+  const cvLoss=L.canvas({padding:0.2});
+  const cvClas=L.canvas({padding:0.2,pane:'clasPane'});
+
   // ---- Zonificación (fondo, apagada por defecto) ----
-  const cv=L.canvas({padding:0.5}); // renderizador canvas para capas vectoriales pesadas
   zonLayer=L.geoJSON(zon,{
-    renderer:cv,
+    renderer:cvZon,
     style:f=>({color:ZON_COLORS[f.properties.clase]||'#888',weight:.4,fillColor:ZON_COLORS[f.properties.clase]||'#888',fillOpacity:zonOpacity}),
     onEachFeature:(f,l)=>{l.bindTooltip(f.properties.sec+' · '+f.properties.clase,{sticky:true});
       l.on('mouseover',()=>l.setStyle({weight:1.6,color:'#fff'}));
@@ -453,13 +540,14 @@ Promise.all([
   serieTotal={};
   loss.features.forEach(f=>{serieTotal[f.properties.year]=f.properties.area_ha});
   lossLayer=L.geoJSON(loss,{
-    renderer:cv,
+    renderer:cvLoss,
     style:f=>({color:colorYear(f.properties.year),weight:0,fillColor:colorYear(f.properties.year),fillOpacity:.85}),
     onEachFeature:(f,l)=>{l.bindTooltip(`Pérdida ${f.properties.year} · ${f.properties.area_ha.toFixed(0)} ha`,{sticky:true})}
   }).addTo(map);
 
   // ---- Límites ANP (tooltip on-hover, no permanente) ----
   anpLayer=L.geoJSON(anps,{
+    pane:'anpPane',
     style:{color:'#ffffff',weight:2,fill:true,fillColor:'#8fb0c8',fillOpacity:0.06,dashArray:'4 3'},
     onEachFeature:(f,l)=>{
       const p=f.properties; const s=statsData[p.cve]||{};
@@ -480,17 +568,30 @@ Promise.all([
   const RF_URL='./data/proj_rf_masked.png';
   const RF_BOUNDS=[[19.50610,-101.40566],[19.80344,-101.03693]];
   const rfLayer=L.imageOverlay(RF_URL,RF_BOUNDS,{opacity:0.75,pane:'rf'});
-  overlays['Modelo · riesgo futuro (RF)']=rfLayer;
+  // "Susceptibilidad", no "riesgo futuro": la capa mide parecido de condiciones con zonas ya
+  // deforestadas, no probabilidad de que ocurra algo en una fecha. La etiqueta prometía más
+  // de lo que el modelo hace.
+  overlays['Modelo · susceptibilidad del terreno']=rfLayer;
   // ---- Pérdida clasificada (deforestación / degradación), validada ----
   let v8Layer=null;
   if(v8){
-    const V8C={1:'#f0a020',2:'#d73027'}; // 1=degradación, 2=deforestación
+    // 1=degradación, 2=deforestación, 3=pérdida reciente sin clasificar (v9 en adelante).
+    // El gris es deliberado: la clase 3 no afirma nada sobre el tipo de pérdida, solo que
+    // el evento es demasiado reciente para saber si la cobertura se recupera.
+    const V8C={1:'#f0a020',2:'#d73027',3:'#9aa4ad'};
+    const CLASES=(manifest&&manifest.clases)||{1:'Degradación',2:'Deforestación',3:'Pérdida reciente (sin clasificar)'};
+    // La leyenda de la clase 3 solo aparece si los datos la traen.
+    if(v8.features.some(f=>+f.properties.clase===3)){
+      const lg=document.getElementById('legendClas');
+      if(lg) lg.insertAdjacentHTML('beforeend',
+        `<div class="row"><span class="sw" style="background:${V8C[3]}"></span>${CLASES[3]}</div>`);
+    }
     v8Layer=L.geoJSON(v8,{
-      renderer:cv,
+      renderer:cvClas,
       style:f=>({color:V8C[f.properties.clase]||'#888',weight:0,fillColor:V8C[f.properties.clase]||'#888',fillOpacity:.9}),
       onEachFeature:(f,l)=>{ l.bindTooltip(
-        `${f.properties.clase===2?'Deforestación':'Degradación'} · ${f.properties.anio} · ${(+f.properties.area_ha).toFixed(2)} ha`+
-        `<br><i>Validado · exactitud 79%, κ 0.68 — clic para aportar</i>`,{sticky:true});
+        `${CLASES[+f.properties.clase]||'Pérdida'} · ${f.properties.anio} · ${(+f.properties.area_ha).toFixed(2)} ha`+
+        `<br><i>${tooltipClase()} — clic para aportar</i>`,{sticky:true});
         l.on('click',e=>{ if(window.aportarEnPunto){ L.DomEvent.stopPropagation(e); window.aportarEnPunto(f.properties,e.latlng); } }); }});
     overlays['Pérdida · clasificada (defor./degrad.)']=v8Layer;
     // Centroides de parches para estadística instantánea dentro de un territorio dibujado
@@ -552,12 +653,20 @@ Promise.all([
     const leftCol=L.DomUtil.create('div','ctl-left');
     const rightCol=L.DomUtil.create('div','ctl-right');
     corner.appendChild(leftCol); corner.appendChild(rightCol);
+    // El rincón de Leaflet no recibe eventos; hay que reactivarlos en estas columnas
+    // y evitar que el arrastre de un deslizador acabe moviendo el mapa.
+    [leftCol,rightCol].forEach(col=>{
+      col.style.pointerEvents='auto';
+      L.DomEvent.disableClickPropagation(col); L.DomEvent.disableScrollPropagation(col);
+    });
     leftCol.appendChild(lc.getContainer());
     ['legendZon','legendRF','legendClas'].forEach(id=>{const el=document.getElementById(id); if(el) leftCol.appendChild(el);});
     if(gcCtl) rightCol.appendChild(gcCtl.getContainer());
     rightCol.appendChild(zoomCtl.getContainer());
     rightCol.appendChild(fsCtl.getContainer());
   }catch(e){}
+  // Estado inicial coherente de las leyendas (ninguna de esas capas arranca encendida)
+  ['legendZon','legendRF','legendClas'].forEach(id=>{const el=document.getElementById(id); if(el) el.style.display='none';});
 
   // ---- KPIs ----
   const totalIn=Object.values(stats).reduce((a,s)=>a+(s&&s.perdida_ha||0),0);
@@ -572,7 +681,7 @@ Promise.all([
   document.getElementById('statOut').textContent=Math.round(out).toLocaleString();
   document.getElementById('statTot').textContent=Math.round(total).toLocaleString();
 
-  window.DATA={loss,anps,zon,stats};
+  window.DATA={loss,anps,zon,stats,manifest};
   buildCharts();
   updateTime();
   const _ld=document.getElementById('loader'); if(_ld)_ld.style.display='none';
@@ -623,7 +732,9 @@ function buildCharts(){
   function drawCerros(m){
     const rel=(m==='rel');
     const vals=order.map(k=> rel? statsData[k].pct_perdida : statsData[k].perdida_ha);
-    const data={labels:order.map(k=>names[k]),datasets:[{data:vals,backgroundColor:order.map(k=>CERRO_COLORS[k]),borderRadius:4}]};
+    // Un solo color: la comparación es de magnitud, no de categorías. Con un color por cerro
+    // el ojo lee cuatro cosas distintas en vez de cuatro tamaños de lo mismo.
+    const data={labels:order.map(k=>names[k]),datasets:[{data:vals,backgroundColor:BAR_COLOR,hoverBackgroundColor:BAR_HOVER,borderRadius:4}]};
     const options={indexAxis:'y',plugins:{legend:{display:false},
       tooltip:{callbacks:{label:c=>{const s=statsData[order[c.dataIndex]];
         return s.perdida_ha.toFixed(0)+' ha · '+s.pct_perdida+'% del ANP · '+(s.pct_perdida/SPAN).toFixed(2)+' %/año';}}}},
@@ -647,9 +758,11 @@ function buildCharts(){
 }
 function drawSerie(which){
   const years=[];for(let y=YMIN;y<=YMAX;y++)years.push(y);
-  let vals,color;
-  if(which==='__total'){vals=years.map(y=>serieTotal[y]||0);color='#3fb27f'}
-  else{const s=statsData[which].serie_ha;vals=years.map(y=>s[y]||0);color=CERRO_COLORS[which]}
+  // Un solo color también aquí: solo se dibuja una serie a la vez, así que un color por cerro
+  // no distinguía nada — el selector ya dice cuál se está viendo.
+  let vals,color='#3fb27f';
+  if(which==='__total'){vals=years.map(y=>serieTotal[y]||0)}
+  else{const s=statsData[which].serie_ha;vals=years.map(y=>s[y]||0)}
   const data={labels:years,datasets:[{data:vals,borderColor:color,backgroundColor:color+'33',fill:true,tension:.3,pointRadius:0,borderWidth:2}]};
   const opts={plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.parsed.y.toFixed(0)+' ha'}}},
     scales:{x:{ticks:{color:'#9fb2c4',font:{size:9},maxTicksLimit:8},grid:{display:false}},
@@ -663,6 +776,13 @@ const SAT_2003_URL='./data/sat_2003.jpg';
 const SAT_2025_URL='./data/sat_2025.jpg';
 const SAT_BOUNDS=[[19.51329,-101.39869],[19.79626,-101.04241]];
 map.createPane('sat'); map.getPane('sat').style.zIndex=250;
+// Capas de datos que conviene atenuar mientras se comparan las dos imágenes satelitales:
+// el propósito del comparador es ver el terreno, y con la huella de pérdida encima al 85%
+// de opacidad no se veía nada. Se atenúan, no se apagan, para no perder la referencia.
+const PANES_DATOS=['zonPane','overlayPane','clasPane'];
+function atenuarDatos(on){
+  PANES_DATOS.forEach(id=>{const pn=map.getPane(id); if(pn){pn.style.transition='opacity .18s ease'; pn.style.opacity=on?'0.28':'1';}});
+}
 const ov2003=L.imageOverlay(SAT_2003_URL,SAT_BOUNDS,{pane:'sat',interactive:false});
 const ov2025=L.imageOverlay(SAT_2025_URL,SAT_BOUNDS,{pane:'sat',interactive:false});
 const swDiv=document.getElementById('swipe-divider');
@@ -690,6 +810,7 @@ function swSet(on){
   swDiv.style.display=on?'block':'none';
   swLabL.style.display=on?'block':'none';
   swLabR.style.display=on?'block':'none';
+  atenuarDatos(on);
   if(on){ ov2003.addTo(map); ov2025.addTo(map);
     const mr=map.getContainer().getBoundingClientRect(); if(swX===null) swX=mr.width/2;
     setTimeout(swUpdate,40); }
@@ -712,7 +833,7 @@ window.addEventListener('touchmove',swMove,{passive:false});
 window.addEventListener('touchend',swEnd);
 document.getElementById('wclose').addEventListener('click',()=>{document.getElementById('welcome').style.display='none';});
 function _dl(n,c,t){const b=new Blob([c],{type:t});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=n;document.body.appendChild(a);a.click();a.remove();}
-document.querySelectorAll('.dlbtn').forEach(btn=>btn.addEventListener('click',()=>{const k=btn.dataset.dl,D=window.DATA||{};if(k==='loss')_dl('perdida_1990_2023.geojson',JSON.stringify(D.loss||{}),'application/geo+json');else if(k==='stats')_dl('estadisticas_cerros.json',JSON.stringify(D.stats||{}),'application/json');else if(k==='zon')_dl('zonificacion_pmdu.geojson',JSON.stringify(D.zon||{}),'application/geo+json');}));
+document.querySelectorAll('.dlbtn').forEach(btn=>btn.addEventListener('click',()=>{const k=btn.dataset.dl,D=window.DATA||{};if(k==='loss')_dl('perdida_1990_2023.geojson',JSON.stringify(D.loss||{}),'application/geo+json');else if(k==='stats')_dl('estadisticas_cerros.json',JSON.stringify(D.stats||{}),'application/json');else if(k==='zon')_dl('zonificacion_pmdu.geojson',JSON.stringify(D.zon||{}),'application/geo+json');else if(k==='manifest')_dl('manifest.json',JSON.stringify(D.manifest||{},null,2),'application/json');}));
 document.querySelectorAll('#sidebar .block > h2').forEach(h=>{h.classList.add('coll-h');h.addEventListener('click',()=>h.parentElement.classList.toggle('collapsed'));});
 (function(){const sh=document.getElementById('sheetHandle'),sb=document.getElementById('sidebar');
   if(sh)sh.addEventListener('click',()=>sb.classList.toggle('sheet-open'));})();
@@ -777,7 +898,8 @@ document.querySelectorAll('#sidebar .block > h2').forEach(h=>{h.classList.add('c
     if(pickMarker)pickMarker.setLatLng(pick);
     else pickMarker=L.marker(pick,{draggable:true}).addTo(map).on('dragend',ev=>{pick=ev.target.getLatLng();coord();});
     coord();
-    const cl=props.clase===2?'deforestación':'degradación';
+    const NOM=(window.MANIFEST&&window.MANIFEST.clases)||{1:'Degradación',2:'Deforestación',3:'Pérdida reciente (sin clasificar)'};
+    const cl=(NOM[+props.clase]||'pérdida').toLowerCase();
     g('apPick').textContent='Aporte ligado a un punto de '+cl+' ('+props.anio+'). Ajusta el marcador si hace falta y envía.';
   };
 
@@ -802,7 +924,7 @@ document.querySelectorAll('#sidebar .block > h2').forEach(h=>{h.classList.add('c
     const{data}=await sb.from('aportes').select('tipo,descripcion,estado,geom').eq('estado','validado');
     window.aportesLayer.clearLayers();
     (data||[]).forEach(a=>{if(!a.geom)return;const c=a.geom.coordinates;
-      L.circleMarker([c[1],c[0]],{radius:7,color:'#fff',weight:1.5,fillColor:'#3fb27f',fillOpacity:.9})
+      L.circleMarker([c[1],c[0]],{pane:'partPane',radius:7,color:'#fff',weight:1.5,fillColor:'#3fb27f',fillOpacity:.9})
         .bindPopup('<b>'+a.tipo+'</b><br>'+((a.descripcion||'').slice(0,180))).addTo(window.aportesLayer);});
   };
 
@@ -813,14 +935,21 @@ document.querySelectorAll('#sidebar .block > h2').forEach(h=>{h.classList.add('c
       const xi=ring[i][0],yi=ring[i][1],xj=ring[j][0],yj=ring[j][1];
       if(((yi>y)!=(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi)) inside=!inside; }
     return inside; }
-  function statsDe(ring){ let tot=0,defo=0,deg=0,n=0;
-    (window.v8Patches||[]).forEach(p=>{ if(pip(p.c,ring)){ tot+=p.area; n++; (p.clase===2?defo+=p.area:deg+=p.area); } });
-    return {tot:+tot.toFixed(2),defo:+defo.toFixed(2),deg:+deg.toFixed(2),n}; }
+  // Cuenta por clase sin asumir cuántas hay: la clase 3 (pérdida reciente) aparece en la v9
+  // y debe sumarse aparte, no repartirse entre deforestación y degradación.
+  function statsDe(ring){ let tot=0,n=0; const porClase={};
+    (window.v8Patches||[]).forEach(p=>{ if(pip(p.c,ring)){ tot+=p.area; n++;
+      porClase[p.clase]=(porClase[p.clase]||0)+p.area; } });
+    return {tot:+tot.toFixed(2),porClase,n,
+            defo:+(porClase[2]||0).toFixed(2), deg:+(porClase[1]||0).toFixed(2)}; }
   function mostrarStats(s){ g('tStats').style.display='block';
     if(!s||!s.n){ g('tStats').innerHTML='<b>Pérdida en este polígono</b><br><span style="color:var(--muted)">Sin pérdida detectada aquí (o fuera del área analizada: 4 cerros + 2 km).</span>'; return; }
+    const NOM=(window.MANIFEST&&window.MANIFEST.clases)||{1:'Degradación',2:'Deforestación',3:'Pérdida reciente (sin clasificar)'};
+    const COL={1:'#f0a020',2:'#d73027',3:'#9aa4ad'};
+    const filas=Object.keys(s.porClase).sort((a,b)=>b-a).map(k=>
+      '<span style="color:'+(COL[k]||'#9fb2c4')+'">'+(NOM[k]||('Clase '+k))+': '+s.porClase[k].toFixed(1)+' ha</span>').join('<br>');
     g('tStats').innerHTML='<b>Pérdida en este polígono</b> <span style="color:var(--muted);font-weight:400">(aprox.)</span><br><b>'+s.n+'</b> parches · <b>'+s.tot.toFixed(1)+' ha</b> en total<br>'
-      +'<span style="color:#d73027">Deforestación: '+s.defo.toFixed(1)+' ha</span><br>'
-      +'<span style="color:#f0a020">Degradación: '+s.deg.toFixed(1)+' ha</span>'
+      +filas
       +'<br><span style="color:var(--muted);font-size:10px">Parches contados por su centro; cifras aproximadas en los bordes.</span>'; }
   function resetTerr(){ drawing=false; if(map.pm)map.pm.disableDraw();
     if(tLayer){map.removeLayer(tLayer);tLayer=null;} tGeo=null;tStats=null;
@@ -834,7 +963,7 @@ document.querySelectorAll('#sidebar .block > h2').forEach(h=>{h.classList.add('c
     if(tLayer){map.removeLayer(tLayer);tLayer=null;tGeo=null;tStats=null;}  // reemplazar anterior
     drawing=true; g('tDibujar').textContent='✕ Cancelar'; g('tHint').style.display='block';
     g('tForm').style.display='none'; g('tStats').style.display='none';
-    map.pm.enableDraw('Polygon',{pathOptions:{color:'#3fb27f',fillColor:'#3fb27f',fillOpacity:0.12},
+    map.pm.enableDraw('Polygon',{pathOptions:{pane:'partPane',color:'#3fb27f',fillColor:'#3fb27f',fillOpacity:0.12},
       templineStyle:{color:'#3fb27f'},hintlineStyle:{color:'#3fb27f',dashArray:[5,5]},snappable:false}); };
   map.on('pm:create',e=>{ if(map.pm)map.pm.disableDraw(); drawing=false;
     g('tDibujar').textContent='✏️ Dibujar territorio'; g('tHint').style.display='none';
@@ -868,7 +997,7 @@ document.querySelectorAll('#sidebar .block > h2').forEach(h=>{h.classList.add('c
     const {data}=await sb.from('territorios').select('nombre,stats,geom').eq('id',id).maybeSingle();
     if(!data||!data.geom)return;
     if(tLayer)map.removeLayer(tLayer);
-    tLayer=L.geoJSON(data.geom,{style:{color:'#3fb27f',weight:2,fillColor:'#3fb27f',fillOpacity:0.12}}).addTo(map);
+    tLayer=L.geoJSON(data.geom,{pane:'partPane',style:{color:'#3fb27f',weight:2,fillColor:'#3fb27f',fillOpacity:0.12}}).addTo(map);
     map.fitBounds(tLayer.getBounds(),{padding:[30,30]}); mostrarStats(data.stats); }
 })();
 </script>

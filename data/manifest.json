@@ -1,0 +1,58 @@
+{
+  "_leeme": "Generado por build_data.py. NO editar a mano. La interfaz lee de aquí la versión, los parámetros y el texto de exactitud, para que la exactitud mostrada pertenezca siempre al mapa mostrado.",
+  "version": "v8.1",
+  "corrida": "2026-07-25",
+  "generado": "2026-07-26",
+  "parametros": {
+    "MAG_MIN": 250,
+    "MAG_DEFO": 300,
+    "NBR_NOFOREST": 0.20,
+    "ventana_estacional": "ene–mar",
+    "periodo": [1990, 2023]
+  },
+  "validacion": {
+    "estado": "parcial",
+    "mapa_validado": "MAG_MIN=100",
+    "mapa_publicado": "MAG_MIN=250",
+    "coincide_con_publicado": false,
+    "n_puntos": 150,
+    "diseno": "aleatorio estratificado, asignación igual (50 por estrato)",
+    "estimador": "Olofsson et al. (2014), estratificado por diseño",
+    "exactitud_global_mapa_validado": 0.770,
+    "ic95_mapa_validado": [0.674, 0.858],
+    "exactitud_global_mapa_publicado": 0.698,
+    "ic95_mapa_publicado": [0.604, 0.786],
+    "por_clase_mapa_publicado": {
+      "estable": { "usuario": 0.705, "productor": 0.977 },
+      "degradacion": { "usuario": 0.538, "productor": 0.097 },
+      "deforestacion": { "usuario": 0.878, "productor": 0.105 }
+    },
+    "nota": "La exactitud se midió sobre el mapa con MAG_MIN=100; las cifras publicadas salen del mapa con MAG_MIN=250. La clase deforestación conserva 87.8% de exactitud de usuario en ambos umbrales. La omisión de degradación es alta en el mapa publicado.",
+    "fuente": "Google Earth Engine/02_AUDITORIA_validacion_y_umbral.md"
+  },
+  "area_ajustada_ha": {
+    "_nota": "Estimada desde la muestra de referencia, no desde el mapa. Los intervalos son amplios por el diseño muestral; leer como cotas, no como estimaciones puntuales.",
+    "estable": { "valor": 12154, "ic95": [10504, 13805] },
+    "degradacion": { "valor": 4892, "ic95": [3287, 6497] },
+    "deforestacion": { "valor": 776, "ic95": [135, 1417] }
+  },
+  "cifras": {
+    "roi_ha": 4238.0,
+    "dentro_anp_ha": 982.3,
+    "fuera_anp_ha": 3255.7,
+    "pct_dentro": 23,
+    "deforestacion_ha": 93.5,
+    "degradacion_ha": 888.8,
+    "ritmo_dentro_pct": 5.5,
+    "ritmo_fuera_pct": 3.2
+  },
+  "clases": {
+    "1": "Degradación",
+    "2": "Deforestación",
+    "3": "Pérdida reciente (sin clasificar)"
+  },
+  "avisos": {
+    "umbral": "La superficie total de pérdida depende del umbral de magnitud adoptado, que es una decisión metodológica declarada y no un dato absoluto.",
+    "cota_inferior": "Las áreas mapeadas son cotas inferiores: la validación detectó omisión sistemática de degradación sutil."
+  }
+}
