@@ -1,20 +1,25 @@
 {
-  "_leeme": "Generado por build_data.py. NO editar a mano. La interfaz lee de aquí la versión, los parámetros y el texto de exactitud, para que la exactitud mostrada pertenezca siempre al mapa mostrado.",
+  "_leeme": "Generado por build_data.py. NO editar a mano. La interfaz lee de aquí la versión, los parámetros y el texto de exactitud, para que lo que se muestra pertenezca siempre al mapa y al área que se muestran.",
   "version": "v8.1",
   "corrida": "2026-07-25",
-  "generado": "2026-07-26",
+  "generado": "2026-08-05",
   "parametros": {
     "MAG_MIN": 250,
     "MAG_DEFO": 300,
     "NBR_NOFOREST": 0.20,
     "ventana_estacional": "ene–mar",
-    "periodo": [1990, 2023]
+    "serie_landsat": [1990, 2025],
+    "eventos_detectados": [1992, 2023],
+    "_nota_periodo": "La serie de imágenes corre 1990–2025; el primer y el último año con pérdida detectada en los datos publicados son 1992 y 2023. Confundir ambos rangos era el origen de la inconsistencia de fechas detectada el 4 de agosto de 2026."
   },
   "validacion": {
     "estado": "parcial",
     "mapa_validado": "MAG_MIN=100",
     "mapa_publicado": "MAG_MIN=250",
     "coincide_con_publicado": false,
+    "ambito_muestra": "interior de las ANP",
+    "ambito_cifras": "ROI completo (4 cerros + franja periurbana)",
+    "ambito_coincide": false,
     "n_puntos": 150,
     "diseno": "aleatorio estratificado, asignación igual (50 por estrato)",
     "estimador": "Olofsson et al. (2014), estratificado por diseño",
@@ -27,11 +32,17 @@
       "degradacion": { "usuario": 0.538, "productor": 0.097 },
       "deforestacion": { "usuario": 0.878, "productor": 0.105 }
     },
-    "nota": "La exactitud se midió sobre el mapa con MAG_MIN=100; las cifras publicadas salen del mapa con MAG_MIN=250. La clase deforestación conserva 87.8% de exactitud de usuario en ambos umbrales. La omisión de degradación es alta en el mapa publicado.",
-    "fuente": "Google Earth Engine/02_AUDITORIA_validacion_y_umbral.md"
+    "nota": "Dos desajustes de atribución, ambos declarados. (1) De mapa: la exactitud se midió sobre MAG_MIN=100 y las cifras salen de MAG_MIN=250. (2) De área: la muestra se extrajo con region=anps.geometry(), es decir solo del interior de las ANP, mientras que las cifras cubren el ROI completo, donde ocurre el 77% de la pérdida. La exactitud no describe la franja periurbana.",
+    "fuente": "Google Earth Engine/02_AUDITORIA_validacion_y_umbral.md · bitácora del 4 de agosto de 2026"
+  },
+  "interpretacion_clases": {
+    "_nota": "Consecuencia del ámbito de la muestra: lo que la clase 2 mide depende de dónde se mire.",
+    "dentro_anp": "Los cuatro cerros son macizos forestales cuyo frente de conversión es agrícola. Dentro de las ANP, la clase 'Deforestación' mide conversión agroindustrial —huerta—, no urbanización. Las 93 ha no son ciudad.",
+    "franja_periurbana": "Sin validar. La muestra no incluyó puntos fuera de las ANP, de modo que no hay base para afirmar qué mide la clase ahí ni con qué exactitud.",
+    "nota_fisica": "El sentido físico apunta a que la urbanización debería detectarse mejor, no peor: bosque → superficie construida produce una caída de NBR mayor que bosque → huerta, porque la huerta conserva vegetación. La ausencia de casos de urbanización en la validación es del muestreo, no del sensor."
   },
   "area_ajustada_ha": {
-    "_nota": "Estimada desde la muestra de referencia, no desde el mapa. Los intervalos son amplios por el diseño muestral; leer como cotas, no como estimaciones puntuales.",
+    "_nota": "Estimada desde la muestra de referencia, no desde el mapa. Los intervalos son amplios por el diseño muestral; leer como cotas, no como estimaciones puntuales. Válida para el interior de las ANP, que es de donde salió la muestra.",
     "estable": { "valor": 12154, "ic95": [10504, 13805] },
     "degradacion": { "valor": 4892, "ic95": [3287, 6497] },
     "deforestacion": { "valor": 776, "ic95": [135, 1417] }
@@ -53,6 +64,7 @@
   },
   "avisos": {
     "umbral": "La superficie total de pérdida depende del umbral de magnitud adoptado, que es una decisión metodológica declarada y no un dato absoluto.",
-    "cota_inferior": "Las áreas mapeadas son cotas inferiores: la validación detectó omisión sistemática de degradación sutil."
+    "cota_inferior": "Las áreas mapeadas son cotas inferiores: la validación detectó omisión sistemática de degradación sutil.",
+    "ambito": "La exactitud declarada se midió únicamente dentro de las áreas protegidas. El 77% de la pérdida ocurre fuera de ellas y esa parte del mapa no está validada."
   }
 }
