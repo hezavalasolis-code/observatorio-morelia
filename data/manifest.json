@@ -1,70 +1,90 @@
 {
-  "_leeme": "Generado por build_data.py. NO editar a mano. La interfaz lee de aquí la versión, los parámetros y el texto de exactitud, para que lo que se muestra pertenezca siempre al mapa y al área que se muestran.",
-  "version": "v8.1",
-  "corrida": "2026-07-25",
-  "generado": "2026-08-05",
+  "_leeme": "Generado por build_data.py. NO editar a mano.",
+  "version": "produccion-2026-09-23",
+  "corrida": "2026-09-28",
+  "generado": "2026-09-28",
   "parametros": {
-    "MAG_MIN": 250,
-    "MAG_DEFO": 300,
-    "NBR_NOFOREST": 0.20,
-    "ventana_estacional": "ene–mar",
-    "serie_landsat": [1990, 2025],
-    "eventos_detectados": [1992, 2023],
-    "_nota_periodo": "La serie de imágenes corre 1990–2025; el primer y el último año con pérdida detectada en los datos publicados son 1992 y 2023. Confundir ambos rangos era el origen de la inconsistencia de fechas detectada el 4 de agosto de 2026."
+    "MAG_MIN": 100,
+    "serie_landsat": [
+      2002,
+      2025
+    ],
+    "periodo_reportado": [
+      2006,
+      2024
+    ],
+    "eventos_detectados": [
+      2006,
+      2024
+    ],
+    "_nota_periodo": "La serie de imágenes y los años con pérdida detectada son rangos distintos; confundirlos fue el origen de una inconsistencia de fechas."
   },
   "validacion": {
-    "estado": "parcial",
-    "mapa_validado": "MAG_MIN=100",
-    "mapa_publicado": "MAG_MIN=250",
-    "coincide_con_publicado": false,
-    "ambito_muestra": "interior de las ANP",
-    "ambito_cifras": "ROI completo (4 cerros + franja periurbana)",
-    "ambito_coincide": false,
-    "n_puntos": 150,
-    "diseno": "aleatorio estratificado, asignación igual (50 por estrato)",
-    "estimador": "Olofsson et al. (2014), estratificado por diseño",
-    "exactitud_global_mapa_validado": 0.770,
-    "ic95_mapa_validado": [0.674, 0.858],
-    "exactitud_global_mapa_publicado": 0.698,
-    "ic95_mapa_publicado": [0.604, 0.786],
-    "por_clase_mapa_publicado": {
-      "estable": { "usuario": 0.705, "productor": 0.977 },
-      "degradacion": { "usuario": 0.538, "productor": 0.097 },
-      "deforestacion": { "usuario": 0.878, "productor": 0.105 }
+    "estado": "pendiente",
+    "mapa_validado": null,
+    "mapa_publicado": "MAG_MIN=100",
+    "coincide_con_publicado": null,
+    "ambito_muestra": null,
+    "ambito_cifras": "municipio de Morelia (119 316 ha)",
+    "ambito_coincide": null,
+    "n_puntos": null,
+    "nota": "Cifras sin validar sobre este mapa. No citar exactitud."
+  },
+  "muestra": {
+    "diseno": 720,
+    "sorteados": 700,
+    "interpretados": 0,
+    "por_unidad": {
+      "Áreas protegidas": {
+        "sorteados": 161,
+        "interpretados": 0
+      },
+      "No urbanizable": {
+        "sorteados": 180,
+        "interpretados": 0
+      },
+      "Urbanizable": {
+        "sorteados": 179,
+        "interpretados": 0
+      },
+      "Urbano": {
+        "sorteados": 180,
+        "interpretados": 0
+      }
     },
-    "nota": "Dos desajustes de atribución, ambos declarados. (1) De mapa: la exactitud se midió sobre MAG_MIN=100 y las cifras salen de MAG_MIN=250. (2) De área: la muestra se extrajo con region=anps.geometry(), es decir solo del interior de las ANP, mientras que las cifras cubren el ROI completo, donde ocurre el 77% de la pérdida. La exactitud no describe la franja periurbana.",
-    "fuente": "Google Earth Engine/02_AUDITORIA_validacion_y_umbral.md · bitácora del 4 de agosto de 2026"
-  },
-  "interpretacion_clases": {
-    "_nota": "Consecuencia del ámbito de la muestra: lo que la clase 2 mide depende de dónde se mire.",
-    "dentro_anp": "Los cuatro cerros son macizos forestales cuyo frente de conversión es agrícola. Dentro de las ANP, la clase 'Deforestación' mide conversión agroindustrial —huerta—, no urbanización. Las 93 ha no son ciudad.",
-    "franja_periurbana": "Sin validar. La muestra no incluyó puntos fuera de las ANP, de modo que no hay base para afirmar qué mide la clase ahí ni con qué exactitud.",
-    "nota_fisica": "El sentido físico apunta a que la urbanización debería detectarse mejor, no peor: bosque → superficie construida produce una caída de NBR mayor que bosque → huerta, porque la huerta conserva vegetación. La ausencia de casos de urbanización en la validación es del muestreo, no del sensor."
-  },
-  "area_ajustada_ha": {
-    "_nota": "Estimada desde la muestra de referencia, no desde el mapa. Los intervalos son amplios por el diseño muestral; leer como cotas, no como estimaciones puntuales. Válida para el interior de las ANP, que es de donde salió la muestra.",
-    "estable": { "valor": 12154, "ic95": [10504, 13805] },
-    "degradacion": { "valor": 4892, "ic95": [3287, 6497] },
-    "deforestacion": { "valor": 776, "ic95": [135, 1417] }
+    "fuente": "ficha_captura.csv",
+    "nota": "Los 20 puntos que faltan para el diseño corresponden a estratos que no tenían más píxeles: conversión construida dentro de áreas protegidas (11 de 30) y en urbanizable (29 de 30). Entran al estimador con su n real."
   },
   "cifras": {
-    "roi_ha": 4238.0,
-    "dentro_anp_ha": 982.3,
-    "fuera_anp_ha": 3255.7,
-    "pct_dentro": 23,
-    "deforestacion_ha": 93.5,
-    "degradacion_ha": 888.8,
-    "ritmo_dentro_pct": 5.5,
-    "ritmo_fuera_pct": 3.2
+    "publicadas": false,
+    "universo_ha": 119316.1,
+    "area_min_parche_ha": 0.5,
+    "motivo": "Superficie mapeada sin validar. No se publica ninguna superficie ni proporción hasta tener las áreas ajustadas por error sobre la franja como dominio de estimación."
   },
   "clases": {
     "1": "Degradación",
-    "2": "Deforestación",
-    "3": "Pérdida reciente (sin clasificar)"
+    "2": "Conversión construida",
+    "3": "Conversión cultivada",
+    "4": "Pérdida reciente (sin clasificar)"
+  },
+  "unidades": {
+    "1": "Áreas protegidas",
+    "2": "No urbanizable",
+    "3": "Urbanizable",
+    "4": "Urbano"
+  },
+  "grupos": {
+    "1": "Protección y restauración",
+    "2": "Aprovechamiento rural",
+    "3": "Verde urbano",
+    "4": "Urbano consolidado",
+    "5": "Urbano en expansión",
+    "6": "Soporte urbano",
+    "7": "Localidad rural"
   },
   "avisos": {
     "umbral": "La superficie total de pérdida depende del umbral de magnitud adoptado, que es una decisión metodológica declarada y no un dato absoluto.",
-    "cota_inferior": "Las áreas mapeadas son cotas inferiores: la validación detectó omisión sistemática de degradación sutil.",
-    "ambito": "La exactitud declarada se midió únicamente dentro de las áreas protegidas. El 77% de la pérdida ocurre fuera de ellas y esa parte del mapa no está validada."
+    "sin_validar": "El mapa muestra dónde el algoritmo detecta pérdida, no cuánta hay. Un mapa de clases tiene comisión y omisión; la superficie se estima desde la muestra de referencia, no contando píxeles.",
+    "cubierta_vista": "La cubierta se mide sobre compuestos de temporada seca: el bosque caducifolio sin hoja queda fuera del numerador y del denominador. El mapa describe la cubierta que el método ve."
   }
 }
