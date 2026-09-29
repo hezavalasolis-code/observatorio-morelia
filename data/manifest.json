@@ -1,8 +1,8 @@
 {
   "_leeme": "Generado por build_data.py. NO editar a mano.",
   "version": "produccion-2026-09-23",
-  "corrida": "2026-09-28",
-  "generado": "2026-09-28",
+  "corrida": "2026-09-29",
+  "generado": "2026-09-29",
   "parametros": {
     "MAG_MIN": 100,
     "serie_landsat": [
@@ -32,11 +32,11 @@
   },
   "muestra": {
     "diseno": 720,
-    "sorteados": 700,
+    "sorteados": 706,
     "interpretados": 0,
     "por_unidad": {
       "Áreas protegidas": {
-        "sorteados": 161,
+        "sorteados": 166,
         "interpretados": 0
       },
       "No urbanizable": {
@@ -44,7 +44,7 @@
         "interpretados": 0
       },
       "Urbanizable": {
-        "sorteados": 179,
+        "sorteados": 180,
         "interpretados": 0
       },
       "Urbano": {
@@ -53,7 +53,7 @@
       }
     },
     "fuente": "ficha_captura.csv",
-    "nota": "Los 20 puntos que faltan para el diseño corresponden a estratos que no tenían más píxeles: conversión construida dentro de áreas protegidas (11 de 30) y en urbanizable (29 de 30). Entran al estimador con su n real."
+    "nota": "Los 14 puntos que faltan para el diseño corresponden a estratos con menos píxeles que puntos pedidos; entran al estimador con su n real."
   },
   "cifras": {
     "publicadas": false,
