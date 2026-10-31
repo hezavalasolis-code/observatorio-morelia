@@ -512,8 +512,16 @@ function colorYear(y){
 }
 
 const map=L.map('map',{zoomControl:false,minZoom:9,maxZoom:19}).setView([19.66,-101.19],11);
-const baseDark=L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
-  attribution:'© OpenStreetMap © CARTO',subdomains:'abcd',maxZoom:20});
+map.createPane('etiquetas'); map.getPane('etiquetas').style.zIndex=450; map.getPane('etiquetas').style.pointerEvents='none';
+// Base oscura de Esri (Canvas Dark Gray). CARTO dejó de servir sus teselas sin clave: el
+// 28-09-2026 devolvían una marca «API KEY REQUIRED» sobre todo el mapa. Esri no pide clave y
+// las etiquetas van en capa aparte, por encima de los datos. Mismo cambio que en vista-v2.
+const baseDark=L.layerGroup([
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',{
+    attribution:'Base © Esri, HERE, Garmin, © OpenStreetMap',maxZoom:19,maxNativeZoom:16}),
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',{
+    pane:'etiquetas',maxZoom:19,maxNativeZoom:16})
+]);
 const baseSat=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{
   attribution:'Imagery © Esri, Maxar, Earthstar Geographics',maxZoom:20});
 baseDark.addTo(map);
