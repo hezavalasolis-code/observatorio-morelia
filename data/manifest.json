@@ -1,8 +1,8 @@
 {
   "_leeme": "Generado por build_data.py. NO editar a mano.",
-  "version": "produccion-2026-09-23",
-  "corrida": "2026-09-29",
-  "generado": "2026-09-29",
+  "version": "secas-calibrado-2026-11-04",
+  "corrida": "2026-11-11",
+  "generado": "2026-11-11",
   "parametros": {
     "MAG_MIN": 100,
     "serie_landsat": [
@@ -20,46 +20,167 @@
     "_nota_periodo": "La serie de imágenes y los años con pérdida detectada son rangos distintos; confundirlos fue el origen de una inconsistencia de fechas."
   },
   "validacion": {
-    "estado": "pendiente",
-    "mapa_validado": null,
-    "mapa_publicado": "MAG_MIN=100",
-    "coincide_con_publicado": null,
-    "ambito_muestra": null,
+    "estado": "validado",
+    "preliminar": false,
+    "superficies_publicadas": true,
+    "corrida": "2026-11-10",
+    "fuente": "exactitud_secas_vertice_crecimiento.csv",
+    "mapa_validado": "mapa_clases.tif (secas, 2026-11-10)",
+    "mapa_publicado": "mapa_clases.tif (secas, 2026-11-10)",
+    "coincide_con_publicado": true,
+    "ambito_muestra": "municipio de Morelia (119 316 ha)",
     "ambito_cifras": "municipio de Morelia (119 316 ha)",
-    "ambito_coincide": null,
-    "n_puntos": null,
-    "nota": "Cifras sin validar sobre este mapa. No citar exactitud."
+    "ambito_coincide": true,
+    "n_puntos": 706,
+    "no_evaluables": 0,
+    "diseno": "muestra aleatoria estratificada por unidad de análisis y clase del mapa",
+    "estimador": "Stehman (2014), para estratos que no coinciden con las clases del mapa",
+    "global": {
+      "tematica": {
+        "estimado": 0.9065,
+        "ee": 0.0111,
+        "ic95": 0.0217
+      },
+      "perdida_si_no": {
+        "estimado": 0.9121,
+        "ee": 0.0111,
+        "ic95": 0.0218
+      }
+    },
+    "por_clase": {
+      "perdida": {
+        "usuario": {
+          "estimado": 0.3096,
+          "ee": 0.0429,
+          "ic95": 0.084
+        },
+        "productor": {
+          "estimado": 0.254,
+          "ee": 0.0489,
+          "ic95": 0.0959
+        }
+      },
+      "estable": {
+        "usuario": {
+          "estimado": 0.9471,
+          "ee": 0.0115,
+          "ic95": 0.0226
+        },
+        "productor": {
+          "estimado": 0.9593,
+          "ee": 0.0025,
+          "ic95": 0.0048
+        }
+      },
+      "degradacion": {
+        "usuario": {
+          "estimado": 0.1862,
+          "ee": 0.0467,
+          "ic95": 0.0916
+        },
+        "productor": {
+          "estimado": 0.2225,
+          "ee": 0.056,
+          "ic95": 0.1098
+        }
+      },
+      "construida": {
+        "usuario": {
+          "estimado": 0.0756,
+          "ee": 0.021,
+          "ic95": 0.0411
+        },
+        "productor": {
+          "estimado": 0.0218,
+          "ee": 0.0165,
+          "ic95": 0.0324
+        }
+      },
+      "cultivada": {
+        "usuario": {
+          "estimado": 0.3648,
+          "ee": 0.0642,
+          "ic95": 0.1259
+        },
+        "productor": {
+          "estimado": 0.0947,
+          "ee": 0.0431,
+          "ic95": 0.0844
+        }
+      },
+      "perdida_reciente": {
+        "usuario": {
+          "estimado": 0.2561,
+          "ee": 0.0598,
+          "ic95": 0.1173
+        }
+      }
+    },
+    "nota": "Validación cerrada. Las superficies que se publican son áreas ajustadas por error con su intervalo de confianza, no hectáreas mapeadas."
   },
   "muestra": {
     "diseno": 720,
     "sorteados": 706,
-    "interpretados": 0,
+    "interpretados": 706,
     "por_unidad": {
       "Áreas protegidas": {
         "sorteados": 166,
-        "interpretados": 0
+        "interpretados": 166
       },
       "No urbanizable": {
         "sorteados": 180,
-        "interpretados": 0
+        "interpretados": 180
       },
       "Urbanizable": {
         "sorteados": 180,
-        "interpretados": 0
+        "interpretados": 180
       },
       "Urbano": {
         "sorteados": 180,
-        "interpretados": 0
+        "interpretados": 180
       }
     },
     "fuente": "ficha_captura.csv",
     "nota": "Los 14 puntos que faltan para el diseño corresponden a estratos con menos píxeles que puntos pedidos; entran al estimador con su n real."
   },
   "cifras": {
-    "publicadas": false,
-    "universo_ha": 119316.1,
-    "area_min_parche_ha": 0.5,
-    "motivo": "Superficie mapeada sin validar. No se publica ninguna superficie ni proporción hasta tener las áreas ajustadas por error sobre la franja como dominio de estimación."
+    "publicadas": true,
+    "tipo": "área ajustada por error, IC 95 % (Stehman 2014)",
+    "fuente": "estadisticas.json",
+    "universo_ha": 119312.6,
+    "total": {
+      "perdida": {
+        "ha": 7994.5,
+        "ic95": 2606.9,
+        "acotada": true,
+        "n_puntos": 181
+      },
+      "degradacion": {
+        "ha": 5232.9,
+        "ic95": 2098.0,
+        "acotada": true,
+        "n_puntos": 101
+      },
+      "construida": {
+        "ha": 769.0,
+        "ic95": 1099.2,
+        "acotada": false,
+        "n_puntos": 37
+      },
+      "cultivada": {
+        "ha": 1992.5,
+        "ic95": 1336.3,
+        "acotada": true,
+        "n_puntos": 43
+      },
+      "conversion": {
+        "ha": 2761.6,
+        "ic95": 1730.3,
+        "acotada": true,
+        "n_puntos": 80
+      }
+    },
+    "area_min_parche_ha": 0.5
   },
   "clases": {
     "1": "Degradación",

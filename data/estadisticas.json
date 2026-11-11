@@ -1,0 +1,1250 @@
+{
+ "_leeme": "Generado por build_data.py --superficies. Áreas ajustadas por error con IC 95 %, estimador de Stehman (2014) del OE1 (14_patrones.py). No son hectáreas mapeadas.",
+ "rotulo": "segunda corrida, con la ficha revisada en los estratos estables (10-11-2026)",
+ "universo_ha": 119312.6,
+ "puntos_evaluables": 706,
+ "no_evaluables": 0,
+ "periodo_reportado": [
+  2006,
+  2024
+ ],
+ "total": {
+  "perdida": {
+   "ha": 7994.5,
+   "ic95": 2606.9,
+   "acotada": true,
+   "n_puntos": 181
+  },
+  "degradacion": {
+   "ha": 5232.9,
+   "ic95": 2098.0,
+   "acotada": true,
+   "n_puntos": 101
+  },
+  "construida": {
+   "ha": 769.0,
+   "ic95": 1099.2,
+   "acotada": false,
+   "n_puntos": 37
+  },
+  "cultivada": {
+   "ha": 1992.5,
+   "ic95": 1336.3,
+   "acotada": true,
+   "n_puntos": 43
+  },
+  "conversion": {
+   "ha": 2761.6,
+   "ic95": 1730.3,
+   "acotada": true,
+   "n_puntos": 80
+  }
+ },
+ "por_periodo": [
+  {
+   "periodo": "2006-2010",
+   "pérdida total": {
+    "ha": 210.7,
+    "ic95": 193.2,
+    "ha_anio": 42.1,
+    "ic95_anio": 38.6,
+    "acotada": true,
+    "n_puntos": 22
+   },
+   "degradacion": {
+    "ha": 202.6,
+    "ic95": 193.0,
+    "ha_anio": 40.5,
+    "ic95_anio": 38.6,
+    "acotada": true,
+    "n_puntos": 18
+   },
+   "construida": {
+    "ha": 8.2,
+    "ic95": 9.2,
+    "ha_anio": 1.6,
+    "ic95_anio": 1.8,
+    "acotada": false,
+    "n_puntos": 4
+   },
+   "cultivada": {
+    "ha": 0.0,
+    "ic95": 0.0,
+    "ha_anio": 0.0,
+    "ic95_anio": 0.0,
+    "acotada": false,
+    "n_puntos": 0
+   },
+   "conversion": {
+    "ha": 8.2,
+    "ic95": 9.2,
+    "ha_anio": 1.6,
+    "ic95_anio": 1.8,
+    "acotada": false,
+    "n_puntos": 4
+   }
+  },
+  {
+   "periodo": "2011-2015",
+   "pérdida total": {
+    "ha": 1633.8,
+    "ic95": 1296.3,
+    "ha_anio": 326.8,
+    "ic95_anio": 259.3,
+    "acotada": true,
+    "n_puntos": 37
+   },
+   "degradacion": {
+    "ha": 667.8,
+    "ic95": 540.2,
+    "ha_anio": 133.6,
+    "ic95_anio": 108.0,
+    "acotada": true,
+    "n_puntos": 20
+   },
+   "construida": {
+    "ha": 637.3,
+    "ic95": 1095.1,
+    "ha_anio": 127.5,
+    "ic95_anio": 219.0,
+    "acotada": false,
+    "n_puntos": 7
+   },
+   "cultivada": {
+    "ha": 328.6,
+    "ic95": 454.6,
+    "ha_anio": 65.7,
+    "ic95_anio": 90.9,
+    "acotada": false,
+    "n_puntos": 10
+   },
+   "conversion": {
+    "ha": 966.0,
+    "ic95": 1185.7,
+    "ha_anio": 193.2,
+    "ic95_anio": 237.1,
+    "acotada": false,
+    "n_puntos": 17
+   }
+  },
+  {
+   "periodo": "2016-2020",
+   "pérdida total": {
+    "ha": 2531.8,
+    "ic95": 1230.8,
+    "ha_anio": 506.4,
+    "ic95_anio": 246.2,
+    "acotada": true,
+    "n_puntos": 80
+   },
+   "degradacion": {
+    "ha": 1882.4,
+    "ic95": 1137.9,
+    "ha_anio": 376.5,
+    "ic95_anio": 227.6,
+    "acotada": true,
+    "n_puntos": 45
+   },
+   "construida": {
+    "ha": 53.8,
+    "ic95": 70.5,
+    "ha_anio": 10.8,
+    "ic95_anio": 14.1,
+    "acotada": false,
+    "n_puntos": 13
+   },
+   "cultivada": {
+    "ha": 595.5,
+    "ic95": 530.5,
+    "ha_anio": 119.1,
+    "ic95_anio": 106.1,
+    "acotada": true,
+    "n_puntos": 22
+   },
+   "conversion": {
+    "ha": 649.3,
+    "ic95": 535.2,
+    "ha_anio": 129.9,
+    "ic95_anio": 107.0,
+    "acotada": true,
+    "n_puntos": 35
+   }
+  },
+  {
+   "periodo": "2021-2024",
+   "pérdida total": {
+    "ha": 3618.2,
+    "ic95": 1983.7,
+    "ha_anio": 904.6,
+    "ic95_anio": 495.9,
+    "acotada": true,
+    "n_puntos": 42
+   },
+   "degradacion": {
+    "ha": 2480.2,
+    "ic95": 1725.3,
+    "ha_anio": 620.0,
+    "ic95_anio": 431.3,
+    "acotada": true,
+    "n_puntos": 18
+   },
+   "construida": {
+    "ha": 69.7,
+    "ic95": 75.3,
+    "ha_anio": 17.4,
+    "ic95_anio": 18.8,
+    "acotada": false,
+    "n_puntos": 13
+   },
+   "cultivada": {
+    "ha": 1068.4,
+    "ic95": 1148.5,
+    "ha_anio": 267.1,
+    "ic95_anio": 287.1,
+    "acotada": false,
+    "n_puntos": 11
+   },
+   "conversion": {
+    "ha": 1138.1,
+    "ic95": 1151.0,
+    "ha_anio": 284.5,
+    "ic95_anio": 287.7,
+    "acotada": false,
+    "n_puntos": 24
+   }
+  }
+ ],
+ "por_unidad": [
+  {
+   "unidad": "Áreas protegidas",
+   "bosque": "bosque protegido",
+   "perdida": {
+    "ha": 3544.3,
+    "ic95": 1460.3,
+    "acotada": true
+   },
+   "degradacion": {
+    "ha": 2888.0,
+    "ic95": 1391.8,
+    "acotada": true
+   },
+   "construida": {
+    "ha": 0.0,
+    "ic95": 0.0,
+    "acotada": false
+   },
+   "cultivada": {
+    "ha": 656.3,
+    "ic95": 631.4,
+    "acotada": true
+   },
+   "lenosa_previa": {
+    "ha": 16405.8,
+    "ic95": 1545.0,
+    "acotada": true
+   },
+   "tasa_pct": {
+    "valor": 21.6,
+    "ic95": 8.9,
+    "acotada": true
+   },
+   "n_puntos_perdida": 64
+  },
+  {
+   "unidad": "No urbanizable",
+   "bosque": "bosque periurbano",
+   "perdida": {
+    "ha": 3535.1,
+    "ic95": 1856.7,
+    "acotada": true
+   },
+   "degradacion": {
+    "ha": 2196.6,
+    "ic95": 1566.4,
+    "acotada": true
+   },
+   "construida": {
+    "ha": 2.8,
+    "ic95": 2.9,
+    "acotada": false
+   },
+   "cultivada": {
+    "ha": 1335.7,
+    "ic95": 1177.8,
+    "acotada": true
+   },
+   "lenosa_previa": {
+    "ha": 30418.1,
+    "ic95": 10833.9,
+    "acotada": true
+   },
+   "tasa_pct": {
+    "valor": 11.6,
+    "ic95": 7.0,
+    "acotada": true
+   },
+   "n_puntos_perdida": 44
+  },
+  {
+   "unidad": "Urbanizable",
+   "bosque": "bosque periurbano",
+   "perdida": {
+    "ha": 80.8,
+    "ic95": 42.0,
+    "acotada": true
+   },
+   "degradacion": {
+    "ha": 47.5,
+    "ic95": 33.8,
+    "acotada": true
+   },
+   "construida": {
+    "ha": 32.7,
+    "ic95": 29.6,
+    "acotada": true
+   },
+   "cultivada": {
+    "ha": 0.5,
+    "ic95": 0.9,
+    "acotada": false
+   },
+   "lenosa_previa": {
+    "ha": 594.9,
+    "ic95": 459.8,
+    "acotada": true
+   },
+   "tasa_pct": {
+    "valor": 13.6,
+    "ic95": 12.3,
+    "acotada": true
+   },
+   "n_puntos_perdida": 32
+  },
+  {
+   "unidad": "Urbano",
+   "bosque": "bosque urbano",
+   "perdida": {
+    "ha": 834.3,
+    "ic95": 1101.9,
+    "acotada": false
+   },
+   "degradacion": {
+    "ha": 100.8,
+    "ic95": 97.7,
+    "acotada": true
+   },
+   "construida": {
+    "ha": 733.6,
+    "ic95": 1098.8,
+    "acotada": false
+   },
+   "cultivada": {
+    "ha": 0.0,
+    "ic95": 0.0,
+    "acotada": false
+   },
+   "lenosa_previa": {
+    "ha": 1554.1,
+    "ic95": 1526.8,
+    "acotada": true
+   },
+   "tasa_pct": {
+    "valor": 53.7,
+    "ic95": 51.1,
+    "acotada": true
+   },
+   "n_puntos_perdida": 41
+  }
+ ],
+ "por_grupo": [
+  {
+   "grupo": "Aprovechamiento rural",
+   "perdida": {
+    "ha": 504.3,
+    "ic95": 825.2,
+    "acotada": false
+   }
+  },
+  {
+   "grupo": "Localidad rural",
+   "perdida": {
+    "ha": 598.2,
+    "ic95": 1093.0,
+    "acotada": false
+   }
+  },
+  {
+   "grupo": "Proteccion y restauracion",
+   "perdida": {
+    "ha": 6575.1,
+    "ic95": 2266.6,
+    "acotada": true
+   }
+  },
+  {
+   "grupo": "Soporte urbano",
+   "perdida": {
+    "ha": 35.6,
+    "ic95": 22.2,
+    "acotada": true
+   }
+  },
+  {
+   "grupo": "Urbano consolidado",
+   "perdida": {
+    "ha": 8.3,
+    "ic95": 11.1,
+    "acotada": false
+   }
+  },
+  {
+   "grupo": "Urbano en expansion",
+   "perdida": {
+    "ha": 225.4,
+    "ic95": 137.4,
+    "acotada": true
+   }
+  },
+  {
+   "grupo": "Verde urbano",
+   "perdida": {
+    "ha": 47.7,
+    "ic95": 71.5,
+    "acotada": false
+   }
+  }
+ ],
+ "por_franja": [
+  {
+   "franja": "dentro del suelo urbano",
+   "perdida": {
+    "ha": 834.3,
+    "ic95": 1101.9,
+    "acotada": false
+   },
+   "degradacion": {
+    "ha": 100.8,
+    "ic95": 97.7,
+    "acotada": true
+   },
+   "cultivada": {
+    "ha": 0.0,
+    "ic95": 0.0,
+    "acotada": false
+   },
+   "construida": {
+    "ha": 733.6,
+    "ic95": 1098.8,
+    "acotada": false
+   },
+   "tasa_pct": {
+    "valor": 53.7,
+    "ic95": 51.1,
+    "acotada": true
+   },
+   "n_puntos_perdida": 41
+  },
+  {
+   "franja": "0-500 m",
+   "perdida": {
+    "ha": 205.4,
+    "ic95": 182.6,
+    "acotada": true
+   },
+   "degradacion": {
+    "ha": 172.2,
+    "ic95": 180.9,
+    "acotada": false
+   },
+   "cultivada": {
+    "ha": 0.5,
+    "ic95": 0.9,
+    "acotada": false
+   },
+   "construida": {
+    "ha": 32.7,
+    "ic95": 29.6,
+    "acotada": true
+   },
+   "tasa_pct": {
+    "valor": 3.3,
+    "ic95": 4.2,
+    "acotada": false
+   },
+   "n_puntos_perdida": 35
+  },
+  {
+   "franja": "500-1000 m",
+   "perdida": {
+    "ha": 794.8,
+    "ic95": 867.5,
+    "acotada": false
+   },
+   "degradacion": {
+    "ha": 550.8,
+    "ic95": 829.1,
+    "acotada": false
+   },
+   "cultivada": {
+    "ha": 243.1,
+    "ic95": 265.3,
+    "acotada": false
+   },
+   "construida": {
+    "ha": 0.9,
+    "ic95": 1.7,
+    "acotada": false
+   },
+   "tasa_pct": {
+    "valor": 28.9,
+    "ic95": 27.1,
+    "acotada": true
+   },
+   "n_puntos_perdida": 12
+  },
+  {
+   "franja": "1-2 km",
+   "perdida": {
+    "ha": 2093.3,
+    "ic95": 1559.4,
+    "acotada": true
+   },
+   "degradacion": {
+    "ha": 1504.8,
+    "ic95": 1370.9,
+    "acotada": true
+   },
+   "cultivada": {
+    "ha": 586.6,
+    "ic95": 832.6,
+    "acotada": false
+   },
+   "construida": {
+    "ha": 1.8,
+    "ic95": 2.4,
+    "acotada": false
+   },
+   "tasa_pct": {
+    "valor": 10.3,
+    "ic95": 8.4,
+    "acotada": true
+   },
+   "n_puntos_perdida": 22
+  },
+  {
+   "franja": "2-5 km",
+   "perdida": {
+    "ha": 2631.6,
+    "ic95": 1414.4,
+    "acotada": true
+   },
+   "degradacion": {
+    "ha": 1761.6,
+    "ic95": 1082.8,
+    "acotada": true
+   },
+   "cultivada": {
+    "ha": 870.0,
+    "ic95": 942.7,
+    "acotada": false
+   },
+   "construida": {
+    "ha": 0.0,
+    "ic95": 0.0,
+    "acotada": false
+   },
+   "tasa_pct": {
+    "valor": 18.1,
+    "ic95": 11.4,
+    "acotada": true
+   },
+   "n_puntos_perdida": 55
+  },
+  {
+   "franja": "más de 5 km",
+   "perdida": {
+    "ha": 1435.1,
+    "ic95": 1062.5,
+    "acotada": true
+   },
+   "degradacion": {
+    "ha": 1142.8,
+    "ic95": 982.4,
+    "acotada": true
+   },
+   "cultivada": {
+    "ha": 292.4,
+    "ic95": 453.1,
+    "acotada": false
+   },
+   "construida": {
+    "ha": 0.0,
+    "ic95": 0.0,
+    "acotada": false
+   },
+   "tasa_pct": {
+    "valor": 39.1,
+    "ic95": 24.6,
+    "acotada": true
+   },
+   "n_puntos_perdida": 16
+  }
+ ],
+ "por_franja_ciudad": [
+  {
+   "franja": "dentro de la ciudad",
+   "perdida": {
+    "ha": 199.3,
+    "ic95": 132.9,
+    "acotada": true
+   },
+   "degradacion": {
+    "ha": 97.5,
+    "ic95": 97.7,
+    "acotada": false
+   },
+   "cultivada": {
+    "ha": 0.0,
+    "ic95": 0.0,
+    "acotada": false
+   },
+   "construida": {
+    "ha": 101.9,
+    "ic95": 97.9,
+    "acotada": true
+   },
+   "tasa_pct": {
+    "valor": 68.8,
+    "ic95": 28.5,
+    "acotada": true
+   },
+   "n_puntos_perdida": 26
+  },
+  {
+   "franja": "hasta 1 km",
+   "perdida": {
+    "ha": 172.0,
+    "ic95": 164.5,
+    "acotada": true
+   },
+   "degradacion": {
+    "ha": 133.9,
+    "ic95": 162.6,
+    "acotada": false
+   },
+   "cultivada": {
+    "ha": 0.0,
+    "ic95": 0.0,
+    "acotada": false
+   },
+   "construida": {
+    "ha": 38.1,
+    "ic95": 29.8,
+    "acotada": true
+   },
+   "tasa_pct": {
+    "valor": 9.6,
+    "ic95": 10.8,
+    "acotada": false
+   },
+   "n_puntos_perdida": 39
+  },
+  {
+   "franja": "1-2 km",
+   "perdida": {
+    "ha": 130.6,
+    "ic95": 173.6,
+    "acotada": false
+   },
+   "degradacion": {
+    "ha": 95.2,
+    "ic95": 159.2,
+    "acotada": false
+   },
+   "cultivada": {
+    "ha": 0.0,
+    "ic95": 0.0,
+    "acotada": false
+   },
+   "construida": {
+    "ha": 35.3,
+    "ic95": 69.2,
+    "acotada": false
+   },
+   "tasa_pct": {
+    "valor": 4.1,
+    "ic95": 7.6,
+    "acotada": false
+   },
+   "n_puntos_perdida": 12
+  },
+  {
+   "franja": "2-5 km",
+   "perdida": {
+    "ha": 1762.0,
+    "ic95": 1343.6,
+    "acotada": true
+   },
+   "degradacion": {
+    "ha": 880.6,
+    "ic95": 663.7,
+    "acotada": true
+   },
+   "cultivada": {
+    "ha": 324.8,
+    "ic95": 453.3,
+    "acotada": false
+   },
+   "construida": {
+    "ha": 556.6,
+    "ic95": 1090.8,
+    "acotada": false
+   },
+   "tasa_pct": {
+    "valor": 16.7,
+    "ic95": 13.1,
+    "acotada": true
+   },
+   "n_puntos_perdida": 35
+  },
+  {
+   "franja": "5-10 km",
+   "perdida": {
+    "ha": 2277.0,
+    "ic95": 1395.9,
+    "acotada": true
+   },
+   "degradacion": {
+    "ha": 1946.0,
+    "ic95": 1341.0,
+    "acotada": true
+   },
+   "cultivada": {
+    "ha": 330.1,
+    "ic95": 455.5,
+    "acotada": false
+   },
+   "construida": {
+    "ha": 0.9,
+    "ic95": 1.7,
+    "acotada": false
+   },
+   "tasa_pct": {
+    "valor": 13.7,
+    "ic95": 9.9,
+    "acotada": true
+   },
+   "n_puntos_perdida": 34
+  },
+  {
+   "franja": "más de 10 km",
+   "perdida": {
+    "ha": 3453.6,
+    "ic95": 1895.3,
+    "acotada": true
+   },
+   "degradacion": {
+    "ha": 2079.7,
+    "ic95": 1575.7,
+    "acotada": true
+   },
+   "cultivada": {
+    "ha": 1337.6,
+    "ic95": 1177.8,
+    "acotada": true
+   },
+   "construida": {
+    "ha": 36.3,
+    "ic95": 69.2,
+    "acotada": false
+   },
+   "tasa_pct": {
+    "valor": 20.9,
+    "ic95": 13.8,
+    "acotada": true
+   },
+   "n_puntos_perdida": 35
+  }
+ ],
+ "anp_decreto": [
+  {
+   "anp": "todas",
+   "fecha_decreto": null,
+   "momento": "pérdida total",
+   "ha": 3544.3,
+   "ic95": 1460.3,
+   "acotada": true,
+   "fraccion": 1.0,
+   "ic95_fraccion": 0.0,
+   "n_puntos": 64
+  },
+  {
+   "anp": "todas",
+   "fecha_decreto": null,
+   "momento": "antes del decreto",
+   "ha": 239.0,
+   "ic95": 207.3,
+   "acotada": true,
+   "fraccion": 0.067,
+   "ic95_fraccion": 0.062,
+   "n_puntos": 11
+  },
+  {
+   "anp": "todas",
+   "fecha_decreto": null,
+   "momento": "año del decreto",
+   "ha": 0.0,
+   "ic95": 0.0,
+   "acotada": false,
+   "fraccion": 0.0,
+   "ic95_fraccion": 0.0,
+   "n_puntos": 0
+  },
+  {
+   "anp": "todas",
+   "fecha_decreto": null,
+   "momento": "con decreto vigente",
+   "ha": 3305.3,
+   "ic95": 1454.2,
+   "acotada": true,
+   "fraccion": 0.933,
+   "ic95_fraccion": 0.062,
+   "n_puntos": 53
+  },
+  {
+   "anp": "Cerro Punhuato",
+   "fecha_decreto": "2005-01-26",
+   "momento": "pérdida total",
+   "ha": 3.3,
+   "ic95": 6.3,
+   "acotada": false,
+   "fraccion": 1.0,
+   "ic95_fraccion": 0.0,
+   "n_puntos": 1
+  },
+  {
+   "anp": "Cerro Punhuato",
+   "fecha_decreto": "2005-01-26",
+   "momento": "antes del decreto",
+   "ha": 0.0,
+   "ic95": 0.0,
+   "acotada": false,
+   "fraccion": 0.0,
+   "ic95_fraccion": 0.0,
+   "n_puntos": 0
+  },
+  {
+   "anp": "Cerro Punhuato",
+   "fecha_decreto": "2005-01-26",
+   "momento": "año del decreto",
+   "ha": 0.0,
+   "ic95": 0.0,
+   "acotada": false,
+   "fraccion": 0.0,
+   "ic95_fraccion": 0.0,
+   "n_puntos": 0
+  },
+  {
+   "anp": "Cerro Punhuato",
+   "fecha_decreto": "2005-01-26",
+   "momento": "con decreto vigente",
+   "ha": 3.3,
+   "ic95": 6.3,
+   "acotada": false,
+   "fraccion": 1.0,
+   "ic95_fraccion": 0.0,
+   "n_puntos": 1
+  },
+  {
+   "anp": "Cerro del Quinceo",
+   "fecha_decreto": "2023-06-16",
+   "momento": "pérdida total",
+   "ha": 82.2,
+   "ic95": 125.4,
+   "acotada": false,
+   "fraccion": 1.0,
+   "ic95_fraccion": 0.0,
+   "n_puntos": 3
+  },
+  {
+   "anp": "Cerro del Quinceo",
+   "fecha_decreto": "2023-06-16",
+   "momento": "antes del decreto",
+   "ha": 82.2,
+   "ic95": 125.4,
+   "acotada": false,
+   "fraccion": 1.0,
+   "ic95_fraccion": 0.0,
+   "n_puntos": 3
+  },
+  {
+   "anp": "Cerro del Quinceo",
+   "fecha_decreto": "2023-06-16",
+   "momento": "año del decreto",
+   "ha": 0.0,
+   "ic95": 0.0,
+   "acotada": false,
+   "fraccion": 0.0,
+   "ic95_fraccion": 0.0,
+   "n_puntos": 0
+  },
+  {
+   "anp": "Cerro del Quinceo",
+   "fecha_decreto": "2023-06-16",
+   "momento": "con decreto vigente",
+   "ha": 0.0,
+   "ic95": 0.0,
+   "acotada": false,
+   "fraccion": 0.0,
+   "ic95_fraccion": 0.0,
+   "n_puntos": 0
+  },
+  {
+   "anp": "Cerro del Águila",
+   "fecha_decreto": "2023-05-11",
+   "momento": "pérdida total",
+   "ha": 156.8,
+   "ic95": 171.4,
+   "acotada": false,
+   "fraccion": 1.0,
+   "ic95_fraccion": 0.0,
+   "n_puntos": 8
+  },
+  {
+   "anp": "Cerro del Águila",
+   "fecha_decreto": "2023-05-11",
+   "momento": "antes del decreto",
+   "ha": 156.8,
+   "ic95": 171.4,
+   "acotada": false,
+   "fraccion": 1.0,
+   "ic95_fraccion": 0.0,
+   "n_puntos": 8
+  },
+  {
+   "anp": "Cerro del Águila",
+   "fecha_decreto": "2023-05-11",
+   "momento": "año del decreto",
+   "ha": 0.0,
+   "ic95": 0.0,
+   "acotada": false,
+   "fraccion": 0.0,
+   "ic95_fraccion": 0.0,
+   "n_puntos": 0
+  },
+  {
+   "anp": "Cerro del Águila",
+   "fecha_decreto": "2023-05-11",
+   "momento": "con decreto vigente",
+   "ha": 0.0,
+   "ic95": 0.0,
+   "acotada": false,
+   "fraccion": 0.0,
+   "ic95_fraccion": 0.0,
+   "n_puntos": 0
+  },
+  {
+   "anp": "Manantial la Mintzita",
+   "fecha_decreto": "2005-01-31",
+   "momento": "pérdida total",
+   "ha": 0.0,
+   "ic95": 0.0,
+   "acotada": false,
+   "fraccion": 1.0,
+   "ic95_fraccion": 0.0,
+   "n_puntos": 0
+  },
+  {
+   "anp": "Manantial la Mintzita",
+   "fecha_decreto": "2005-01-31",
+   "momento": "antes del decreto",
+   "ha": 0.0,
+   "ic95": 0.0,
+   "acotada": false,
+   "fraccion": null,
+   "ic95_fraccion": null,
+   "n_puntos": 0
+  },
+  {
+   "anp": "Manantial la Mintzita",
+   "fecha_decreto": "2005-01-31",
+   "momento": "año del decreto",
+   "ha": 0.0,
+   "ic95": 0.0,
+   "acotada": false,
+   "fraccion": null,
+   "ic95_fraccion": null,
+   "n_puntos": 0
+  },
+  {
+   "anp": "Manantial la Mintzita",
+   "fecha_decreto": "2005-01-31",
+   "momento": "con decreto vigente",
+   "ha": 0.0,
+   "ic95": 0.0,
+   "acotada": false,
+   "fraccion": null,
+   "ic95_fraccion": null,
+   "n_puntos": 0
+  },
+  {
+   "anp": "Pico Azul-La Escalera",
+   "fecha_decreto": "2011-09-13",
+   "momento": "pérdida total",
+   "ha": 3302.0,
+   "ic95": 1454.2,
+   "acotada": true,
+   "fraccion": 1.0,
+   "ic95_fraccion": 0.0,
+   "n_puntos": 52
+  },
+  {
+   "anp": "Pico Azul-La Escalera",
+   "fecha_decreto": "2011-09-13",
+   "momento": "antes del decreto",
+   "ha": 0.0,
+   "ic95": 0.0,
+   "acotada": false,
+   "fraccion": 0.0,
+   "ic95_fraccion": 0.0,
+   "n_puntos": 0
+  },
+  {
+   "anp": "Pico Azul-La Escalera",
+   "fecha_decreto": "2011-09-13",
+   "momento": "año del decreto",
+   "ha": 0.0,
+   "ic95": 0.0,
+   "acotada": false,
+   "fraccion": 0.0,
+   "ic95_fraccion": 0.0,
+   "n_puntos": 0
+  },
+  {
+   "anp": "Pico Azul-La Escalera",
+   "fecha_decreto": "2011-09-13",
+   "momento": "con decreto vigente",
+   "ha": 3302.0,
+   "ic95": 1454.2,
+   "acotada": true,
+   "fraccion": 1.0,
+   "ic95_fraccion": 0.0,
+   "n_puntos": 52
+  }
+ ],
+ "caminos": [
+  {
+   "grupo": "pérdida",
+   "indicador": "con camino junto o dentro",
+   "proporcion": 0.758,
+   "ic95": 0.154,
+   "acotada": true,
+   "n_puntos": 144
+  },
+  {
+   "grupo": "pérdida",
+   "indicador": "caminos: aislado",
+   "proporcion": 0.318,
+   "ic95": 0.166,
+   "acotada": true,
+   "n_puntos": 46
+  },
+  {
+   "grupo": "pérdida",
+   "indicador": "caminos: red_ramificada",
+   "proporcion": 0.277,
+   "ic95": 0.151,
+   "acotada": true,
+   "n_puntos": 52
+  },
+  {
+   "grupo": "pérdida",
+   "indicador": "caminos: vialidad_formal",
+   "proporcion": 0.164,
+   "ic95": 0.153,
+   "acotada": true,
+   "n_puntos": 46
+  },
+  {
+   "grupo": "pérdida",
+   "indicador": "secuencia: camino de acceso previo",
+   "proporcion": 0.892,
+   "ic95": 0.084,
+   "acotada": true,
+   "n_puntos": 156
+  },
+  {
+   "grupo": "pérdida",
+   "indicador": "secuencia: camino abierto con el desmonte",
+   "proporcion": 0.054,
+   "ic95": 0.06,
+   "acotada": false,
+   "n_puntos": 15
+  },
+  {
+   "grupo": "pérdida",
+   "indicador": "secuencia: no determinable",
+   "proporcion": 0.055,
+   "ic95": 0.061,
+   "acotada": false,
+   "n_puntos": 10
+  },
+  {
+   "grupo": "bosque y matorral que se conserva",
+   "indicador": "con camino junto o dentro",
+   "proporcion": 0.28,
+   "ic95": 0.153,
+   "acotada": true,
+   "n_puntos": 69
+  },
+  {
+   "grupo": "bosque y matorral que se conserva",
+   "indicador": "caminos: aislado",
+   "proporcion": 0.197,
+   "ic95": 0.134,
+   "acotada": true,
+   "n_puntos": 45
+  },
+  {
+   "grupo": "bosque y matorral que se conserva",
+   "indicador": "caminos: red_ramificada",
+   "proporcion": 0.029,
+   "ic95": 0.027,
+   "acotada": true,
+   "n_puntos": 14
+  },
+  {
+   "grupo": "bosque y matorral que se conserva",
+   "indicador": "caminos: vialidad_formal",
+   "proporcion": 0.054,
+   "ic95": 0.096,
+   "acotada": false,
+   "n_puntos": 10
+  }
+ ],
+ "regla08": {
+  "_estado": "preliminar: regla en revisión (NOTA_degradacion-y-deforestacion.md)",
+  "categorias": [
+   {
+    "categoria": "deforestacion_con_cambio_de_uso:construida",
+    "ha": 769.0,
+    "ic95": 1099.2,
+    "acotada": false,
+    "fraccion": 0.096,
+    "ic95_fraccion": 0.128,
+    "n_puntos": 37
+   },
+   {
+    "categoria": "deforestacion_con_cambio_de_uso:cultivada",
+    "ha": 1992.5,
+    "ic95": 1336.3,
+    "acotada": true,
+    "fraccion": 0.249,
+    "ic95_fraccion": 0.151,
+    "n_puntos": 43
+   },
+   {
+    "categoria": "deforestacion_sin_desenlace",
+    "ha": 1297.9,
+    "ic95": 1203.4,
+    "acotada": true,
+    "fraccion": 0.162,
+    "ic95_fraccion": 0.139,
+    "n_puntos": 13
+   },
+   {
+    "categoria": "deforestacion_sin_uso_posterior",
+    "ha": 158.5,
+    "ic95": 175.2,
+    "acotada": false,
+    "fraccion": 0.02,
+    "ic95_fraccion": 0.023,
+    "n_puntos": 21
+   },
+   {
+    "categoria": "degradacion",
+    "ha": 3766.5,
+    "ic95": 1797.7,
+    "acotada": true,
+    "fraccion": 0.471,
+    "ic95_fraccion": 0.179,
+    "n_puntos": 63
+   },
+   {
+    "categoria": "vegetacion_crecida_en_la_serie",
+    "ha": 10.0,
+    "ic95": 10.8,
+    "acotada": false,
+    "fraccion": 0.001,
+    "ic95_fraccion": 0.001,
+    "n_puntos": 4
+   }
+  ]
+ },
+ "periodo_fechado": [
+  {
+   "periodo": "2006-2010",
+   "fechado": "año de la imagen",
+   "ha_anio": 42.1,
+   "ic95_anio": 38.6,
+   "acotada": true,
+   "n_puntos": 22
+  },
+  {
+   "periodo": "2006-2010",
+   "fechado": "año del modelo donde lo hay",
+   "ha_anio": 77.7,
+   "ic95_anio": 53.6,
+   "acotada": true,
+   "n_puntos": 33
+  },
+  {
+   "periodo": "2011-2015",
+   "fechado": "año de la imagen",
+   "ha_anio": 326.8,
+   "ic95_anio": 259.3,
+   "acotada": true,
+   "n_puntos": 37
+  },
+  {
+   "periodo": "2011-2015",
+   "fechado": "año del modelo donde lo hay",
+   "ha_anio": 321.6,
+   "ic95_anio": 260.0,
+   "acotada": true,
+   "n_puntos": 27
+  },
+  {
+   "periodo": "2016-2020",
+   "fechado": "año de la imagen",
+   "ha_anio": 506.4,
+   "ic95_anio": 246.2,
+   "acotada": true,
+   "n_puntos": 80
+  },
+  {
+   "periodo": "2016-2020",
+   "fechado": "año del modelo donde lo hay",
+   "ha_anio": 510.0,
+   "ic95_anio": 246.3,
+   "acotada": true,
+   "n_puntos": 85
+  },
+  {
+   "periodo": "2021-2024",
+   "fechado": "año de la imagen",
+   "ha_anio": 904.6,
+   "ic95_anio": 495.9,
+   "acotada": true,
+   "n_puntos": 42
+  },
+  {
+   "periodo": "2021-2024",
+   "fechado": "año del modelo donde lo hay",
+   "ha_anio": 861.9,
+   "ic95_anio": 493.2,
+   "acotada": true,
+   "n_puntos": 36
+  }
+ ]
+}

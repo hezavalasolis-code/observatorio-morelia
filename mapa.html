@@ -1,0 +1,1485 @@
+<!--
+  Observatorio Forestal de Morelia
+  © 2026 Héctor Eduardo Zavala Solís (M.C.S.) — Posgrado en Geografía, CIGA-UNAM.
+  Licencia: Creative Commons Atribución-NoComercial-SinDerivadas 4.0 (CC BY-NC-ND 4.0).
+  El uso, copia, modificación o redistribución sin atribución expresa al autor infringe la licencia y los derechos de autor.
+  Referencia de autoría: HZS-OFM-2026-e4372558ba98
+-->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mapa · Observatorio Forestal de Morelia</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/@geoman-io/leaflet-geoman-free@2.18.3/dist/leaflet-geoman.css" />
+<script src="https://unpkg.com/@geoman-io/leaflet-geoman-free@2.18.3/dist/leaflet-geoman.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
+<script src="./sb-config.js"></script>
+<script src="./nav.js"></script>
+<style>
+  :root{
+    --bg:#0f1720; --panel:#16212e; --panel2:#1e2c3c; --ink:#e8eef4; --muted:#9fb2c4;
+    --line:#2b3d4f; --accent:#3fb27f; --accent2:#f0a020;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
+  #app{display:flex;height:100vh;height:100dvh;overflow:hidden}
+  /* Sidebar */
+  #sidebar{width:360px;min-width:360px;background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;overflow-y:auto}
+  #sidebar header{padding:18px 18px 12px}
+  #sidebar h1{font-size:18px;margin:0 0 3px;line-height:1.25}
+  #sidebar .sub{font-size:12px;color:var(--muted);line-height:1.35}
+  .block{padding:14px 18px;border-top:1px solid var(--line)}
+  .block h2{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 10px}
+  /* Secciones densas (metodología, créditos, metadatos): plegadas por defecto.
+     El texto permanece en la página —imprimible, buscable y accesible—, solo deja de competir
+     visualmente con los datos. */
+  details.fold>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:7px;
+    font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;
+    padding:2px 0;user-select:none}
+  details.fold>summary::-webkit-details-marker{display:none}
+  details.fold>summary::before{content:'▸';font-size:11px;line-height:1;display:inline-block;transition:transform .15s ease}
+  details.fold[open]>summary::before{transform:rotate(90deg)}
+  details.fold>summary:hover{color:var(--ink)}
+  details.fold>summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
+  details.fold .fold-body{margin-top:11px}
+  .stat{background:linear-gradient(135deg,#7a1f2b,#b2323f);border-radius:10px;padding:14px 16px;margin-bottom:6px}
+  .stat-sec{background:rgba(240,160,32,.14);border:1px solid rgba(240,160,32,.38);border-radius:10px;padding:9px 12px;margin-bottom:6px;color:#f0c060;font-size:12px;line-height:1.4}
+  .stat-sec .rate{font-size:11px;color:#d9a94e;margin-top:3px}
+  .stat-sec b{color:#ffd27a}
+  .stat .big{font-size:30px;font-weight:700;line-height:1}
+  .stat .lbl{font-size:12px;color:#ffe3e6;margin-top:5px;line-height:1.3}
+  .mini{display:flex;gap:8px;margin-top:10px}
+  .mini div{flex:1;background:var(--panel2);border-radius:8px;padding:9px 10px}
+  .mini .n{font-size:17px;font-weight:700}
+  .mini .t{font-size:10.5px;color:var(--muted);margin-top:2px}
+  /* Solo las gráficas del panel se ajustan al ancho. OJO: una regla global
+     `canvas{max-width:100%}` colapsa a 0 px el canvas del renderizador de Leaflet
+     (sus panes miden 0), dejando invisibles las capas vectoriales. */
+  #sidebar canvas{max-width:100%}
+  .leaflet-container canvas{max-width:none!important;max-height:none!important}
+  .chartwrap{background:var(--panel2);border-radius:10px;padding:10px 12px 6px}
+  select{width:100%;background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:7px 9px;font-size:12px;margin-bottom:8px}
+  .credits{font-size:11px;color:var(--muted);line-height:1.5}
+  .credits b{color:var(--ink)}
+  .credits .todo{color:var(--accent2)}
+  /* Map */
+  #map{flex:1;position:relative}
+  #loader{position:absolute;inset:0;z-index:3000;background:#0f1720;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--muted);font-size:13px}
+  #loader .ldot{width:34px;height:34px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .leaflet-control-scale{margin-bottom:86px!important;margin-left:12px!important}
+  #cerroBar .cbtn.active{background:var(--accent);color:#06231a;border-color:var(--accent)}
+  #welcome{position:absolute;inset:0;z-index:2500;background:rgba(9,14,20,.74);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(2px);padding:16px}
+  .wcard{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px 24px;max-width:450px;box-shadow:0 10px 34px rgba(0,0,0,.55)}
+  .wcard h2{margin:0 0 8px;font-size:16px;color:#fff;line-height:1.3}
+  .wcard p{margin:0 0 12px;font-size:13px;color:var(--muted);line-height:1.5}
+  .wcard ul{margin:0 0 16px;padding-left:18px;font-size:12.5px;color:var(--ink);line-height:1.55}
+  .wcard li{margin-bottom:6px}
+  .wcard #wclose{background:var(--accent);color:#06231a;border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer}
+  .wcard #wclose:hover{filter:brightness(1.08)}
+  .dl-row{display:flex;flex-wrap:wrap;gap:5px}
+  .dlbtn{background:var(--panel2);border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:6px 9px;font-size:11px;cursor:pointer}
+  .dlbtn:hover{background:var(--accent);color:#06231a;border-color:var(--accent)}
+  #sidebar .block>h2.coll-h{cursor:pointer;user-select:none}
+  #sidebar .block>h2.coll-h::before{content:'▾';font-size:9px;margin-right:5px;display:inline-block;transition:transform .15s}
+  #sidebar .block.collapsed>h2.coll-h::before{transform:rotate(-90deg)}
+  #sidebar .block.collapsed>*:not(h2){display:none}
+  @media(max-width:820px){#legendYears,#legendZon,#legendRF{width:128px;font-size:10px}#legendZon{top:118px}#legendRF{top:262px}.wcard{padding:16px 18px}}
+  /* Timebar */
+  #timebar{position:absolute;left:50%;transform:translateX(-50%);bottom:12px;width:calc(100% - 24px);max-width:640px;z-index:1000;background:rgba(16,24,34,.93);
+    border:1px solid var(--line);border-radius:12px;padding:11px 16px;backdrop-filter:blur(6px);display:flex;align-items:center;gap:14px}
+  #playBtn{background:var(--accent);border:none;color:#06231a;width:38px;height:38px;border-radius:50%;font-size:15px;cursor:pointer;flex:0 0 auto;font-weight:700}
+  #playBtn:hover{filter:brightness(1.1)}
+  .tb-main{flex:1}
+  .tb-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
+  .tb-year{font-size:22px;font-weight:700;letter-spacing:.02em}
+  .tb-acc{font-size:12px;color:var(--muted)}
+  .tb-acc b{color:var(--accent2);font-size:14px}
+  input[type=range]{width:100%;accent-color:var(--accent)}
+  #yearSlider{-webkit-appearance:none;appearance:none;height:6px;border-radius:4px;background:#2b3d4f;cursor:pointer}
+  #yearSlider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:24px;height:24px;border-radius:50%;background:var(--accent);border:2px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.55);cursor:grab;margin-top:-9px}
+  #yearSlider:active::-webkit-slider-thumb{cursor:grabbing}
+  #yearSlider::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:var(--accent);border:2px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.55);cursor:grab}
+  #yearSlider::-moz-range-track{height:6px;border-radius:4px;background:#2b3d4f}
+  .tb-mode{display:flex;flex-direction:column;gap:5px;flex:0 0 auto}
+  .tb-mode-btns{display:flex;gap:5px}
+  .tb-op{display:flex;align-items:center;gap:6px}
+  .tb-op span{font-size:10px;color:var(--muted)}
+  .tb-op input[type=range]{flex:1;accent-color:var(--accent)}
+  .tb-main .grad{margin:2px 0 3px}
+  .tb-main .grad-lbl{margin-top:2px}
+  .tb-mode button{background:var(--panel2);border:1px solid var(--line);color:var(--muted);font-size:11px;padding:6px 10px;border-radius:7px;cursor:pointer;flex:1}
+  .tb-mode button.on{background:var(--accent);color:#06231a;border-color:var(--accent);font-weight:700}
+  /* Legends */
+  .legend{position:absolute;z-index:1000;background:rgba(16,24,34,.93);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:11px;backdrop-filter:blur(6px)}
+  #legendYears{left:12px;top:12px;width:150px}
+  #legendZon{left:12px;top:150px;width:172px;display:none}
+  #legendRF{left:12px;top:352px;width:186px;display:none}
+  #legendClas{display:none}
+  /* Rincón superior izquierdo: capas + leyendas (columna izq.) y botones (columna der.) */
+  .leaflet-top.leaflet-left{display:flex;flex-direction:row;align-items:flex-start;gap:6px;padding:10px}
+  .leaflet-top.leaflet-left .leaflet-control{margin:0}
+  /* Los contenedores propios cuelgan del rincón de Leaflet, que tiene
+     pointer-events:none; sin esto los deslizadores de las leyendas no reciben clic. */
+  .ctl-left,.ctl-right{display:flex;flex-direction:column;gap:6px;pointer-events:auto}
+  /* Ancho fijo: sin él, la leyenda más larga estiraba la columna y descuadraba el bloque. */
+  .ctl-left{width:256px;max-width:46vw}
+  .ctl-left .legend{position:static;left:auto;top:auto;right:auto;width:100%}
+  .ctl-left .leaflet-control-layers{width:100%}
+  .legend h3{margin:0 0 7px;font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+  .grad{height:11px;border-radius:5px;background:linear-gradient(90deg,#ffd6c4,#ffa080,#ff6347,#f01e1e,#d70000);margin-bottom:3px}
+  .grad-lbl{display:flex;justify-content:space-between;color:var(--muted);font-size:10px}
+  .row{display:flex;align-items:center;gap:7px;margin:3px 0}
+  .sw{width:13px;height:13px;border-radius:3px;flex:0 0 auto}
+  .leaflet-tooltip.anp-tip{background:#06231a;border:1px solid var(--accent);color:#eafff5;font-weight:600;font-size:12px}
+  #swipeBtn{position:absolute;top:90px;left:50%;transform:translateX(-50%);z-index:1000;background:rgba(16,24,34,.93);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:8px 11px;font-size:12px;cursor:pointer;backdrop-filter:blur(6px)}
+  #swipeBtn.on{background:var(--accent);color:#06231a;border-color:var(--accent);font-weight:700}
+  #swipe-divider{position:absolute;top:0;bottom:0;width:3px;background:#fff;z-index:900;display:none;box-shadow:0 0 8px rgba(0,0,0,.7)}
+  #swipe-divider .hit{position:absolute;top:0;bottom:0;left:-13px;width:28px;cursor:ew-resize}
+  #swipe-divider .grip{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:36px;height:36px;border-radius:50%;background:#fff;color:#111;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;box-shadow:0 1px 6px rgba(0,0,0,.55);cursor:ew-resize}
+  .sat-label{position:absolute;bottom:74px;z-index:900;background:rgba(0,0,0,.72);color:#fff;font-size:12px;font-weight:700;padding:3px 9px;border-radius:6px;display:none}
+  #sat-label-l{left:12px}
+  #sat-label-r{right:12px}
+  #cerroBar{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:1000;display:flex;gap:6px;background:rgba(16,24,34,.9);border:1px solid var(--line);border-radius:10px;padding:6px;backdrop-filter:blur(6px)}
+  #cerroBar .cbtn{width:60px;height:60px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;color:var(--muted);padding:3px}
+  #cerroBar .cbtn:hover{background:var(--accent);color:#06231a;border-color:var(--accent)}
+  #cerroBar .cbtn svg{width:32px;height:30px}
+  #cerroBar .cbtn svg path,#cerroBar .cbtn svg rect{fill:currentColor}
+  #cerroBar .cbtn .cl{font-size:8.5px;line-height:1;text-align:center;white-space:nowrap}
+  @media(max-width:820px){#cerroBar{display:none}#swipeBtn{top:calc(58px + env(safe-area-inset-top));font-size:11px;padding:6px 9px}}
+  .op-row{display:flex;align-items:center;gap:6px;margin-top:6px}
+  .op-row span{font-size:10px;color:var(--muted)}
+  .op-row input[type=range]{flex:1;accent-color:var(--accent)}
+  #cerroSelectWrap{display:none}
+  #cerroSelect{width:100%;background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:9px 10px;font-size:14px}
+  /* Asa de la hoja inferior (solo móvil) */
+  #sheetHandle{display:none;align-items:center;gap:10px;padding:14px 18px 10px;cursor:pointer;position:sticky;top:0;background:var(--panel);z-index:3;border-radius:18px 18px 0 0}
+  #sheetHandle .grab{position:absolute;top:7px;left:50%;transform:translateX(-50%);width:40px;height:5px;border-radius:3px;background:var(--line)}
+  #sheetHandle .lbl{font-size:13px;font-weight:600}
+  #sheetHandle .chev{margin-left:auto;color:var(--muted);font-size:11px;transition:transform .28s}
+  #sidebar.sheet-open #sheetHandle .chev{transform:rotate(180deg)}
+  @media(max-width:820px){
+    #app{flex-direction:column}
+    #map{height:100vh;height:100dvh}
+    /* Barra lateral = hoja inferior desplegable (estilo app de mapas) */
+    #sidebar{position:fixed;left:0;right:0;bottom:0;top:auto;width:100%;height:auto;z-index:1200;
+      border-radius:18px 18px 0 0;border-top:1px solid var(--line);box-shadow:0 -8px 28px rgba(0,0,0,.55);
+      max-height:82dvh;overflow:hidden;transition:max-height .28s ease}
+    #sidebar:not(.sheet-open){max-height:54px}
+    #sidebar:not(.sheet-open) > header,#sidebar:not(.sheet-open) > .block{display:none}
+    #sidebar.sheet-open{overflow-y:auto}
+    #sheetHandle{display:flex}
+    #cerroSelectWrap{display:block}
+    .dlbtn,.tb-mode button{padding:8px 12px}
+    /* menos controles sobre el mapa (estilo app de mapas) */
+    .leaflet-control-zoom,.fs-ctl{display:none}
+    .leaflet-control-scale{display:none}
+    /* leyendas compactas */
+    details.fold>summary{min-height:44px;align-items:center}  /* área táctil cómoda en móvil */
+    .ctl-left .legend{width:100%!important;font-size:9.5px;padding:7px 9px}
+    .ctl-left .legend h3{font-size:10px;margin-bottom:4px}
+    /* línea de tiempo por encima de la hoja colapsada */
+    #timebar{bottom:calc(74px + env(safe-area-inset-bottom))}
+  }
+  /* Móvil: áreas táctiles ≥44px, safe-area (notch iOS) y buscador acotado */
+  @media(max-width:820px){
+    .leaflet-bar a{width:44px!important;height:44px!important;line-height:44px!important;font-size:19px!important}
+    .leaflet-control-geocoder-icon{width:44px!important;height:44px!important}
+    #playBtn{width:44px;height:44px}
+    .leaflet-control-geocoder-form input{max-width:58vw}
+    .leaflet-top.leaflet-left{padding-top:max(10px,env(safe-area-inset-top));padding-left:max(10px,env(safe-area-inset-left))}
+    #timebar{bottom:max(12px,env(safe-area-inset-bottom))}
+  }
+  /* Pantallas muy angostas: modos/opacidad bajan y el deslizador queda a ancho completo */
+  @media(max-width:520px){
+    #timebar{flex-wrap:wrap;row-gap:10px}
+    .tb-mode{flex-basis:100%;flex-direction:row;align-items:center;gap:10px}
+    .tb-mode-btns{flex:0 0 auto}
+    .tb-op{flex:1}
+  }
+
+  /* ---- Vista 2 (28-09-2026): unidades, clases y estado de la validación ---- */
+  #cerroBar .cbtn{width:auto;height:34px;flex-direction:row;gap:6px;padding:0 10px}
+  #cerroBar .cbtn .cl{font-size:11px}
+  .sw{display:inline-block;width:11px;height:11px;border-radius:3px;flex:none;vertical-align:-1px;margin-right:6px}
+  #cerroBar .cbtn .sw{margin-right:0}
+  .val-head{display:flex;gap:8px;align-items:flex-start;font-size:12px;line-height:1.4;margin-bottom:10px}
+  .val-badge{background:rgba(217,164,65,.16);border:1px solid rgba(217,164,65,.55);color:#f2c46b;border-radius:999px;padding:2px 9px;font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+  .val-bar{height:8px;background:var(--panel2);border-radius:999px;overflow:hidden;border:1px solid var(--line)}
+  .val-bar span{display:block;height:100%;background:var(--accent);min-width:2px}
+  .val-lbl{font-size:12px;margin:6px 0 10px}
+  .val-tab{width:100%;border-collapse:collapse;font-size:11.5px;margin-bottom:8px}
+  .val-tab th{text-align:left;color:var(--muted);font-weight:600;font-size:10.5px;padding:4px 4px;border-bottom:1px solid var(--line)}
+  .val-tab td{padding:5px 4px;border-bottom:1px solid rgba(43,61,79,.5)}
+  .val-tab td+td,.val-tab th+th{text-align:right;font-variant-numeric:tabular-nums}
+  .val-tab .ic{color:var(--muted);font-size:10.5px}
+  .val-txt{font-size:12.5px;line-height:1.5;margin:4px 0 6px}
+  .val-nota{font-size:11px;color:var(--muted);line-height:1.5;margin:6px 0 0}
+  .defs{font-size:12px;line-height:1.45}
+  .defs .row{display:flex;align-items:flex-start;gap:0;margin:0 0 7px}
+  .defs .row .sw{margin-top:3px}
+  .defs h3{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:12px 0 7px;font-weight:600}
+  .tb-acc{font-size:11px;color:var(--muted)}
+  /* ---- Buscador y ficha del lugar (D8, D9, D10 · 09-11-2026) ---- */
+  #buscador{position:absolute;top:12px;left:330px;width:min(460px,calc(100% - 350px));z-index:1100;display:flex;flex-direction:column;gap:6px}
+  #bForm{display:flex;background:rgba(16,24,34,.96);border:1px solid var(--line);border-radius:12px;box-shadow:0 6px 22px rgba(0,0,0,.45);overflow:hidden}
+  #bForm .ofm-burger{border-right:1px solid var(--line);border-radius:0;height:auto;background:transparent;color:var(--ink);font-weight:400;padding:0}
+  #bForm .ofm-burger:hover{background:rgba(255,255,255,.08)}
+  #bInput{flex:1;min-width:0;background:transparent;border:none;color:var(--ink);font-size:15px;padding:12px 14px;outline:none}
+  #bInput::placeholder{color:var(--muted)}
+  #bForm button{background:var(--accent);border:none;color:#06231a;font-size:15px;font-weight:700;padding:0 16px;cursor:pointer}
+  #bForm:focus-within{border-color:var(--accent)}
+  #bRes{background:rgba(16,24,34,.98);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  #bRes button{display:block;width:100%;text-align:left;background:none;border:none;border-bottom:1px solid var(--line);color:var(--ink);font-size:13px;padding:10px 12px;cursor:pointer;line-height:1.35}
+  #bRes button:last-child{border-bottom:none}
+  #bRes button:hover,#bRes button:focus{background:var(--panel2);outline:none}
+  #bRes .msg{font-size:12.5px;color:var(--muted);padding:10px 12px}
+  .b-acc{display:flex;gap:6px;flex-wrap:wrap}
+  .b-acc button,#buscador #swipeBtn{position:static;transform:none;background:rgba(16,24,34,.93);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:7px 11px;font-size:12.5px;cursor:pointer;backdrop-filter:blur(6px)}
+  .b-acc button:hover{border-color:var(--accent)}
+  #bHint{font-size:12px;color:var(--ink);text-shadow:0 1px 3px #000;padding-left:4px}
+  #cerroBar{top:128px;left:330px;transform:none}
+  .ctl-left .leaflet-control-layers:not(.leaflet-control-layers-expanded){width:auto;align-self:flex-start}
+  #ficha{position:absolute;top:184px;right:12px;width:340px;max-height:calc(100% - 300px);overflow-y:auto;z-index:1150;background:rgba(16,24,34,.97);border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.55);padding:14px 16px 12px;font-size:13px;line-height:1.45}
+  #ficha[hidden]{display:none}
+  .f-head{display:flex;align-items:baseline;gap:8px;margin-bottom:10px}
+  .f-head b{font-size:15px}
+  .f-coord{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .f-x{margin-left:auto;background:none;border:none;color:var(--muted);font-size:22px;line-height:1;cursor:pointer;padding:0 2px}
+  .f-x:hover{color:var(--ink)}
+  .f-dl{margin:0 0 10px}
+  .f-dl dt{font-size:11.5px;color:var(--muted);margin-top:8px}
+  .f-dl dd{margin:2px 0 0}
+  .f-dl dd .sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:baseline}
+  .f-dl dd small{display:block;color:var(--muted);font-size:12px}
+  .f-alerta{border-left:3px solid #d9a441;background:rgba(217,164,65,.10);padding:7px 10px;border-radius:0 7px 7px 0;margin:8px 0 10px;font-size:12.5px}
+  #ficha h4{font-size:12.5px;margin:12px 0 6px}
+  #ficha ul{margin:0;padding-left:0;list-style:none}
+  #ficha li{display:flex;gap:8px;align-items:center;padding:3px 0;font-variant-numeric:tabular-nums}
+  #ficha li .sw{width:10px;height:10px;border-radius:2px;flex:0 0 auto}
+  .f-nota{font-size:12px;color:var(--muted);margin:6px 0 0}
+  .f-sat{width:100%;margin-top:12px;background:var(--panel2);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:8px;font-size:12.5px;cursor:pointer}
+  .f-sat:hover{border-color:var(--accent)}
+  .f-sat-meta{font-size:11.5px;color:var(--muted);margin-top:5px}
+  .f-aviso{margin-top:12px;padding-top:10px;border-top:1px solid var(--line);font-size:11.5px;color:var(--muted);line-height:1.45}
+  .f-aviso b{color:var(--ink)}
+  #verif{position:absolute;top:184px;right:12px;width:340px;max-height:calc(100% - 300px);overflow-y:auto;z-index:1150;background:rgba(16,24,34,.97);border:1px solid #ffe600;border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.55);padding:14px 16px 12px;font-size:13px;line-height:1.45}
+  #verif[hidden]{display:none}
+  body.verificando #buscador,body.verificando #cerroBar,body.verificando #timebar,body.verificando #legendClas,body.verificando #legendZon{display:none!important}
+  body.verificando #verif{top:12px;max-height:calc(100% - 24px)}
+  .v-meta{font-size:12px;color:var(--ink);background:var(--panel2);border-radius:7px;padding:6px 9px;margin:6px 0 10px}
+  .v-ops{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .v-ops button{background:var(--panel2);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:10px 8px;font-size:13px;cursor:pointer;text-align:center}
+  .v-ops button:hover{border-color:#ffe600}
+  .v-ops button.on{background:#ffe600;color:#1a1a00;border-color:#ffe600;font-weight:700}
+  .v-dudas{display:flex;gap:6px;align-items:center;font-size:12px;color:var(--muted);margin:10px 0 8px}
+  .v-dudas input{width:auto}
+  .v-acts{display:flex;gap:6px}
+  .v-acts button{flex:1;border-radius:8px;padding:9px;font-size:13px;cursor:pointer;border:1px solid var(--line);background:var(--panel2);color:var(--ink)}
+  .v-acts #vGuardar{background:var(--accent);color:#06231a;border-color:var(--accent);font-weight:700}
+  .v-acts #vGuardar:disabled{opacity:.45;cursor:default}
+  .v-msg{font-size:12px;margin-top:6px;min-height:1em}
+  .v-ops button.ok{background:#1f7a52;border-color:#3fb27f;color:#fff;font-weight:700}
+  .v-ops button.mal{background:#7a2530;border-color:#b2323f;color:#fff}
+  .v-ops button:disabled{cursor:default}
+  .v-explica{font-size:12.5px;background:var(--panel2);border-radius:7px;padding:8px 10px;margin:10px 0 8px;line-height:1.45}
+  @media(max-width:820px){
+    body.verificando #verif{top:auto}
+    #verif{top:auto;left:8px;right:8px;width:auto;bottom:calc(62px + env(safe-area-inset-bottom));max-height:62dvh}
+    #buscador{top:max(10px,env(safe-area-inset-top));left:64px;right:10px;width:auto}
+    #bInput{font-size:16px}
+    .b-acc button,#buscador #swipeBtn{font-size:12px;padding:7px 9px}
+    #ficha{top:auto;left:8px;right:8px;width:auto;bottom:calc(62px + env(safe-area-inset-bottom));max-height:58dvh}
+    body.ficha-abierta #timebar{display:none}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <aside id="sidebar">
+    <div id="sheetHandle" role="button" aria-label="Mostrar u ocultar detalles"><span class="grab"></span><span class="lbl">Detalles y estado de la validación</span><span class="chev">▲</span></div>
+    <header>
+      <h1>Observatorio Forestal de Morelia</h1>
+      <div class="sub">Dónde se ha perdido bosque y matorral en el municipio de Morelia entre 2006 y 2024, según imágenes de satélite, y en qué tipo de suelo del PMDU ocurrió. <span id="subVal"></span></div>
+    </header>
+
+    <div class="block" id="cerroSelectWrap">
+      <h2>Ir a</h2>
+      <select id="cerroSelect" aria-label="Ir a una unidad o a un área protegida">
+        <option value="__all">Municipio de Morelia (4 unidades)</option>
+        <optgroup label="Tipos de suelo (PMDU)">
+          <option value="1">Áreas protegidas</option>
+          <option value="2">No urbanizable</option>
+          <option value="3">Urbanizable</option>
+          <option value="4">Urbano</option>
+        </optgroup>
+        <optgroup label="Áreas naturales protegidas" id="optAnp"></optgroup>
+      </select>
+    </div>
+    <div class="block" id="estadoBlock">
+      <h2>Estado de la validación</h2>
+      <div id="estadoVal"><div class="val-nota">Cargando…</div></div>
+    </div>
+
+    <div class="block">
+      <h2>Qué muestra el mapa</h2>
+      <div class="defs">
+        <h3>Tipos de pérdida</h3>
+        <div class="row"><span class="sw" style="background:#ccffcc"></span><div><b>Degradación.</b> El bosque se aclara o se corta, pero vuelve a crecer o no se ve qué lo reemplaza.</div></div>
+        <div class="row"><span class="sw" style="background:#9b30ff"></span><div><b>Conversión construida.</b> El bosque se sustituye por casas, calles u otras construcciones.</div></div>
+        <div class="row"><span class="sw" style="background:#ffd000"></span><div><b>Conversión cultivada.</b> El bosque se sustituye por cultivos o huertas.</div></div>
+        <div class="row"><span class="sw" style="background:#8a939c"></span><div><b>Pérdida reciente, sin clasificar.</b> Pérdida de 2020 a 2024: todavía no hay años suficientes para saber si el bosque se recupera o se reemplaza.</div></div>
+        <h3>Tipos de suelo (PMDU)</h3>
+        <div class="row"><span class="sw" style="background:#1ed760"></span><div><b>Áreas protegidas.</b> Áreas naturales protegidas por su bosque o su agua.</div></div>
+        <div class="row"><span class="sw" style="background:#ffd400"></span><div><b>No urbanizable.</b> Suelo que el PMDU no destina a la urbanización.</div></div>
+        <div class="row"><span class="sw" style="background:#ff7a00"></span><div><b>Urbanizable.</b> Suelo que el PMDU destina al crecimiento de la ciudad.</div></div>
+        <div class="row"><span class="sw" style="background:#d63cf0"></span><div><b>Urbano.</b> La ciudad actual, según el PMDU.</div></div>
+        <p class="val-nota">Los cuatro tipos de suelo cubren todo el municipio sin encimarse. Donde un área protegida y otro tipo de suelo coinciden, cuenta como área protegida.</p>
+      </div>
+    </div>
+
+
+    <div class="block" id="participaBlock">
+      <h2>Participa · aportes ciudadanos</h2>
+      <div id="vContador" style="font-size:12px;line-height:1.45;margin-bottom:8px"></div>
+      <div id="apLogin">
+        <div style="font-size:12px;color:var(--muted);line-height:1.45;margin-bottom:8px">Entra con tu correo para dejar aportes, trazar tu territorio o, con tu registro aprobado, verificar el estado actual del mapa. Consulta el <a href="./privacidad.html" target="_blank" style="color:var(--accent2)">aviso de privacidad</a>.</div>
+        <button class="dlbtn" id="apBtnEntrar" style="width:100%;background:var(--accent);color:#06231a;border-color:var(--accent);font-weight:700">Entrar o registrarme</button>
+        <div id="apMsg" style="font-size:11.5px;margin-top:6px;line-height:1.4"></div>
+      </div>
+      <div id="apSession" style="display:none">
+        <div style="font-size:12px;color:var(--muted)">Conectado: <b id="apUser" style="color:var(--ink)"></b> <span id="apMod"></span></div>
+        <div id="vSolicitud" style="display:none;margin-top:10px">
+          <div style="font-size:12px;line-height:1.45;margin-bottom:6px"><b>Verificar el estado actual.</b> Con tu registro aprobado podrás revisar sobre la imagen de satélite qué hay hoy en los cuadros del mapa.</div>
+          <textarea id="vMotivo" rows="3" placeholder="¿Por qué quieres participar? (una o dos frases)" style="width:100%;background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:7px 9px;font-size:12px;font-family:inherit;margin-bottom:6px"></textarea>
+          <div style="font-size:11.5px;line-height:1.45;background:var(--panel2);border-radius:7px;padding:7px 9px;margin-bottom:8px"><b>Qué pasa con tus respuestas.</b> Cada cuadro toma unos segundos: miras la imagen y eliges qué hay hoy. Tus respuestas se comparan con las de otras personas y con puntos de referencia; ninguna corrige el mapa por sí sola. Solo se publican totales, nunca tu nombre ni tus respuestas una por una.</div>
+          <label style="font-size:11.5px;color:var(--muted);display:flex;gap:6px;align-items:flex-start;line-height:1.4"><input type="checkbox" id="vAcepto" style="width:auto;margin-top:2px"><span>Entiendo que es un ejercicio de investigación científica, no un documento legal: registro lo que se ve en la imagen, no quién lo hizo ni si fue legal. Acepto el <a href="./privacidad.html" target="_blank" style="color:var(--accent2)">aviso de privacidad</a>.</span></label>
+          <button class="dlbtn" id="vEnviar" style="width:100%;margin-top:8px;background:var(--accent);color:#06231a;border-color:var(--accent)">Solicitar participación</button>
+          <div id="vMsg" style="font-size:11.5px;margin-top:6px"></div>
+        </div>
+        <div id="vEstado" style="font-size:12px;color:var(--muted);margin-top:8px"></div>
+        <button class="dlbtn" id="vBtnEntrar" style="display:none;width:100%;margin-top:8px;background:#ffe600;color:#1a1a00;border-color:#ffe600;font-weight:700">🔎 Verificar el estado actual</button>
+        <button class="dlbtn" id="apBtnAportar" style="width:100%;margin-top:8px;background:var(--accent);color:#06231a;border-color:var(--accent)">＋ Dejar un aporte</button>
+        <div id="apForm" style="display:none;margin-top:8px">
+          <div id="apPick" style="font-size:11.5px;color:var(--muted);margin-bottom:6px">Haz clic en el mapa para ubicar el punto.</div>
+          <div id="apCoord" style="font-size:11px;color:var(--muted);margin-bottom:4px"></div>
+          <select id="apTipo" style="margin-bottom:6px">
+            <option value="tala">Tala</option><option value="incendio">Incendio</option>
+            <option value="construccion">Construcción</option><option value="cambio_agricola">Cambio agrícola</option>
+            <option value="invasion">Invasión</option><option value="plaga">Plaga</option><option value="otro">Otro</option>
+          </select>
+          <textarea id="apDesc" rows="3" placeholder="¿Qué observaste?" style="width:100%;background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:7px 9px;font-size:12px;font-family:inherit;margin-bottom:6px"></textarea>
+          <input id="apFoto" type="file" accept="image/*" style="font-size:11px;margin-bottom:6px" />
+          <button class="dlbtn" id="apBtnEnviar" style="width:100%;background:var(--accent);color:#06231a;border-color:var(--accent)">Enviar aporte</button>
+          <div id="apFormMsg" style="font-size:11.5px;margin-top:6px"></div>
+        </div>
+        <div id="apMios" style="margin-top:10px"></div>
+        <div style="display:flex;gap:6px;margin-top:8px">
+          <button class="dlbtn" id="apBtnLogout" style="flex:1">Cerrar sesión</button>
+          <a id="apModLink" href="./moderacion.html" style="display:none;flex:1;text-align:center;color:var(--accent2);font-size:11px;align-self:center">Moderación →</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="block" id="territorioBlock" style="display:none">
+      <h2>Mi territorio</h2>
+      <div style="font-size:12px;color:var(--muted);line-height:1.45">Dibuja tu zona (ejido, comunidad, microcuenca) y guárdala. Cuando la validación cierre, aquí se verá la pérdida estimada dentro de ella.</div>
+      <button class="dlbtn" id="tDibujar" style="width:100%;margin-top:8px;background:var(--accent);color:#06231a;border-color:var(--accent)">✏️ Dibujar territorio</button>
+      <div id="tHint" style="display:none;font-size:11px;color:var(--muted);margin-top:6px">Clic para poner vértices · doble clic para cerrar el polígono.</div>
+      <div id="tStats" style="display:none;margin-top:9px;font-size:12px;line-height:1.55"></div>
+      <div id="tForm" style="display:none;margin-top:8px">
+        <input id="tNombre" placeholder="Nombre (p. ej. Tumbisca)" style="width:100%;background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:8px 10px;font-size:13px;margin-bottom:6px" />
+        <input id="tComunidad" placeholder="Comunidad (opcional)" style="width:100%;background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:8px 10px;font-size:13px;margin-bottom:6px" />
+        <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;margin-bottom:8px"><input type="checkbox" id="tPublico" style="width:auto"> Hacerlo visible a otros</label>
+        <div style="display:flex;gap:6px">
+          <button class="dlbtn" id="tGuardar" style="flex:1;background:var(--accent);color:#06231a;border-color:var(--accent)">Guardar</button>
+          <button class="dlbtn" id="tCancelar" style="flex:1">Cancelar</button>
+        </div>
+        <div id="tMsg" style="font-size:11.5px;margin-top:6px"></div>
+      </div>
+      <div id="tLista" style="margin-top:10px"></div>
+    </div>
+
+    <div class="block">
+      <details class="fold">
+        <summary>Metodología · cómo se obtuvieron los datos</summary>
+        <div class="fold-body credits">
+        <!-- Bloque generado desde data/manifest.json. No escribir aquí cifras de exactitud
+             ni de versión a mano: se desincronizan del mapa en cuanto cambia el umbral. -->
+        <div id="metaValidacion"></div>
+        <p style="margin:7px 0"><b>Detección.</b> LandTrendr segmenta, píxel por píxel, la serie anual del índice NBR (Landsat 5, 7, 8 y 9, reflectancia superficial, compuestos de temporada seca) de 2002 a 2025. Earth Engine hace solo la segmentación; la clasificación, la muestra y las superficies salen de un único script sobre ese mismo ráster, de modo que el mapa que se muestra es el mismo sobre el que se sortea y se estima.</p>
+        <p style="margin:7px 0"><b>Clasificación.</b> Cada evento de pérdida se asigna a degradación, conversión construida o conversión cultivada según su magnitud y el estado de la cubierta cinco años después. Los eventos de 2020 a 2024 no tienen todavía esa ventana y quedan como pérdida reciente sin clasificar. Los umbrales que separan construida de cultivada se calibran contra la fotointerpretación, no antes.</p>
+        <p style="margin:7px 0"><b>Validación y superficies.</b> Muestra aleatoria estratificada por unidad y por clase del mapa, interpretada a ciegas sobre imagen de alta resolución. Las superficies se estiman desde esa muestra con el estimador de Olofsson et al. (2014), con intervalos de confianza, sobre la franja como dominio de estimación. Contar píxeles del mapa no da la superficie: da la superficie mapeada, que arrastra comisión y omisión.</p>
+        <p style="margin:7px 0"><b>Qué cubierta se ve.</b> Los compuestos son de temporada seca, así que el bosque caducifolio sin hoja queda fuera, tanto de lo que se pierde como de lo que había. El mapa describe la cubierta que el método ve.</p>
+        <p style="margin:7px 0"><b>Unidades y zonificación.</b> Cartografía del IMPLAN (ANP, zonificación primaria y secundaria del PMDU). Las veinte claves de la zonificación secundaria se agrupan en siete grupos, que son atributo de lectura y no estrato de muestreo. Las capas del mapa están simplificadas para dibujarse; no sirven para medir.</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="block">
+      <details class="fold">
+        <summary>Créditos</summary>
+      <div class="credits fold-body">
+        <div><b>Autor:</b> M.C.S. Héctor Eduardo Zavala Solís</div>
+        <div><b>Asesor principal:</b> Dr. Jaime Paneque-Gálvez</div>
+        <div style="margin-top:5px"><b>Programa:</b> Posgrado en Geografía, UNAM — Centro de Investigaciones en Geografía Ambiental (CIGA)</div>
+        <div style="margin-top:7px">
+          <b>Fuentes:</b> Landsat 5/7/8/9 C2 SR (USGS); algoritmo LandTrendr (Kennedy et&nbsp;al., 2018); estimador de áreas de Olofsson et&nbsp;al. (2014); cartografía de ANP y zonificación del PMDU de Morelia (IMPLAN).
+        </div>
+      </div>
+      </details>
+    </div>
+    <div class="block">
+      <details class="fold">
+        <summary>Datos y metadatos · descargas</summary>
+      <div class="dl-row fold-body">
+        <button class="dlbtn" data-dl="loss" aria-label="Descargar la pérdida detectada por año en GeoJSON">Pérdida por año (GeoJSON)</button>
+        <button class="dlbtn" data-dl="clas" aria-label="Descargar la pérdida detectada por clase en GeoJSON">Pérdida por clase (GeoJSON)</button>
+        <button class="dlbtn" data-dl="unid" aria-label="Descargar los tipos de suelo en GeoJSON">Tipos de suelo (GeoJSON)</button>
+        <button class="dlbtn" data-dl="zon" aria-label="Descargar la zonificación en GeoJSON">Zonificación (GeoJSON)</button>
+        <button class="dlbtn" data-dl="manifest" aria-label="Descargar el manifiesto de la corrida en JSON">Manifiesto de la corrida (JSON)</button>
+      </div>
+      <div class="credits" style="margin-top:9px">
+        <div><b>Cómo citar:</b> Zavala Solís, H. E. (2026). <i>Observatorio Forestal de Morelia</i>. Posgrado en Geografía, CIGA-UNAM.</div>
+        <div style="margin-top:5px"><b>Elaboración:</b> noviembre de 2026 · Periodo analizado 2006–2024 · Validación preliminar.</div>
+        <div style="margin-top:5px">© 2026 H. E. Zavala Solís · Licencia <b>CC BY-NC-ND 4.0</b> · Ref. HZS-OFM-2026-e4372558ba98</div>
+      </div>
+      </details>
+    </div>
+  </aside>
+
+  <div id="map">
+    <div id="loader"><div class="ldot"></div>Cargando observatorio…</div>
+    <div id="buscador" role="search">
+      <form id="bForm" autocomplete="off">
+        <input id="bInput" type="search" placeholder="Busca una dirección, colonia o coordenadas" aria-label="Buscar una dirección, colonia o coordenadas en Morelia" />
+        <button type="submit" aria-label="Buscar">Buscar</button>
+      </form>
+      <div id="bRes" hidden></div>
+      <div class="b-acc" id="bAcc">
+        <button type="button" id="bCambio">▶ Cómo ha cambiado</button>
+        <button type="button" id="bAcerca">Acerca de</button>
+        <button type="button" id="bCompartir" title="Copiar un enlace a esta vista">🔗 Compartir</button>
+      </div>
+      <div id="bHint">o toca cualquier punto del mapa para ver qué hay ahí</div>
+    </div>
+    <div id="ficha" role="region" aria-label="Ficha del lugar" aria-live="polite" hidden></div>
+    <div id="verif" role="region" aria-label="Verificar el estado actual" aria-live="polite" hidden></div>
+    <!-- La leyenda de color de año ahora vive integrada en la línea de tiempo (abajo). -->
+    <div class="legend" id="legendZon">
+      <h3>Usos previstos (PMDU)</h3>
+      <div id="legendZonRows"></div>
+      <div class="op-row"><span>Opac.</span><input type="range" id="zonOpacity" min="0.1" max="1" step="0.05" value="0.4"></div>
+    </div>
+    <div class="legend" id="legendClas">
+      <h3>Pérdida por tipo</h3>
+      <div id="legendClasRows"></div>
+      <div class="op-row"><span>Opac.</span><input type="range" id="clasOpacity" min="0.1" max="1" step="0.05" value="0.95" aria-label="Opacidad de la pérdida por clase"></div>
+    </div>
+
+    <button id="swipeBtn" title="Compara dos imágenes satelitales (2003 y 2025). Es distinto de la línea de tiempo de abajo, que muestra la pérdida detectada." aria-label="Comparar imágenes satelitales de 2003 y 2025">🛰️ Comparar 2003 ↔ 2025</button>
+    <div id="cerroBar"></div>
+    <div id="swipe-divider"><div class="hit"></div><div class="grip">⇔</div></div>
+    <div class="sat-label" id="sat-label-l">2003</div>
+    <div class="sat-label" id="sat-label-r">2025</div>
+
+    <div id="timebar">
+      <button id="playBtn" title="Reproducir">▶</button>
+      <div class="tb-main">
+        <div class="tb-top">
+          <span class="tb-year" id="yearLabel">2024</span>
+          <span class="tb-acc" id="tbModo">pérdida hasta 2024</span>
+        </div>
+        <div class="grad" title="Año de pérdida"></div>
+        <input type="range" id="yearSlider" min="2006" max="2024" value="2024" step="1" />
+        <div class="grad-lbl"><span>2006</span><span>2015</span><span>2024</span></div>
+      </div>
+      <div class="tb-mode">
+        <div class="tb-mode-btns">
+          <button id="modeAcc" class="on">Hasta ese año</button>
+          <button id="modeYr">Solo ese año</button>
+        </div>
+        <div class="tb-op"><span>Opac.</span><input type="range" id="lossOpacity" min="0.15" max="1" step="0.05" value="0.85"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const YMIN=2006, YMAX=2024;
+
+// ── Exactitud y versión: se leen del manifiesto, nunca se escriben en el HTML ──────────
+// Una exactitud pertenece a un mapa concreto, no a un método. Tenerla escrita a mano hizo
+// que sobreviviera a un cambio de umbral y quedara atribuida al mapa equivocado.
+const pct=v=>(v==null?'—':(100*v).toFixed(1)+'%');
+// La rama 'exactitud_medida' (04-11-2026) lee el bloque que escribe build_data.py --exactitud.
+// Las ramas de abajo de ella conservan el vocabulario de la v8 (deforestación/degradación) y
+// solo se alcanzan con un JSON de validación del formato viejo.
+const ic=o=>(o?`${pct(o.estimado)} <span class="ic">± ${(100*o.ic95).toFixed(1)}</span>`:'—');
+const NOM_CLASE={perdida:'Pérdida (cualquier clase)',estable:'Estable',degradacion:'Degradación',
+  construida:'Conversión construida',cultivada:'Conversión cultivada',perdida_reciente:'Pérdida reciente'};
+function tablaExactitud(v){
+  const f=Object.entries(v.por_clase||{}).map(([c,d])=>
+    `<tr><td>${NOM_CLASE[c]||c}</td><td>${ic(d.usuario)}</td><td>${d.productor?ic(d.productor):'—'}</td></tr>`).join('');
+  return `<table class="val-tab"><thead><tr><th>Clase</th><th>Usuario</th><th>Productor</th></tr></thead><tbody>${f}</tbody></table>`;
+}
+function textoExactitud(mf){
+  if(!mf||!mf.validacion) return null;
+  const v=mf.validacion;
+  if(v.estado==='exactitud_medida'||v.estado==='validado'){
+    const g=v.global||{}, p=(v.por_clase||{}).perdida||{};
+    return {tono:'aviso',html:
+      `<b>Exactitud${v.estado==='validado'?'':' preliminar'}.</b> Corrida del ${v.corrida}, medida con ${v.n_puntos} puntos de referencia fotointerpretados sobre este mismo mapa y en todo el municipio; ${v.diseno}, estimador de ${v.estimador}. `+
+      `Exactitud global <b>${ic(g.tematica)}</b> (IC 95%): el mapa acierta sobre todo en lo que no cambió. `+
+      `En la pérdida acierta menos. De lo que el mapa marca como pérdida, la referencia la confirma en <b>${pct(p.usuario&&p.usuario.estimado)}</b> (exactitud de usuario); de la pérdida que la referencia encuentra, el mapa capta <b>${pct(p.productor&&p.productor.estimado)}</b> (exactitud del productor).`+
+      tablaExactitud(v)+
+      (v.estado==='validado'?`<b>Superficies.</b> Contar los píxeles del mapa no da la superficie; las que se publican en «Datos» son áreas ajustadas por error, con su intervalo. ${v.nota||''}`
+        :`<b>Por eso no se publican superficies.</b> Contar los píxeles del mapa no da la superficie, y la estimación ajustada por error todavía no la sostiene. ${v.nota||''}`)};
+  }
+  if(v.estado==='pendiente') return {tono:'aviso',html:'<b>Sin validar.</b> Este mapa todavía no tiene validación por fotointerpretación, así que no se reporta exactitud ni superficie. Lo que sí se sabe es dónde el algoritmo detecta pérdida y de qué tipo la clasifica.'};
+  const mismo=v.coincide_con_publicado!==false;
+  if(mismo) return {tono:'ok',html:`<b>Exactitud.</b> Validado con ${v.n_puntos} puntos por fotointerpretación (${v.diseno}). Exactitud global ${pct(v.exactitud_global_mapa_publicado)} (IC 95% ${pct(v.ic95_mapa_publicado[0])}–${pct(v.ic95_mapa_publicado[1])}), estimador de ${v.estimador}.`};
+  const c=v.por_clase_mapa_publicado||{};
+  let h='';
+  // (1) Desajuste de mapa: la exactitud se midió con otro umbral.
+  if(v.coincide_con_publicado===false) h+=
+    `<b>Sobre la exactitud de este mapa.</b> La validación (${v.n_puntos} puntos, ${v.diseno}) se midió sobre el mapa <b>${v.mapa_validado}</b>, mientras que las cifras aquí publicadas provienen del mapa <b>${v.mapa_publicado}</b>. `+
+    `Reevaluada con el estimador de ${v.estimador} sobre el mapa publicado, la exactitud global es <b>${pct(v.exactitud_global_mapa_publicado)}</b> (IC 95% ${pct(v.ic95_mapa_publicado[0])}–${pct(v.ic95_mapa_publicado[1])}), frente a ${pct(v.exactitud_global_mapa_validado)} del mapa validado.<br>`+
+    `Por clase, en el mapa publicado: <b>deforestación</b> ${pct(c.deforestacion&&c.deforestacion.usuario)} de exactitud de usuario —cuando el mapa dice deforestación, casi siempre acierta—; <b>degradación</b> ${pct(c.degradacion&&c.degradacion.productor)} de exactitud del productor, es decir que el mapa capta solo una fracción de la degradación que la muestra de referencia encuentra.<br>`;
+  // (2) Desajuste de área: la muestra no cubre todo lo que el mapa muestra.
+  // Es la limitación más consecuente, porque cambia lo que la clase significa.
+  if(v.ambito_coincide===false) h+=
+    `<br><b>Y sobre qué parte del mapa está validada.</b> La muestra se extrajo del <b>${v.ambito_muestra}</b>, mientras que las cifras cubren el <b>${v.ambito_cifras}</b>. `+
+    `Como el ${100-(window.MANIFEST&&window.MANIFEST.cifras?window.MANIFEST.cifras.pct_dentro:23)}% de la pérdida ocurre fuera de las áreas protegidas, <b>esa parte del mapa no tiene exactitud medida</b>.<br>`;
+  h+=`<br><b>Léanse las superficies como cotas inferiores</b>, no como estimaciones: la validación detectó omisión sistemática de degradación sutil.`;
+  return {tono:'aviso',html:h};
+}
+// Lo que la clase 2 significa depende de dónde se mire, y eso no es un matiz: dentro de las
+// ANP el frente de conversión es agrícola, no urbano.
+function bloqueInterpretacion(mf){
+  const i=mf&&mf.interpretacion_clases; if(!i) return '';
+  return `<p style="margin:7px 0"><b>Qué mide la clase «Deforestación».</b> ${i.dentro_anp} `+
+         `<i>${i.franja_periurbana}</i> ${i.nota_fisica||''}</p>`;
+}
+function pintarMetodologia(mf){
+  const cont=document.getElementById('metaValidacion'); if(!cont) return;
+  const t=textoExactitud(mf);
+  if(!t){cont.innerHTML='';return;}
+  const col=t.tono==='ok'?'var(--accent)':'#d9a441';
+  const bg=t.tono==='ok'?'rgba(63,178,127,.10)':'rgba(217,164,65,.10)';
+  cont.innerHTML=`<div style="border-left:3px solid ${col};background:${bg};border-radius:0 8px 8px 0;padding:9px 11px;margin:2px 0 10px;line-height:1.5">${t.html}</div>`;
+  cont.insertAdjacentHTML('beforeend', tablaMuestra(mf));
+  cont.insertAdjacentHTML('beforeend', bloqueInterpretacion(mf));
+  const p=mf&&mf.parametros;
+  if(p){
+    // Serie de imágenes y años con detección son cosas distintas; mostrarlos como uno solo
+    // fue el origen de una inconsistencia de fechas entre documentos.
+    const serie=p.serie_landsat||p.periodo, ev=p.eventos_detectados;
+    cont.insertAdjacentHTML('beforeend',
+      `<p style="margin:7px 0"><b>Versión y parámetros.</b> Corrida <b>${mf.version}</b> (manifiesto generado el ${mf.generado}); umbral de magnitud <b>${(p.MAG_MIN/1000).toFixed(2)}</b> de caída de NBR. `+
+      `Serie de imágenes ${serie[0]}–${serie[1]}; periodo reportado ${(p.periodo_reportado||ev||serie).join('–')}. ${(mf.avisos&&mf.avisos.umbral)||''}</p>`);
+  }
+}
+// Colores. Unidades: tonos de su propio sentido (verde protegido, ocre rural, naranja
+// urbanizable, gris urbano). Clases de pérdida: ámbar, magenta, cian y gris, elegidos para
+// no confundirse entre sí ni con las unidades en daltonismo rojo-verde.
+// D11 (09-11-2026): borde intenso y relleno del mismo tono, más claro y translúcido.
+const UNI_COLORS={1:'#1ed760',2:'#ffd400',3:'#ff7a00',4:'#d63cf0'};   // borde y muestras
+const UNI_FILL  ={1:'#8af0b0',2:'#fff27a',3:'#ffb870',4:'#f0a8fa'};   // relleno
+const UNI_FILL_OP=0.18;
+// D13: jerarquía de contornos. Donde dos unidades comparten límite, se ve el de la de mayor
+// protección: áreas protegidas > no urbanizable > urbanizable > urbano. Más grueso y encima.
+const UNI_W={1:3.4,2:2.8,3:2.2,4:1.7};
+const UNI_ORDEN=[4,3,2,1];   // orden de dibujo: el último queda encima
+const UNI_ID={'Áreas protegidas':1,'No urbanizable':2,'Urbanizable':3,'Urbano':4};
+const CLAS_COLORS={1:'#ccffcc',2:'#9b30ff',3:'#ffd000',4:'#8a939c'};   // D14 (10-11-2026)
+const APORTE_COLOR='#1e6fff';
+let clasOpacity=0.95;
+const LOSS_STROKE={color:'#0b0f14',weight:.6};   // contorno oscuro: la pérdida resalta sobre cualquier relleno
+const GRUPO_COLORS={1:'#2e7d32',2:'#b59a3a',3:'#7cc47f',4:'#6f7a86',5:'#c7684a',6:'#8f7fb8',7:'#d2b48c'};
+const CLASES_DEF={1:'Degradación',2:'Conversión construida',3:'Conversión cultivada',4:'Pérdida reciente (sin clasificar)'};
+
+// paleta año -> color (interpolación por tramos)
+// D11: claro (pérdida antigua) que se intensifica hasta rojo pleno (reciente); ningún tono de las unidades.
+const STOPS=[[2006,[255,214,196]],[2011,[255,160,128]],[2015,[255,99,71]],[2020,[240,30,30]],[2024,[215,0,0]]];/*build:e4372558ba98*/
+function lerp(a,b,t){return Math.round(a+(b-a)*t)}
+function colorYear(y){
+  y=Math.max(YMIN,Math.min(YMAX,y));
+  for(let i=0;i<STOPS.length-1;i++){
+    const [y0,c0]=STOPS[i],[y1,c1]=STOPS[i+1];
+    if(y>=y0&&y<=y1){const t=(y-y0)/(y1-y0);return`rgb(${lerp(c0[0],c1[0],t)},${lerp(c0[1],c1[1],t)},${lerp(c0[2],c1[2],t)})`}
+  }
+  return'rgb(165,0,38)';
+}
+
+const map=L.map('map',{zoomControl:false,minZoom:9,maxZoom:19}).setView([19.66,-101.19],11);
+map.createPane('etiquetas'); map.getPane('etiquetas').style.zIndex=450; map.getPane('etiquetas').style.pointerEvents='none';
+// Base oscura de Esri (Canvas Dark Gray). CARTO dejó de servir sus teselas sin clave: el
+// 28-09-2026 devolvían una marca «API KEY REQUIRED» sobre todo el mapa, también en el sitio
+// publicado. Esri no pide clave y las etiquetas van en capa aparte, por encima de los datos.
+const baseDark=L.layerGroup([
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',{
+    attribution:'Base © Esri, HERE, Garmin, © OpenStreetMap',maxZoom:19,maxNativeZoom:16}),
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',{
+    pane:'etiquetas',maxZoom:19,maxNativeZoom:16})
+]);
+const baseSat=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{
+  attribution:'Imagery © Esri, Maxar, Earthstar Geographics',maxZoom:20});
+baseDark.addTo(map);
+// Los controles de la esquina derecha (capas → buscador → zoom → pantalla completa)
+// se agregan en secuencia dentro del .then, para que queden en ese orden vertical.
+['timebar','legendZon','legendClas','swipeBtn'].forEach(id=>{const el=document.getElementById(id);if(el){L.DomEvent.disableClickPropagation(el);L.DomEvent.disableScrollPropagation(el);}});
+
+// Lo que aporta la ciudadanía va encima de todo lo demás: es la capa que el usuario reconoce
+// como suya y no debe quedar tapada por las capas de datos.
+map.createPane('partPane'); map.getPane('partPane').style.zIndex=480;
+
+let lossLayer,anpLayer,zonLayer,uniLayer,clasLayer,lossOpacity=0.85,zonOpacity=0.4;
+const uniById={}, anpById={};
+const overlays={};
+
+/*DATA:BEGIN*/
+Promise.all([
+  fetch('./data/perdida_por_anio.geojson').then(r=>r.json()),
+  fetch('./data/anps.geojson').then(r=>r.json()),
+  fetch('./data/zonificacion.geojson').then(r=>r.json()),
+  fetch('./data/unidades.geojson').then(r=>r.json()),
+  fetch('./data/perdida_clasificada.geojson').then(r=>r.json()).catch(()=>null),
+  fetch('./data/manifest.json').then(r=>r.json()).catch(()=>null),
+  fetch('./data/perdida_puntos.json').then(r=>r.json()).catch(()=>null),
+  fetch('./data/objetivos.json').then(r=>r.json()).catch(()=>null)
+]).then(([loss,anps,zon,unid,clas,manifest,pix,obj])=>{
+/*DATA:END*/
+  window.MANIFEST=manifest; pintarMetodologia(manifest); pintarEstado(manifest);
+  { const sv=document.getElementById('subVal'), est=manifest&&manifest.validacion&&manifest.validacion.estado;
+    if(sv) sv.innerHTML = est==='validado' ? '<b>Validación cerrada:</b> <a href="./datos.html" style="color:var(--accent2)">ver cuánto se perdió</a>.'
+      : est==='exactitud_medida' ? '<b>Validación preliminar:</b> muestra dónde, todavía no cuánto.' : '<b>Sin validar:</b> muestra dónde, no cuánto.'; }
+  const CLASES=(manifest&&manifest.clases)||CLASES_DEF;
+  const fitOpts={paddingTopLeft:[14,56],paddingBottomRight:[14,42]};
+
+  // Panes: zonificación de fondo → unidades → pérdida por año → pérdida por clase → ANP.
+  // Las unidades van debajo de la pérdida para no robarle el clic a los parches.
+  map.createPane('zonPane');  map.getPane('zonPane').style.zIndex=395;
+  map.createPane('uniPane');  map.getPane('uniPane').style.zIndex=398;
+  map.createPane('clasPane'); map.getPane('clasPane').style.zIndex=405;
+  map.createPane('anpPane');  map.getPane('anpPane').style.zIndex=410;
+  const cvZon =L.canvas({padding:0.2,pane:'zonPane'});
+  const cvLoss=L.canvas({padding:0.2});
+  const cvClas=L.canvas({padding:0.2,pane:'clasPane'});
+
+  // ---- Zonificación secundaria, siete grupos (apagada por defecto) ----
+  zonLayer=L.geoJSON(zon,{
+    renderer:cvZon,
+    style:f=>({color:GRUPO_COLORS[f.properties.grupo_id]||'#888',weight:.4,fillColor:GRUPO_COLORS[f.properties.grupo_id]||'#888',fillOpacity:zonOpacity}),
+    onEachFeature:(f,l)=>{l.bindTooltip('Uso previsto · '+f.properties.grupo,{sticky:true});}
+  });
+  const zr=document.getElementById('legendZonRows');
+  const GR=(manifest&&manifest.grupos)||{};
+  Object.keys(GRUPO_COLORS).forEach(k=>{zr.innerHTML+=`<div class="row"><span class="sw" style="background:${GRUPO_COLORS[k]}"></span>${GR[k]||('Grupo '+k)}</div>`});
+
+  // ---- Unidades de análisis (encendidas: son el marco de lectura del mapa) ----
+  uniLayer=L.geoJSON(unid,{
+    pane:'uniPane',
+    style:f=>({color:UNI_COLORS[f.properties.unidad_id],weight:UNI_W[f.properties.unidad_id],opacity:1,fill:true,fillColor:UNI_FILL[f.properties.unidad_id],fillOpacity:UNI_FILL_OP}),
+    onEachFeature:(f,l)=>{uniById[f.properties.unidad_id]=l; l.bindTooltip('Tipo de suelo · '+f.properties.unidad,{sticky:true,className:'anp-tip'});}
+  }).addTo(map);
+  const ordenarUnidades=()=>UNI_ORDEN.forEach(id=>{const l=uniById[id]; if(l&&map.hasLayer(uniLayer)) l.bringToFront();});
+  ordenarUnidades();
+  map.on('overlayadd',e=>{ if(e.layer===uniLayer) ordenarUnidades(); });
+
+  // ---- Pérdida detectada por año ----
+  lossLayer=L.geoJSON(loss,{
+    renderer:cvLoss,
+    style:f=>({color:LOSS_STROKE.color,weight:LOSS_STROKE.weight,fillColor:colorYear(f.properties.year),fillOpacity:.9}),
+    onEachFeature:(f,l)=>{l.bindTooltip(`Pérdida detectada en ${f.properties.year}`,{sticky:true})}
+  }).addTo(map);
+
+  // ---- ANP del instrumento municipal: solo contorno, para no tapar los parches ----
+  anpLayer=L.geoJSON(anps,{
+    pane:'anpPane',
+    style:{color:'#ffffff',weight:1.6,fill:false,dashArray:'4 3'},
+    onEachFeature:(f,l)=>{
+      const p=f.properties; anpById[p.nombre]=l;
+      const dec=p.decreto?('decreto '+p.decreto.split('-').reverse().join('/')):'sin fecha de decreto en la fuente';
+      l.bindTooltip(`${p.nombre} · objeto ${p.objeto} · ${dec}`,{className:'anp-tip',sticky:true});
+      l.on('mouseover',()=>l.setStyle({weight:3,color:'#3fb27f'}));
+      l.on('mouseout',()=>l.setStyle({weight:1.6,color:'#ffffff'}));
+    }
+  }).addTo(map);
+  // Selector: ANP por superficie de dibujo, de la mayor a la menor
+  const og=document.getElementById('optAnp');
+  if(og){ Object.entries(anpById).sort((a,b)=>b[1].getBounds().getNorthEast().distanceTo(b[1].getBounds().getSouthWest())-a[1].getBounds().getNorthEast().distanceTo(a[1].getBounds().getSouthWest()))
+    .forEach(([n])=>{const o=document.createElement('option');o.value='anp:'+n;o.textContent=n;og.appendChild(o);}); }
+
+  // Sin animación: en celular la animación terminaba después de aplicar un enlace compartido y lo pisaba.
+  map.fitBounds(uniLayer.getBounds(),Object.assign({animate:false},fitOpts));
+  map.setMaxBounds(uniLayer.getBounds().pad(0.3)); map.options.maxBoundsViscosity=0.7;
+
+  // ---- Pérdida detectada por clase ----
+  if(clas){
+    clasLayer=L.geoJSON(clas,{
+      renderer:cvClas,
+      style:f=>({color:LOSS_STROKE.color,weight:LOSS_STROKE.weight,opacity:Math.min(1,clasOpacity+.1),fillColor:CLAS_COLORS[f.properties.clase]||'#888',fillOpacity:clasOpacity}),
+      onEachFeature:(f,l)=>{ l.bindTooltip(`${CLASES[+f.properties.clase]||'Pérdida'}`,{sticky:true});
+        l.on('click',e=>{ if(window.aportarEnPunto&&aportando()){ L.DomEvent.stopPropagation(e); window.aportarEnPunto(f.properties,e.latlng); } }); }});
+  }
+  const lr=document.getElementById('legendClasRows');
+  if(lr){ Object.keys(CLAS_COLORS).forEach(k=>{lr.innerHTML+=`<div class="row"><span class="sw" style="background:${CLAS_COLORS[k]}"></span>${CLASES[k]||CLASES_DEF[k]}</div>`});
+    lr.innerHTML+=`<div class="row"><span class="sw" style="background:${APORTE_COLOR};border-radius:50%"></span>Aporte ciudadano validado</div>`;
+    const a=manifest&&manifest.cifras&&manifest.cifras.area_min_parche_ha;
+    if(a) lr.innerHTML+=`<div style="font-size:10px;color:var(--muted);margin-top:5px;line-height:1.35">Se dibujan los parches de ${a} ha o más; el conteo usa todos los píxeles.</div>`; }
+
+  // ---- Control de capas ----
+  overlays['Pérdida por año']=lossLayer;
+  if(clasLayer) overlays['Pérdida por tipo']=clasLayer;
+  overlays['Tipos de suelo (PMDU)']=uniLayer;
+  overlays['Áreas naturales protegidas']=anpLayer;
+  overlays['Usos previstos (PMDU)']=zonLayer;
+  window.aportesLayer=L.layerGroup();
+  overlays['Aportes ciudadanos']=window.aportesLayer;
+  const lc=L.control.layers({'Mapa oscuro':baseDark,'Satélite (Esri)':baseSat},overlays,{collapsed:true,position:'topleft'}).addTo(map);
+  // Líneas de distancia al suelo urbano (apagadas por defecto). Se cargan aparte: si el
+  // archivo falta, como en la copia offline, el mapa sigue igual y la capa no aparece.
+  fetch('./data/distancias.geojson').then(r=>r.ok?r.json():null).then(g=>{ if(!g) return;
+    const distLayer=L.geoJSON(g,{pane:'uniPane',interactive:true,
+      style:f=>({color:'#8fd0ff',weight:f.properties.dist_m>=5000?2:1.3,opacity:.9,dashArray:'2 6',fill:false}),
+      onEachFeature:(f,l)=>l.bindTooltip('A '+f.properties.rotulo+' del suelo urbano más cercano (ciudad o localidad)',{sticky:true,className:'anp-tip'})});
+    lc.addOverlay(distLayer,'Distancia al suelo urbano (0.5, 1, 2 y 5 km)');
+  }).catch(()=>{});
+  let gcCtl=null;
+  // El geocodificador de Leaflet salió el 09-11-2026: lo sustituye #buscador.
+  const zoomCtl=L.control.zoom({position:'topleft'}).addTo(map);
+  if(window.cargarAportesValidados) window.cargarAportesValidados();
+  map.on('overlayadd overlayremove',e=>{
+    if(e.layer===zonLayer)document.getElementById('legendZon').style.display=(map.hasLayer(zonLayer)?'block':'none');
+    const showClas=((clasLayer&&map.hasLayer(clasLayer))||map.hasLayer(window.aportesLayer));
+    const lgC=document.getElementById('legendClas'); if(lgC)lgC.style.display=showClas?'block':'none';
+    const gr=document.querySelector('.tb-main .grad'), gl=document.querySelector('.tb-main .grad-lbl');
+    const showYr=map.hasLayer(lossLayer); if(gr)gr.style.display=showYr?'block':'none'; if(gl)gl.style.display=showYr?'flex':'none';
+  });
+
+  // ---- Barra de unidades: enfoca una unidad y atenúa las otras ----
+  const cbar=document.getElementById('cerroBar');
+  const cselect=document.getElementById('cerroSelect');
+  function enfocar(id){
+    cbar.querySelectorAll('.cbtn').forEach(x=>x.classList.toggle('active',x.dataset.u===String(id)));
+    uniLayer.eachLayer(l=>{const u=l.feature.properties.unidad_id, todo=(id==='__all'), on=todo||u==id;
+      l.setStyle({weight:UNI_W[u]+((on&&!todo)?1:0), opacity:on?1:.25, fillOpacity:todo?UNI_FILL_OP:(on?UNI_FILL_OP+.1:.04)});});
+    ordenarUnidades();   // la jerarquía de contornos se mantiene aunque se enfoque otra unidad
+    map.fitBounds(id==='__all'?uniLayer.getBounds():uniById[id].getBounds(),fitOpts);
+    if(cselect) cselect.value=String(id);
+  }
+  window.enfocarUnidad=enfocar;
+  [['__all','Municipio','#ffffff'],[1,'Áreas protegidas'],[2,'No urbanizable'],[3,'Urbanizable'],[4,'Urbano']].forEach(([id,name,col])=>{
+    const b=document.createElement('button'); b.className='cbtn'; b.dataset.u=String(id);
+    b.title=id==='__all'?'Ver el municipio completo':'Ver solo el suelo '+name.toLowerCase(); b.setAttribute('aria-label',b.title);
+    b.innerHTML=`<span class="sw" style="background:${col||UNI_COLORS[id]}"></span><span class="cl">${name}</span>`;
+    b.onclick=()=>enfocar(id);
+    cbar.appendChild(b);
+  });
+  cbar.querySelector('.cbtn').classList.add('active');
+  L.DomEvent.disableClickPropagation(cbar);L.DomEvent.disableScrollPropagation(cbar);
+  if(cselect){cselect.addEventListener('change',()=>{const v=cselect.value;
+    if(v.startsWith('anp:')){const l=anpById[v.slice(4)]; if(l) map.fitBounds(l.getBounds(),fitOpts);}
+    else enfocar(v==='__all'?'__all':+v);});}
+
+  L.control.scale({imperial:false,maxWidth:130,position:'bottomleft'}).addTo(map);
+  const FsCtl=L.Control.extend({options:{position:'topleft'},onAdd:function(){const d=L.DomUtil.create('div','leaflet-bar fs-ctl');const a=L.DomUtil.create('a','',d);a.href='#';a.innerHTML='⛶';a.title='Pantalla completa';a.setAttribute('role','button');a.setAttribute('aria-label','Pantalla completa');L.DomEvent.on(a,'click',ev=>{L.DomEvent.preventDefault(ev);const el=document.documentElement;if(!document.fullscreenElement){(el.requestFullscreen||el.webkitRequestFullscreen||function(){}).call(el);}else{(document.exitFullscreen||document.webkitExitFullscreen||function(){}).call(document);}});return d;}});
+  const fsCtl=new FsCtl(); map.addControl(fsCtl);
+  document.addEventListener('fullscreenchange',()=>setTimeout(()=>map.invalidateSize(),150));
+  try{
+    const corner=map._controlCorners['topleft'];
+    const leftCol=L.DomUtil.create('div','ctl-left');
+    const rightCol=L.DomUtil.create('div','ctl-right');
+    corner.appendChild(leftCol); corner.appendChild(rightCol);
+    [leftCol,rightCol].forEach(col=>{
+      col.style.pointerEvents='auto';
+      L.DomEvent.disableClickPropagation(col); L.DomEvent.disableScrollPropagation(col);
+    });
+    leftCol.appendChild(lc.getContainer());
+    ['legendZon','legendClas'].forEach(id=>{const el=document.getElementById(id); if(el) leftCol.appendChild(el);});
+    if(gcCtl) rightCol.appendChild(gcCtl.getContainer());
+    rightCol.appendChild(zoomCtl.getContainer());
+    rightCol.appendChild(fsCtl.getContainer());
+  }catch(e){}
+  ['legendZon','legendClas'].forEach(id=>{const el=document.getElementById(id); if(el) el.style.display='none';});
+
+  window.DATA={loss,anps,zon,unid,clas,manifest,pix,obj};
+  iniciarBuscadorYFicha();
+  updateTime();
+  const _ld=document.getElementById('loader'); if(_ld)_ld.style.display='none';
+});
+
+// ================= Secciones del sitio (D18): el menú común las abre sin recargar =================
+window.ofmIrSeccion=function(sec){
+  const sb=document.getElementById('sidebar'), movil=window.matchMedia('(max-width:820px)').matches;
+  const q=sec?('?seccion='+sec):''; try{history.replaceState(null,'',location.pathname+q+location.hash);}catch(e){}
+  if(!sec){ if(movil) sb.classList.remove('sheet-open'); return; }
+  let destino=null;
+  if(sec==='participar') destino=document.getElementById('participaBlock');
+  if(sec==='acerca'){ const d=document.getElementById('metaValidacion').closest('details'); if(d)d.open=true; destino=document.getElementById('estadoBlock'); }
+  if(sec==='datos'){ const d=[...document.querySelectorAll('details.fold')].find(x=>/Datos y metadatos/.test(x.querySelector('summary').textContent)); if(d){d.open=true;destino=d;} }
+  if(movil) sb.classList.add('sheet-open');
+  if(destino) setTimeout(()=>{ if(movil) sb.scrollTop=destino.offsetTop-60; else destino.scrollIntoView({behavior:'smooth',block:'start'}); }, movil?320:0);
+};
+
+// ================= Metadatos de la imagen de Esri (fecha, proveedor, sensor, resolución) =================
+// Capa de metadatos de World Imagery que corresponde a cada acercamiento (30 cm ≈ z18).
+const META_CAPA={20:8,19:8,18:9,17:10,16:11,15:12,14:13};
+async function metaImagen(lat,lng){
+  const z=Math.max(14,Math.min(20,Math.round(map.getZoom()))); const capas=[META_CAPA[z],9,10,11,12].filter((v,i,a)=>v&&a.indexOf(v)===i);
+  for(const c of capas){ try{
+    const u='https://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/'+c+'/query?geometry='+lng+','+lat+
+      '&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=SRC_DATE,SRC_RES,SRC_DESC,NICE_DESC&returnGeometry=false&f=json';
+    const j=await (await fetch(u)).json(); const a=j.features&&j.features[0]&&j.features[0].attributes;
+    if(a&&a.SRC_DATE){const s=String(a.SRC_DATE); return {fecha:s.slice(0,4)+'-'+s.slice(4,6)+'-'+s.slice(6,8),
+      fuente:[a.NICE_DESC,a.SRC_DESC].filter(Boolean).join(' · '),res:a.SRC_RES||null};}
+  }catch(e){} } return null;}
+const textoMeta=m=>m?('Imagen del '+m.fecha.split('-').reverse().join('/')+' · '+m.fuente+(m.res?' · '+m.res+' m':'')):'Sin datos de la imagen en este punto';
+
+// ================= Enlaces compartibles (P3) =================
+// #z/lat/lng/año/modo/capa[/f] — modo: acc|yr; capa: anio|clase; f: ficha abierta en el centro.
+function estadoURL(){const c=map.getCenter(), capa=(clasLayer&&map.hasLayer(clasLayer))?'clase':'anio';
+  return '#'+map.getZoom()+'/'+c.lat.toFixed(5)+'/'+c.lng.toFixed(5)+'/'+slider.value+'/'+mode+'/'+capa+
+    (document.getElementById('ficha').hidden?'':'/f');}
+function guardarURL(){ if(window.__verificando)return; try{history.replaceState(null,'',estadoURL());}catch(e){} }
+function leerURL(){const p=(location.hash||'').replace('#','').split('/'); if(p.length<3)return null;
+  const z=+p[0],lat=+p[1],lng=+p[2]; if(!isFinite(z)||!isFinite(lat)||!isFinite(lng))return null;
+  return {z,lat,lng,anio:+p[3]||null,modo:p[4]||null,capa:p[5]||null,ficha:p[6]==='f'};}
+function aplicarURL(){const e=leerURL(); if(!e)return; map.stop();
+  map.setView([e.lat,e.lng],e.z,{animate:false});
+  if(e.capa==="clase"&&clasLayer){map.removeLayer(lossLayer);map.addLayer(clasLayer);}
+  if(e.modo==='yr')document.getElementById('modeYr').click();
+  if(e.anio&&e.anio>=YMIN&&e.anio<=YMAX){slider.value=e.anio;updateTime();}
+  setTimeout(guardarURL,0);   // la dirección se escribe ya con el año y la capa aplicados
+  if(e.ficha) setTimeout(()=>abrirFicha(e.lat,e.lng,false),50);}
+
+// ================= Buscador y ficha del lugar (D8, D9, D10 · 09-11-2026) =================
+// El aviso vive SOLO aquí (D9). Si el comité pide cambiarlo, se cambia en esta línea.
+const AVISO_FICHA='<b>Ejercicio de investigación científica, no documento legal.</b> Los límites provienen del Programa Municipal de Desarrollo Urbano (PMDU) de Morelia 2022-2041, simplificados para el mapa. La pérdida detectada describe un cambio en la vegetación, no quién lo hizo ni si fue legal.';
+const RADIO_M=250;          // D8
+const BORDE_M=50;           // a menos de esto, la cartografía simplificada no asegura el lado
+const UNI_GLOSA={1:'área natural protegida por su bosque o su agua',
+  2:'suelo que el PMDU no destina a la urbanización',3:'suelo que el PMDU destina al crecimiento de la ciudad',
+  4:'la ciudad actual, según el PMDU'};
+const M_LAT=110574, M_LNG=111320*Math.cos(19.7*Math.PI/180);
+function aportando(){if(window.__verificando)return true;const f=document.getElementById('apForm');return !!f&&f.style.display==='block';}
+function enRing(x,y,r){let d=false;for(let i=0,j=r.length-1;i<r.length;j=i++){const xi=r[i][0],yi=r[i][1],xj=r[j][0],yj=r[j][1];
+  if(((yi>y)!==(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi))d=!d;}return d;}
+function polys(g){return g.type==='Polygon'?[g.coordinates]:g.type==='MultiPolygon'?g.coordinates:[];}
+function contiene(g,x,y){return polys(g).some(p=>enRing(x,y,p[0])&&!p.slice(1).some(h=>enRing(x,y,h)));}
+function distBorde(g,x,y){let m=Infinity;const px=x*M_LNG,py=y*M_LAT;
+  polys(g).forEach(p=>p.forEach(r=>{for(let i=1;i<r.length;i++){
+    const ax=r[i-1][0]*M_LNG,ay=r[i-1][1]*M_LAT,bx=r[i][0]*M_LNG,by=r[i][1]*M_LAT,dx=bx-ax,dy=by-ay;
+    const t=Math.max(0,Math.min(1,((px-ax)*dx+(py-ay)*dy)/((dx*dx+dy*dy)||1)));
+    const d=Math.hypot(px-ax-t*dx,py-ay-t*dy); if(d<m)m=d;}}));return m;}
+function fmtDist(m){return m<1000?`${Math.round(m/10)*10} m`:`${(m/1000).toFixed(1)} km`;}
+function fmtFecha(f){return f?f.split('-').reverse().join('/'):null;}
+let fichaMarca=null, fichaCirculo=null;
+
+function consultarLugar(lat,lng){
+  const D=window.DATA||{}, x=lng, y=lat, r={lat,lng};
+  // Unidad y cercanía al límite con otra unidad
+  const U=(D.unid&&D.unid.features)||[];
+  const u=U.find(f=>contiene(f.geometry,x,y));
+  if(u){ r.unidad=u.properties;
+    const db=distBorde(u.geometry,x,y);
+    if(db<BORDE_M){ let best=null;
+      U.forEach(f=>{ if(f===u)return; const d=distBorde(f.geometry,x,y); if(!best||d<best.d)best={d,p:f.properties}; });
+      if(best&&best.d<BORDE_M*2) r.borde={d:db,vecina:best.p}; } }
+  // Área natural protegida: dentro, o la más cercana
+  const A=(D.anps&&D.anps.features)||[];
+  const a=A.find(f=>contiene(f.geometry,x,y));
+  if(a) r.anp=a.properties;
+  else { let best=null; A.forEach(f=>{const d=distBorde(f.geometry,x,y); if(!best||d<best.d)best={d,p:f.properties};}); r.anpCercana=best; }
+  // Zonificación secundaria
+  const Z=(D.zon&&D.zon.features)||[]; const z=Z.find(f=>contiene(f.geometry,x,y)); if(z) r.zon=z.properties;
+  // Pérdida detectada a menos de RADIO_M (D8): año y tipo, sin superficie (D2)
+  const P=D.pix; r.perdida=null;
+  if(P){ const e=P.esc, qla=y*e-P.base[0], qlo=x*e-P.base[1], kla=M_LAT/e, klo=M_LNG/e, vistos={};
+    for(let i=0;i<P.la.length;i++){ const dy=(P.la[i]-qla)*kla; if(dy>RADIO_M||dy<-RADIO_M)continue;
+      const dx=(P.lo[i]-qlo)*klo; if(dx*dx+dy*dy>RADIO_M*RADIO_M)continue;
+      vistos[(2000+P.a[i])+'|'+P.c[i]]=1; }
+    r.perdida=Object.keys(vistos).map(k=>{const [a,c]=k.split('|');return {anio:+a,clase:+c};})
+      .sort((p,q)=>p.anio-q.anio||p.clase-q.clase); }
+  return r;
+}
+
+function pintarFicha(r){
+  const el=document.getElementById('ficha'); const CL=(window.MANIFEST&&window.MANIFEST.clases)||CLASES_DEF;
+  let h=`<div class="f-head"><b>Este lugar</b><span class="f-coord">${r.lat.toFixed(5)}, ${r.lng.toFixed(5)}</span><button class="f-x" type="button" aria-label="Cerrar la ficha">×</button></div>`;
+  if(!r.unidad){
+    h+=`<p>Este punto queda fuera del ámbito del observatorio, que cubre el municipio de Morelia.</p>`;
+  } else {
+    const uid=r.unidad.unidad_id;
+    h+=`<dl class="f-dl"><dt>Tipo de suelo (PMDU)</dt><dd><span class="sw" style="background:${UNI_COLORS[uid]}"></span>${r.unidad.unidad}<small>${UNI_GLOSA[uid]||''}</small></dd>`;
+    if(r.anp){ const f=fmtFecha(r.anp.decreto);
+      h+=`<dt>Área natural protegida</dt><dd>Dentro de <b>${r.anp.nombre}</b><small>Objeto ${r.anp.objeto}${f?' · decreto '+f:''}</small></dd>`; }
+    else if(r.anpCercana){
+      h+=`<dt>Área natural protegida</dt><dd>Fuera de áreas naturales protegidas<small>La más cercana: ${r.anpCercana.p.nombre}, a ${fmtDist(r.anpCercana.d)}</small></dd>`; }
+    h+=`<dt>Uso previsto (PMDU)</dt><dd>${r.zon?r.zon.grupo:'Sin dato en este punto'}</dd></dl>`;
+    if(r.borde) h+=`<div class="f-alerta">Está a unos ${fmtDist(r.borde.d)} del límite con <b>${r.borde.vecina.unidad.toLowerCase()}</b>. A esa distancia el mapa no permite asegurar de qué lado cae.</div>`;
+    h+=`<h4>Pérdida de bosque detectada a menos de ${RADIO_M} m</h4>`;
+    if(!r.perdida) h+=`<p class="f-nota">No se pudo leer la capa de pérdida.</p>`;
+    else if(!r.perdida.length) h+=`<p>No se detectó pérdida entre ${YMIN} y ${YMAX}.</p>`;
+    else { const MAX=8;
+      h+='<ul>'+r.perdida.slice(0,MAX).map(p=>`<li><span class="sw" style="background:${CLAS_COLORS[p.clase]||'#888'}"></span>${p.anio} · ${CL[p.clase]||CLASES_DEF[p.clase]}</li>`).join('')+'</ul>';
+      if(r.perdida.length>MAX) h+=`<p class="f-nota">y ${r.perdida.length-MAX} registros más.</p>`; }
+    h+=`<p class="f-nota">El mapa no capta toda la pérdida; su exactitud está en «Acerca de».</p>`;
+  }
+  if(r.unidad) h+=`<button type="button" class="f-sat" id="fSat">🛰️ Ver la imagen de satélite actual</button><div class="f-sat-meta" id="fSatMeta"></div>`;
+  h+=`<div class="f-aviso">${AVISO_FICHA}</div>`;
+  el.innerHTML=h;
+  const bs=document.getElementById('fSat');
+  if(bs){ const enSat=()=>map.hasLayer(baseSat);
+    const pinta=()=>{bs.textContent=enSat()?'🗺️ Volver al mapa':'🛰️ Ver la imagen de satélite actual';};
+    pinta(); if(enSat()) metaImagen(r.lat,r.lng).then(m=>{const e=document.getElementById('fSatMeta'); if(e)e.textContent=textoMeta(m);});
+    bs.onclick=async()=>{ const mm=document.getElementById('fSatMeta');
+      if(enSat()){ map.removeLayer(baseSat); baseDark.addTo(map); mm.textContent=''; }
+      else{ map.removeLayer(baseDark); baseSat.addTo(map); if(map.getZoom()<17) map.setView([r.lat,r.lng],17);
+        mm.textContent='Consultando la fecha de la imagen…'; mm.textContent=textoMeta(await metaImagen(r.lat,r.lng)); }
+      pinta(); }; } el.hidden=false; document.body.classList.add('ficha-abierta');
+  el.querySelector('.f-x').onclick=cerrarFicha;
+  const hint=document.getElementById('bHint'); if(hint) hint.style.display='none';
+}
+window.cerrarFicha=cerrarFicha;
+function cerrarFicha(){const el=document.getElementById('ficha'); el.hidden=true; document.body.classList.remove('ficha-abierta'); setTimeout(guardarURL,0);
+  if(fichaMarca){map.removeLayer(fichaMarca);fichaMarca=null;} if(fichaCirculo){map.removeLayer(fichaCirculo);fichaCirculo=null;}}
+function abrirFicha(lat,lng,centrar){
+  if(fichaMarca)map.removeLayer(fichaMarca); if(fichaCirculo)map.removeLayer(fichaCirculo);
+  fichaCirculo=L.circle([lat,lng],{radius:RADIO_M,color:'#ffffff',weight:1.5,dashArray:'5 4',fill:false,interactive:false}).addTo(map);
+  fichaMarca=L.circleMarker([lat,lng],{radius:7,color:'#06231a',weight:2,fillColor:'#3fb27f',fillOpacity:1,interactive:false}).addTo(map);
+  if(centrar) map.setView([lat,lng],Math.max(map.getZoom(),16));
+  pintarFicha(consultarLugar(lat,lng)); setTimeout(guardarURL,0);
+  // Que el punto no quede debajo de la ficha: abajo en móvil, a la derecha en escritorio.
+  const el=document.getElementById('ficha'), sz=map.getSize(), pt=map.latLngToContainerPoint([lat,lng]);
+  if(window.matchMedia('(max-width:820px)').matches){
+    const libre=sz.y-el.offsetHeight-70, objetivo=Math.max(150,120+(libre-120)/2);
+    map.panBy([pt.x-sz.x/2, pt.y-objetivo],{animate:true});
+  } else if(pt.x>sz.x-380){ map.panBy([pt.x-(sz.x-380)/2,0],{animate:true}); }
+}
+
+// Coordenadas escritas o pegadas desde un enlace de mapas: «19.70, -101.19» o «…/@19.70,-101.19,15z»
+function leerCoordenadas(t){const m=t.match(/(-?\d{1,3}\.\d+)\s*[,\s]\s*(-?\d{1,3}\.\d+)/); if(!m)return null;
+  let a=+m[1], b=+m[2]; if(Math.abs(a)>90){const c=a;a=b;b=c;} if(Math.abs(a)>90||Math.abs(b)>180)return null; return [a,b];}
+function iniciarBuscadorYFicha(){
+  const form=document.getElementById('bForm'), inp=document.getElementById('bInput'), res=document.getElementById('bRes');
+  ['buscador','ficha','verif'].forEach(id=>{const el=document.getElementById(id); L.DomEvent.disableClickPropagation(el); L.DomEvent.disableScrollPropagation(el);});
+  const acc=document.getElementById('bAcc'), sw=document.getElementById('swipeBtn'); if(sw) acc.insertBefore(sw,document.getElementById('bAcerca'));
+  // Nominatim pide no buscar mientras se escribe: la búsqueda corre solo al enviar.
+  form.addEventListener('submit',async ev=>{ev.preventDefault(); const t=inp.value.trim(); if(!t)return;
+    const c=leerCoordenadas(t); if(c){res.hidden=true; abrirFicha(c[0],c[1],true); return;}
+    res.hidden=false; res.innerHTML='<div class="msg">Buscando…</div>';
+    try{ const u='https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&accept-language=es&countrycodes=mx&bounded=1&viewbox=-101.55,19.90,-100.95,19.40&q='+encodeURIComponent(t);
+      const js=await (await fetch(u)).json();
+      if(!js.length){res.innerHTML='<div class="msg">Sin resultados en Morelia. Prueba con otra forma de escribirlo o toca el mapa.</div>';return;}
+      res.innerHTML=''; js.forEach(o=>{const b=document.createElement('button'); b.type='button';
+        b.textContent=o.display_name.split(',').slice(0,3).join(','); b.onclick=()=>{res.hidden=true; abrirFicha(+o.lat,+o.lon,true);}; res.appendChild(b);});
+    }catch(e){res.innerHTML='<div class="msg">No se pudo consultar el buscador. Puedes tocar el mapa o escribir coordenadas.</div>';}
+  });
+  inp.addEventListener('input',()=>{if(!inp.value.trim())res.hidden=true;});
+  map.on('click',e=>{ if(aportando())return; res.hidden=true; abrirFicha(e.latlng.lat,e.latlng.lng,false); });
+  document.getElementById('bCambio').onclick=()=>{ const ma=document.getElementById('modeAcc'); if(ma)ma.click();
+    slider.value=YMIN; updateTime(); if(!playing) document.getElementById('playBtn').click(); };
+  document.getElementById('bCompartir').onclick=async ev=>{ const b=ev.currentTarget, url=location.href.split('#')[0]+estadoURL();
+    try{ await navigator.clipboard.writeText(url); b.textContent='✓ Enlace copiado'; }
+    catch(e){ window.prompt('Copia este enlace:',url); }
+    setTimeout(()=>{b.textContent='🔗 Compartir';},2000); };
+  map.on('moveend',guardarURL); slider.addEventListener('change',guardarURL);
+  ['modeAcc','modeYr'].forEach(id=>document.getElementById(id).addEventListener('click',()=>setTimeout(guardarURL,0)));
+  map.on('overlayadd overlayremove',()=>setTimeout(guardarURL,0));
+  aplicarURL();
+  // En escritorio, la barra de tipos de suelo y la ficha se colocan debajo del buscador,
+  // cuyo alto cambia según cuántas filas ocupen sus botones.
+  function acomodar(){ if(window.matchMedia('(max-width:820px)').matches) return;
+    const bz=document.getElementById('buscador'), cb=document.getElementById('cerroBar');
+    const abajo=bz.offsetTop+bz.offsetHeight+8; cb.style.top=abajo+'px';
+    const tf=abajo+cb.offsetHeight+10; ['ficha','verif'].forEach(id=>{const e=document.getElementById(id);
+      if(!document.body.classList.contains('verificando')){ e.style.top=tf+'px'; e.style.maxHeight='calc(100% - '+(tf+110)+'px)'; }
+      else { e.style.top=''; e.style.maxHeight=''; } }); }
+  acomodar(); window.addEventListener('resize',acomodar);
+  new MutationObserver(acomodar).observe(document.getElementById('buscador'),{childList:true,subtree:true,attributes:true});
+  new MutationObserver(acomodar).observe(document.body,{attributes:true,attributeFilter:['class']});
+  const sec0=new URLSearchParams(location.search).get('seccion'); if(sec0) setTimeout(()=>window.ofmIrSeccion(sec0),200);
+  document.getElementById('bAcerca').onclick=()=>window.ofmIrSeccion('acerca');
+
+}
+
+// ---- Estado de la validación: qué falta para poder publicar superficies ----
+// «De cada 10…»: traduce una proporción del manifiesto a lenguaje llano; nunca se escribe a mano,
+// para que cambie sola con cada corrida.
+const deCada10=v=>(v==null?null:Math.max(0,Math.min(10,Math.round(10*v))));
+function pintarEstado(mf){
+  const c=document.getElementById('estadoVal'); if(!c) return;
+  const m=mf&&mf.muestra;
+  if(!m){c.innerHTML='<div class="val-nota">El manifiesto no trae el estado de la muestra.</div>';return;}
+  const est=mf.validacion?mf.validacion.estado:'pendiente';
+  const validado=est!=='pendiente'&&est!=='exactitud_medida';
+  const v=mf.validacion||{}, p=((v.por_clase||{}).perdida||{});
+  const u10=deCada10(p.usuario&&p.usuario.estimado), p10=deCada10(p.productor&&p.productor.estimado);
+  const fecha=v.corrida?v.corrida.split('-').reverse().join('/'):'';
+  let cuerpo;
+  if(validado) cuerpo='<p class="val-txt">Se revisaron uno por uno '+m.interpretados.toLocaleString('es-MX')+' lugares en imágenes de alta resolución para comprobar el mapa. '+
+      (u10!=null&&p10!=null?'<b>De cada 10 lugares que el mapa marca como pérdida, la revisión confirma '+u10+'; y de cada 10 lugares donde hubo pérdida, el mapa capta '+p10+'.</b> ':'')+
+      'Por eso las hectáreas se calculan con esa revisión y no contando el mapa: <a href="./datos.html" style="color:var(--accent2)">ver cuánto se perdió</a>.</p>'+
+      '<p class="val-nota">Validación cerrada el '+fecha+'. Las cifras técnicas están en «Metodología».</p>';
+  else if(est==='exactitud_medida'&&u10!=null&&p10!=null)
+    cuerpo='<p class="val-txt">Se revisaron uno por uno '+m.interpretados.toLocaleString('es-MX')+' lugares en imágenes de alta resolución para comprobar el mapa. '+
+      '<b>De cada 10 lugares que el mapa marca como pérdida, la revisión confirma '+u10+'; y de cada 10 lugares donde hubo pérdida, el mapa capta '+p10+'.</b> '+
+      'Por eso todavía no se publican hectáreas.</p><p class="val-nota">Resultado preliminar'+(fecha?' del '+fecha:'')+'; cambiará con la siguiente revisión. Las cifras técnicas están en «Metodología».</p>';
+  else cuerpo='<p class="val-txt">Se están revisando '+m.sorteados.toLocaleString('es-MX')+' lugares en imágenes de alta resolución para comprobar el mapa: van '+m.interpretados.toLocaleString('es-MX')+'. Hasta terminar no se publican hectáreas.</p>';
+  c.innerHTML='<div class="val-head"><span class="val-badge">'+(validado?'Validado':est==='exactitud_medida'?'Validación preliminar':'Sin validar')+'</span>'+
+    '<span>'+(validado?'El mapa muestra <b>dónde</b> se perdió bosque; <b>cuánto</b>, en «Datos».':'El mapa muestra <b>dónde</b> se perdió bosque, todavía no <b>cuánto</b>.')+'</span></div>'+cuerpo;
+}
+// Detalle técnico de la muestra: va en «Metodología», debajo de la exactitud.
+function tablaMuestra(mf){const m=mf&&mf.muestra; if(!m)return '';
+  const filas=Object.entries(m.por_unidad||{}).map(([u,d])=>
+    `<tr><td><span class="sw" style="background:${UNI_COLORS[UNI_ID[u]]||'#888'}"></span>${u}</td><td>${d.interpretados}</td><td>${d.sorteados}</td></tr>`).join('');
+  return `<p style="margin:7px 0"><b>Muestra de referencia.</b> ${m.interpretados} de ${m.sorteados} puntos interpretados; el diseño contempla ${m.diseno}. ${m.nota||''}</p>`+
+    `<table class="val-tab"><thead><tr><th>Unidad de análisis</th><th>Interpretados</th><th>Sorteados</th></tr></thead><tbody>${filas}</tbody></table>`;}
+
+// ================= Time control =================
+let mode='acc';
+const slider=document.getElementById('yearSlider');
+function updateTime(){
+  const y=+slider.value;
+  document.getElementById('yearLabel').textContent=y;
+  lossLayer.eachLayer(l=>{
+    const fy=l.feature.properties.year;
+    const show=(mode==='acc')?(fy<=y):(fy===y);
+    l.setStyle({fillOpacity:show?lossOpacity:0,opacity:show?1:0});
+  });
+  // Sin superficie: mientras el mapa no esté validado la barra dice qué se ve, no cuánto.
+  document.getElementById('tbModo').textContent=(mode==='acc'?'pérdida hasta '+y:'pérdida en '+y);
+}
+slider.addEventListener('input',()=>{ if(playing){clearInterval(playing);playing=null;document.getElementById('playBtn').textContent='▶';} updateTime(); });
+document.getElementById('lossOpacity').addEventListener('input',e=>{lossOpacity=parseFloat(e.target.value);updateTime();});
+document.getElementById('clasOpacity').addEventListener('input',e=>{clasOpacity=parseFloat(e.target.value);if(clasLayer)clasLayer.setStyle({fillOpacity:clasOpacity,opacity:Math.min(1,clasOpacity+.1)});});
+document.getElementById('zonOpacity').addEventListener('input',e=>{zonOpacity=parseFloat(e.target.value);if(zonLayer)zonLayer.setStyle({fillOpacity:zonOpacity});});
+document.getElementById('modeAcc').addEventListener('click',()=>{mode='acc';document.getElementById('modeAcc').classList.add('on');document.getElementById('modeYr').classList.remove('on');updateTime()});
+document.getElementById('modeYr').addEventListener('click',()=>{mode='yr';document.getElementById('modeYr').classList.add('on');document.getElementById('modeAcc').classList.remove('on');updateTime()});
+
+let playing=null;
+document.getElementById('playBtn').addEventListener('click',function(){
+  if(playing){clearInterval(playing);playing=null;this.textContent='▶';return}
+  this.textContent='⏸';
+  if(+slider.value>=YMAX)slider.value=YMIN;
+  playing=setInterval(()=>{
+    let y=+slider.value;
+    if(y>=YMAX){clearInterval(playing);playing=null;document.getElementById('playBtn').textContent='▶';return}
+    slider.value=y+1;updateTime();
+  },650);
+});
+
+// ================= Swipe satelital 2003 vs 2025 =================
+const SAT_2003_URL='./data/sat_2003.jpg';
+const SAT_2025_URL='./data/sat_2025.jpg';
+const SAT_BOUNDS=[[19.51329,-101.39869],[19.79626,-101.04241]];
+map.createPane('sat'); map.getPane('sat').style.zIndex=250;
+// Capas de datos que conviene atenuar mientras se comparan las dos imágenes satelitales:
+// el propósito del comparador es ver el terreno, y con la huella de pérdida encima al 85%
+// de opacidad no se veía nada. Se atenúan, no se apagan, para no perder la referencia.
+const PANES_DATOS=['zonPane','overlayPane','clasPane'];
+function atenuarDatos(on){
+  PANES_DATOS.forEach(id=>{const pn=map.getPane(id); if(pn){pn.style.transition='opacity .18s ease'; pn.style.opacity=on?'0.28':'1';}});
+}
+const ov2003=L.imageOverlay(SAT_2003_URL,SAT_BOUNDS,{pane:'sat',interactive:false});
+const ov2025=L.imageOverlay(SAT_2025_URL,SAT_BOUNDS,{pane:'sat',interactive:false});
+const swDiv=document.getElementById('swipe-divider');
+const swBtn=document.getElementById('swipeBtn');
+const swLabL=document.getElementById('sat-label-l'), swLabR=document.getElementById('sat-label-r');
+let swOn=false, swX=null;
+ov2025.on('load',()=>{if(swOn)swUpdate();});
+function swUpdate(){
+  if(!swOn) return;
+  const mr=map.getContainer().getBoundingClientRect();
+  if(swX===null) swX=mr.width/2;
+  swX=Math.max(0,Math.min(mr.width,swX));
+  swDiv.style.left=swX+'px';
+  const el=ov2025.getElement();
+  if(el){
+    const ir=el.getBoundingClientRect();
+    const clipLeft=Math.max(0,(mr.left+swX)-ir.left);
+    el.style.clipPath='inset(0px 0px 0px '+clipLeft+'px)';
+    el.style.webkitClipPath=el.style.clipPath;
+  }
+}
+function swVis(v){[ov2003,ov2025].forEach(o=>{const e=o.getElement();if(e)e.style.visibility=v;});}
+function swSet(on){
+  swOn=on; swBtn.classList.toggle('on',on);
+  swDiv.style.display=on?'block':'none';
+  swLabL.style.display=on?'block':'none';
+  swLabR.style.display=on?'block':'none';
+  atenuarDatos(on);
+  if(on){ ov2003.addTo(map); ov2025.addTo(map);
+    const mr=map.getContainer().getBoundingClientRect(); if(swX===null) swX=mr.width/2;
+    setTimeout(swUpdate,40); }
+  else { map.removeLayer(ov2003); map.removeLayer(ov2025); }
+}
+swBtn.addEventListener('click',()=>swSet(!swOn));
+map.on('move viewreset resize',swUpdate);
+map.on('zoomstart',()=>{if(swOn)swVis('hidden');});
+map.on('zoomend',()=>{if(swOn){swVis('visible');swUpdate();}});
+let swDrag=false;
+function swStart(e){swDrag=true;e.preventDefault();if(e.stopPropagation)e.stopPropagation();map.dragging.disable();}
+function swMove(e){ if(!swDrag)return; const mr=map.getContainer().getBoundingClientRect();
+  const cx=e.touches?e.touches[0].clientX:e.clientX; swX=cx-mr.left; swUpdate(); }
+function swEnd(){ if(swDrag){swDrag=false;map.dragging.enable();} }
+swDiv.addEventListener('mousedown',swStart);
+window.addEventListener('mousemove',swMove);
+window.addEventListener('mouseup',swEnd);
+swDiv.addEventListener('touchstart',swStart,{passive:false});
+window.addEventListener('touchmove',swMove,{passive:false});
+window.addEventListener('touchend',swEnd);
+// El modal de bienvenida salió el 09-11-2026 (D10): el sitio abre en el mapa con el buscador.
+function _dl(n,c,t){const b=new Blob([c],{type:t});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=n;document.body.appendChild(a);a.click();a.remove();}
+document.querySelectorAll('.dlbtn[data-dl]').forEach(btn=>btn.addEventListener('click',()=>{const k=btn.dataset.dl,D=window.DATA||{};
+  const G='application/geo+json', v=(D.manifest&&D.manifest.version)||'corrida';
+  if(k==='loss')_dl('perdida_por_anio_'+v+'.geojson',JSON.stringify(D.loss||{}),G);
+  else if(k==='clas')_dl('perdida_por_clase_'+v+'.geojson',JSON.stringify(D.clas||{}),G);
+  else if(k==='unid')_dl('unidades_analisis.geojson',JSON.stringify(D.unid||{}),G);
+  else if(k==='zon')_dl('zonificacion_7_grupos.geojson',JSON.stringify(D.zon||{}),G);
+  else if(k==='manifest')_dl('manifest.json',JSON.stringify(D.manifest||{},null,2),'application/json');}));
+document.querySelectorAll('#sidebar .block > h2').forEach(h=>{h.classList.add('coll-h');h.addEventListener('click',()=>h.parentElement.classList.toggle('collapsed'));});
+(function(){const sh=document.getElementById('sheetHandle'),sb=document.getElementById('sidebar');
+  if(sh)sh.addEventListener('click',()=>sb.classList.toggle('sheet-open'));})();
+[['yearSlider','Año de la línea de tiempo'],['playBtn','Reproducir o pausar la animación'],['lossOpacity','Opacidad de la capa de pérdida'],['zonOpacity','Opacidad de la zonificación']].forEach(([id,l])=>{const e=document.getElementById(id);if(e)e.setAttribute('aria-label',l);});
+</script>
+<script>
+// ===== Aportes ciudadanos (Supabase) =====
+(function(){
+  if(!window.SB_CONFIG||!window.supabase){return;}
+  // Un solo cliente por página: el de nav.js. Dos clientes con la misma sesión se
+  // disputan el candado del token y la sesión real puede quedarse sin resolver (10-11-2026).
+  const sb=(window.ofmAuth&&window.ofmAuth.sb)||supabase.createClient(SB_CONFIG.url,SB_CONFIG.key);
+  const g=id=>document.getElementById(id);
+  let user=null,esMod=false,aportarMode=false,pick=null,pickMarker=null,puntoActual=null,perfil=null;
+  const setMsg=(el,t,ok)=>{el.textContent=t;el.style.color=ok?'var(--accent)':'#ff8a95';};
+
+  // -- Auth UI --
+  // El acceso es el de nav.js (ventana «Entrar»): aquí ya no hay formulario propio (10-11-2026).
+  g('apBtnEntrar').onclick=()=>{ if(window.ofmAuth) window.ofmAuth.abrirAcceso(); };
+  g('apBtnLogout').onclick=()=>sb.auth.signOut();
+
+  // Diferido: consultar la base dentro del aviso de sesión bloquea al cliente de Supabase.
+  sb.auth.onAuthStateChange((_e,s)=>{setTimeout(()=>sesion(s),0);});
+  sb.auth.getSession().then(({data})=>sesion(data.session));
+  async function sesion(s){
+    user=s?.user||null;
+    g('apLogin').style.display=user?'none':'block';
+    g('apSession').style.display=user?'block':'none';
+    g('territorioBlock').style.display=user?'block':'none';
+    if(!user){salirAportar(); salirTerritorio(); perfil=null; salirVerificar(); pintarParticipacion(); if(g('apMios'))g('apMios').innerHTML=''; autoVerificar(); return;}
+    g('apUser').textContent=user.email;
+    const{data:p}=await sb.from('profiles').select('role,aprobado,motivo,acepta_aviso_at').eq('id',user.id).maybeSingle();
+    perfil=p||null; pintarParticipacion(); cargarMisAportes(); autoVerificar();
+    esMod=p&&(p.role==='moderator'||p.role==='admin');
+    g('apMod').textContent=esMod?'· admin':'';
+    g('apModLink').style.display=esMod?'block':'none';
+    cargarTerritorios();
+  }
+
+  // -- Modo aportar --
+  g('apBtnAportar').onclick=()=>{aportarMode=!aportarMode;
+    g('apForm').style.display=aportarMode?'block':'none';
+    g('apBtnAportar').textContent=aportarMode?'✕ Cancelar aporte':'＋ Dejar un aporte';
+    if(!aportarMode)salirAportar();};
+  function salirAportar(){aportarMode=false;g('apForm')&&(g('apForm').style.display='none');
+    if(pickMarker){map.removeLayer(pickMarker);pickMarker=null;}pick=null;puntoActual=null;
+    if(g('apBtnAportar'))g('apBtnAportar').textContent='＋ Dejar un aporte';}
+  map.on('click',e=>{
+    if(!aportarMode||!user)return;
+    pick=e.latlng; puntoActual=null;
+    if(pickMarker)pickMarker.setLatLng(pick);
+    else pickMarker=L.marker(pick,{draggable:true}).addTo(map).on('dragend',ev=>{pick=ev.target.getLatLng();coord();});
+    coord();g('apPick').textContent='Punto libre (sin anclar). Ajusta si hace falta y envía.';
+  });
+  function coord(){g('apCoord').textContent='📍 '+pick.lat.toFixed(5)+', '+pick.lng.toFixed(5);}
+  // Clic en un parche de pérdida v8 → aporte ligado a ese punto
+  window.aportarEnPunto=function(props,latlng){
+    if(!user){ setMsg(g('apMsg'),'Inicia sesión para aportar sobre este punto.',false); return; }
+    aportarMode=true; puntoActual=props._h||null;
+    g('apForm').style.display='block'; g('apBtnAportar').textContent='✕ Cancelar aporte';
+    pick=latlng;
+    if(pickMarker)pickMarker.setLatLng(pick);
+    else pickMarker=L.marker(pick,{draggable:true}).addTo(map).on('dragend',ev=>{pick=ev.target.getLatLng();coord();});
+    coord();
+    const NOM=(window.MANIFEST&&window.MANIFEST.clases)||CLASES_DEF;
+    const cl=(NOM[+props.clase]||'pérdida').toLowerCase();
+    g('apPick').textContent='Aporte sobre un parche de '+cl+'. Ajusta el marcador si hace falta y envía.';
+  };
+
+  g('apBtnEnviar').onclick=async()=>{
+    if(!pick){setMsg(g('apFormMsg'),'Primero marca un punto en el mapa.',false);return;}
+    g('apBtnEnviar').disabled=true;
+    const{data:id,error}=await sb.rpc('crear_aporte',{p_tipo:g('apTipo').value,p_descripcion:g('apDesc').value,
+      p_lon:pick.lng,p_lat:pick.lat,p_punto_perdida_id:puntoActual});
+    if(error){setMsg(g('apFormMsg'),error.message,false);g('apBtnEnviar').disabled=false;return;}
+    const file=g('apFoto').files[0];
+    if(file){const path=`${user.id}/${id}/${file.name}`;
+      const up=await sb.storage.from('aportes-fotos').upload(path,file,{upsert:false});
+      if(!up.error)await sb.from('aporte_fotos').insert({aporte_id:id,storage_path:path});}
+    setMsg(g('apFormMsg'),'¡Gracias! Tu aporte quedó pendiente de revisión.',true);
+    g('apDesc').value='';g('apFoto').value='';salirAportar();g('apForm').style.display='none'; cargarMisAportes();
+    g('apBtnAportar').textContent='＋ Dejar un aporte';g('apBtnEnviar').disabled=false;
+  };
+
+  // -- Mis aportes: lista con su estado (traída de aportes.html, retirada el 10-11-2026) --
+  const ESTADO_AP={pendiente:['En revisión','#f0c060','rgba(240,160,32,.2)'],validado:['Validado','#3fb27f','rgba(63,178,127,.2)'],rechazado:['No validado','#ff8a95','rgba(178,50,63,.25)']};
+  async function cargarMisAportes(){ const c=g('apMios'); if(!c||!user)return;
+    const{data}=await sb.from('aportes').select('id,tipo,descripcion,estado,motivo_rechazo,created_at,geom').eq('user_id',user.id).order('created_at',{ascending:false});
+    if(!data||!data.length){c.innerHTML='';return;}
+    const esc=t=>String(t??'').replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+    c.innerHTML='<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Mis aportes</div>'+
+      data.map(a=>{const e=ESTADO_AP[a.estado]||[a.estado,'var(--muted)','transparent'];
+        return '<div class="ap-mio" data-ll="'+(a.geom?a.geom.coordinates[1]+','+a.geom.coordinates[0]:'')+'" style="background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:6px;font-size:12px;cursor:pointer">'+
+          '<div style="display:flex;justify-content:space-between;gap:8px"><b style="text-transform:capitalize">'+esc(a.tipo).replace('_',' ')+'</b>'+
+          '<span style="font-size:10.5px;padding:2px 7px;border-radius:20px;font-weight:700;color:'+e[1]+';background:'+e[2]+'">'+e[0]+'</span></div>'+
+          '<div style="color:var(--muted);margin-top:2px">'+new Date(a.created_at).toLocaleDateString('es-MX')+(a.descripcion?' · '+esc(a.descripcion.slice(0,90)):'')+'</div>'+
+          (a.estado==='rechazado'&&a.motivo_rechazo?'<div style="color:var(--muted);margin-top:2px">Motivo: '+esc(a.motivo_rechazo)+'</div>':'')+'</div>';}).join('');
+    c.querySelectorAll('.ap-mio').forEach(d=>d.onclick=()=>{const ll=d.dataset.ll; if(!ll)return; const[la,lo]=ll.split(',').map(Number);
+      map.setView([la,lo],17); if(window.matchMedia('(max-width:820px)').matches) document.getElementById('sidebar').classList.remove('sheet-open');});
+  }
+
+  // -- Cargar aportes validados a la capa del mapa --
+  window.cargarAportesValidados=async function(){
+    if(!window.aportesLayer)return;
+    const{data}=await sb.from('aportes').select('tipo,descripcion,estado,geom').eq('estado','validado');
+    window.aportesLayer.clearLayers();
+    (data||[]).forEach(a=>{if(!a.geom)return;const c=a.geom.coordinates;
+      L.circleMarker([c[1],c[0]],{pane:'partPane',radius:7,color:'#fff',weight:1.5,fillColor:APORTE_COLOR,fillOpacity:.9})
+        .bindPopup('<b>'+a.tipo+'</b><br>'+((a.descripcion||'').slice(0,180))).addTo(window.aportesLayer);});
+  };
+
+  // ===== Registro de territorios =====
+  let tLayer=null, tGeo=null, tStats=null, drawing=false;
+  function pip(pt,ring){ let x=pt[0],y=pt[1],inside=false;
+    for(let i=0,j=ring.length-1;i<ring.length;j=i++){
+      const xi=ring[i][0],yi=ring[i][1],xj=ring[j][0],yj=ring[j][1];
+      if(((yi>y)!=(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi)) inside=!inside; }
+    return inside; }
+  // Cuenta por clase sin asumir cuántas hay: la clase 3 (pérdida reciente) aparece en la v9
+  // y debe sumarse aparte, no repartirse entre deforestación y degradación.
+  function statsDe(ring){ let tot=0,n=0; const porClase={};
+    (window.v8Patches||[]).forEach(p=>{ if(pip(p.c,ring)){ tot+=p.area; n++;
+      porClase[p.clase]=(porClase[p.clase]||0)+p.area; } });
+    return {tot:+tot.toFixed(2),porClase,n,
+            defo:+(porClase[2]||0).toFixed(2), deg:+(porClase[1]||0).toFixed(2)}; }
+  // Sin cifras hasta validar (28-09-2026). El territorio se dibuja y se guarda igual; la
+  // estadística se activará cuando existan áreas ajustadas por error.
+  function mostrarStats(s){ g('tStats').style.display='block';
+    g('tStats').innerHTML='<b>Pérdida en este territorio</b><br><span style="color:var(--muted)">El mapa aún no está validado, así que no se calcula superficie. El territorio se guarda y la cifra aparecerá aquí cuando la validación cierre.</span>'; }
+  function resetTerr(){ drawing=false; if(map.pm)map.pm.disableDraw();
+    if(tLayer){map.removeLayer(tLayer);tLayer=null;} tGeo=null;tStats=null;
+    if(g('tDibujar'))g('tDibujar').textContent='✏️ Dibujar territorio';
+    ['tHint','tForm','tStats'].forEach(id=>{const el=g(id); if(el)el.style.display='none';});
+    if(g('tMsg'))g('tMsg').textContent=''; }
+  function salirTerritorio(){ resetTerr(); if(g('tLista'))g('tLista').innerHTML=''; }
+
+  g('tDibujar').onclick=()=>{ if(!user||!map.pm)return;
+    if(drawing){ resetTerr(); return; }                 // cancelar dibujo en curso
+    if(tLayer){map.removeLayer(tLayer);tLayer=null;tGeo=null;tStats=null;}  // reemplazar anterior
+    drawing=true; g('tDibujar').textContent='✕ Cancelar'; g('tHint').style.display='block';
+    g('tForm').style.display='none'; g('tStats').style.display='none';
+    map.pm.enableDraw('Polygon',{pathOptions:{pane:'partPane',color:'#3fb27f',fillColor:'#3fb27f',fillOpacity:0.12},
+      templineStyle:{color:'#3fb27f'},hintlineStyle:{color:'#3fb27f',dashArray:[5,5]},snappable:false}); };
+  map.on('pm:create',e=>{ if(map.pm)map.pm.disableDraw(); drawing=false;
+    g('tDibujar').textContent='✏️ Dibujar territorio'; g('tHint').style.display='none';
+    if(tLayer)map.removeLayer(tLayer); tLayer=e.layer;
+    tGeo=tLayer.toGeoJSON(); tStats={pendiente:true, motivo:'superficies sin publicar'};
+    mostrarStats(tStats); g('tForm').style.display='block'; });
+  g('tCancelar').onclick=()=>resetTerr();
+  g('tGuardar').onclick=async()=>{
+    if(!tGeo){ setMsg(g('tMsg'),'Primero dibuja un territorio.',false); return; }
+    if(!g('tNombre').value.trim()){ setMsg(g('tMsg'),'Ponle un nombre.',false); return; }
+    g('tGuardar').disabled=true;
+    const {error}=await sb.rpc('crear_territorio',{p_nombre:g('tNombre').value.trim(),
+      p_comunidad:g('tComunidad').value.trim()||null, p_publico:g('tPublico').checked,
+      p_geojson:JSON.stringify(tGeo.geometry), p_stats:tStats});
+    g('tGuardar').disabled=false;
+    if(error){ setMsg(g('tMsg'),error.message,false); return; }
+    g('tNombre').value='';g('tComunidad').value='';g('tPublico').checked=false;
+    if(tLayer){map.removeLayer(tLayer);tLayer=null;} tGeo=null;tStats=null;
+    g('tForm').style.display='none';
+    g('tStats').style.display='block'; g('tStats').innerHTML='<span style="color:var(--accent)">¡Territorio guardado!</span>';
+    g('tDibujar').textContent='✏️ Dibujar territorio';
+    cargarTerritorios(); };
+  window.cargarTerritorios=async function(){ if(!user){g('tLista').innerHTML='';return;}
+    const {data}=await sb.from('territorios').select('id,nombre,publico,stats').eq('user_id',user.id).order('created_at',{ascending:false});
+    if(!data||!data.length){ g('tLista').innerHTML='<div style="font-size:12px;color:var(--muted)">Aún no has guardado territorios.</div>'; return; }
+    g('tLista').innerHTML='<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Mis territorios</div>'+
+      data.map(t=>{const s=t.stats||{}; return '<div class="aporte" data-id="'+t.id+'" style="cursor:pointer"><div class="top"><b>'+t.nombre+'</b>'+(t.publico?'<span class="tag validado">público</span>':'')+'</div>'
+        +'<div style="color:var(--muted)">'+(s.tot?s.tot.toFixed(1)+' ha · '+(s.n||0)+' parches':'sin cifras')+'</div></div>';}).join('');
+    g('tLista').querySelectorAll('[data-id]').forEach(el=>el.onclick=()=>verTerritorio(el.dataset.id)); };
+  // ===== Verificar el estado actual (D15) =====
+  const OPCIONES=[['arboles_matorral','Árboles o matorral'],['construccion','Construcción'],['cultivo_huerta','Cultivo o huerta'],
+    ['pasto_suelo','Pasto o suelo desnudo'],['agua','Agua'],['no_se_distingue','No se distingue']];
+  let vModo=false, vCuadros=null, vPuntos=null, vHechas={}, vSel=null, vAsignado=false, vPrevio=null, vMeta=null, vResp=null;
+  const VOBJ=()=>window.DATA&&window.DATA.obj;
+  function pintarParticipacion(){
+    const sol=g('vSolicitud'), est=g('vEstado'), btn=g('vBtnEntrar');
+    if(!user){sol.style.display='none';est.textContent='';btn.style.display='none';return;}
+    if(perfil&&perfil.aprobado){sol.style.display='none';est.textContent='Registro aprobado: puedes verificar el estado actual del mapa.';btn.style.display='block';}
+    else if(perfil&&perfil.motivo&&perfil.acepta_aviso_at){sol.style.display='none';est.textContent='Tu solicitud para verificar está en revisión.';btn.style.display='none';}
+    else{sol.style.display='block';est.textContent='';btn.style.display='none';}
+  }
+  g('vEnviar').onclick=async()=>{const m=g('vMotivo').value.trim();
+    if(m.length<10){setMsg(g('vMsg'),'Cuéntanos en una o dos frases por qué quieres participar.',false);return;}
+    if(!g('vAcepto').checked){setMsg(g('vMsg'),'Hace falta aceptar las condiciones.',false);return;}
+    const ahora=new Date().toISOString();
+    const{error}=await sb.from('profiles').update({motivo:m,acepta_aviso_at:ahora}).eq('id',user.id);
+    if(error){setMsg(g('vMsg'),error.message,false);return;}
+    perfil=Object.assign({},perfil||{},{motivo:m,acepta_aviso_at:ahora}); pintarParticipacion();};
+  g('vBtnEntrar').onclick=()=>{vModo?salirVerificar():entrarVerificar();};
+  // Desde «Participación»: mapa.html?modo=verificar entra directo, si la cuenta está aprobada.
+  // Si no se puede entrar, se dice por qué: antes el mapa se quedaba igual, sin explicación.
+  // La intención se lee una vez al cargar: abrir una sección reescribe la dirección.
+  let vAvisado=false; const vPedido=new URLSearchParams(location.search).get('modo')==='verificar';
+  function autoVerificar(){ if(!vPedido)return;
+    if(vModo)return;
+    if(!user||!perfil||!perfil.aprobado){ if(vAvisado)return; vAvisado=true;
+      if(window.ofmIrSeccion) window.ofmIrSeccion('participar');
+      if(!user&&window.ofmAuth) window.ofmAuth.abrirAcceso();
+      return; } if(!VOBJ()){setTimeout(autoVerificar,500);return;} entrarVerificar(); }
+
+  function cuadro(lat,lng){const dy=15/M_LAT,dx=15/M_LNG;return [[lat-dy,lng-dx],[lat+dy,lng+dx]];}
+  // ===== Contador público de participación (P1) =====
+  async function pintarContador(){ const el=g('vContador'); if(!el)return;
+    const v=(VOBJ()&&VOBJ().version)||(window.MANIFEST&&window.MANIFEST.version); if(!v){setTimeout(pintarContador,800);return;}
+    const{data,error}=await sb.rpc('resumen_participacion',{p_version:v}); if(error||!data||!data.length){el.textContent='';return;}
+    const r=data[0], n=+r.cuadros_verificados, m=+r.personas;
+    el.innerHTML=n?('<b>Verificación ciudadana:</b> '+n.toLocaleString('es-MX')+' cuadro'+(n===1?'':'s')+' revisado'+(n===1?'':'s')+' por '+m+' persona'+(m===1?'':'s')+'.')
+      :'<b>Verificación ciudadana:</b> todavía no hay cuadros revisados.';}
+  pintarContador();
+
+  // ===== Tutorial antes de verificar (P2) =====
+  const EXPLICA={arboles_matorral:'Copas de árboles o arbustos cubren la mitad del cuadro o más, aunque haya claros entre ellas.',
+    construccion:'Techos, pavimento o patios construidos ocupan la mayor parte del cuadro. Un lote con calles trazadas pero sin construir no es construcción.',
+    cultivo_huerta:'Surcos, parcelas o hileras regulares de frutales. Una huerta es cultivo aunque tenga árboles.',
+    pasto_suelo:'Pasto, terreno baldío o suelo sin árboles, matorral ni construcción.',
+    agua:'Un bordo, presa, lago o canal ocupa la mayor parte del cuadro.'};
+  let vEjemplos=null, vTut=null;
+  const tutHecho=()=>{try{return localStorage.getItem('ofm_tutorial_v1')==='1';}catch(e){return false;}};
+  const marcarTut=()=>{try{localStorage.setItem('ofm_tutorial_v1','1');}catch(e){}};
+  async function iniciarTutorial(k){
+    if(!vEjemplos){try{vEjemplos=(await (await fetch('./data/ejemplos_verificar.json')).json()).ejemplos;}catch(e){vEjemplos=[];}}
+    if(!vEjemplos.length){siguiente();return;}
+    k=k||0; const ej=vEjemplos[k]; vTut={k,resp:null,meta:null};
+    if(vSel&&vSel.marca)map.removeLayer(vSel.marca);
+    vSel={i:-1,marca:L.rectangle(cuadro(ej.lat,ej.lng),{color:'#4fd8ff',weight:3,fill:false,interactive:false,dashArray:'4 3'}).addTo(map)};
+    map.setView([ej.lat,ej.lng],18,{animate:false}); pintarTutorial(); centrarSobrePanel(ej.lat,ej.lng);
+    vTut.meta=await metaImagen(ej.lat,ej.lng); if(vTut&&vTut.k===k)pintarTutorial();
+  }
+  function pintarTutorial(){
+    const el=g('verif'), ej=vEjemplos[vTut.k], ok=vTut.resp;
+    let h='<div class="f-head"><b>Ejemplo '+(vTut.k+1)+' de '+vEjemplos.length+'</b><button class="f-x" type="button" aria-label="Salir de verificar">×</button></div>';
+    if(vTut.k===0&&!ok) h+='<p style="margin:0 0 8px">Antes de empezar, practica con cinco cuadros cuya respuesta conocemos. Mira el cuadro punteado y decide por lo que ocupa la mitad o más. Si la imagen está borrosa, con nubes o sombra, la respuesta es «No se distingue».</p>';
+    h+='<div class="v-meta">'+(vTut.meta?textoMeta(vTut.meta):'Consultando la fecha de la imagen…')+'</div>';
+    h+='<div class="v-ops">'+OPCIONES.map(([k,t])=>{let c=''; if(ok){ if(k===ej.respuesta)c='ok'; else if(k===ok)c='mal'; }
+      return '<button type="button" data-op="'+k+'" class="'+c+'"'+(ok?' disabled':'')+'>'+t+'</button>';}).join('')+'</div>';
+    if(ok){ h+='<div class="v-explica"><b>'+(ok===ej.respuesta?'Correcto.':'La respuesta es «'+OPCIONES.find(o=>o[0]===ej.respuesta)[1]+'».')+'</b> '+EXPLICA[ej.respuesta]+'</div>';
+      h+='<div class="v-acts"><button type="button" id="tSig" style="background:var(--accent);color:#06231a;border-color:var(--accent);font-weight:700">'+(vTut.k+1<vEjemplos.length?'Siguiente ejemplo':'Empezar a verificar')+'</button></div>'; }
+    h+='<p class="f-nota"><a href="#" id="tSaltar" style="color:var(--accent2)">Saltar los ejemplos</a></p>';
+    el.innerHTML=h; el.hidden=false; document.body.classList.add('ficha-abierta');
+    el.querySelector('.f-x').onclick=salirVerificar;
+    el.querySelectorAll('[data-op]').forEach(b=>b.onclick=()=>{vTut.resp=b.dataset.op; pintarTutorial();});
+    const fin=()=>{marcarTut(); vTut=null; siguiente();};
+    g('tSaltar').onclick=e=>{e.preventDefault(); fin();};
+    if(g('tSig')) g('tSig').onclick=()=>{ if(vTut.k+1<vEjemplos.length) iniciarTutorial(vTut.k+1); else fin(); };
+  }
+
+  function colorCuadro(id){return vHechas[id]?'#3fb27f':'#ffe600';}
+  function verZoom(){if(!vCuadros)return; const z=map.getZoom();
+    if(z>=15){map.addLayer(vCuadros);map.removeLayer(vPuntos);}else{map.addLayer(vPuntos);map.removeLayer(vCuadros);}}
+  async function entrarVerificar(){
+    const O=VOBJ(); if(!O){setMsg(g('vMsg'),'No se pudo leer la capa de cuadros.',false);return;}
+    vModo=true; window.__verificando=true; document.body.classList.add('verificando'); if(window.cerrarFicha) cerrarFicha();
+    vPrevio={sat:map.hasLayer(baseSat),capas:[lossLayer,clasLayer,uniLayer,zonLayer,anpLayer].filter(l=>l&&map.hasLayer(l))};
+    vPrevio.capas.forEach(l=>map.removeLayer(l)); if(map.hasLayer(baseDark))map.removeLayer(baseDark); baseSat.addTo(map);
+    const{data}=await sb.from('verificaciones').select('objetivo_id,respuesta').eq('user_id',user.id).eq('version',O.version);
+    vHechas={}; (data||[]).forEach(r=>vHechas[r.objetivo_id]=r.respuesta);
+    const rc=L.canvas({padding:.3}); vCuadros=L.layerGroup(); vPuntos=L.layerGroup();
+    O.id.forEach((id,i)=>{
+      const r=L.rectangle(cuadro(O.lat[i],O.lng[i]),{renderer:rc,weight:2,color:colorCuadro(id),fill:true,fillOpacity:.02});
+      const p=L.circleMarker([O.lat[i],O.lng[i]],{renderer:rc,radius:3,weight:0,fillColor:colorCuadro(id),fillOpacity:.9});
+      [r,p].forEach(x=>{x._vi=i; x.on('click',e=>{L.DomEvent.stopPropagation(e);abrirVerif(i,false);});});
+      vCuadros.addLayer(r); vPuntos.addLayer(p);});
+    map.on('zoomend',verZoom); verZoom();
+    g('vBtnEntrar').textContent='✕ Salir de verificar';
+    document.getElementById('sidebar').classList.remove('sheet-open');
+    if(!tutHecho()&&!Object.keys(vHechas).length) iniciarTutorial(0); else siguiente();
+  }
+  function salirVerificar(){
+    if(!vModo)return; vModo=false; window.__verificando=false; document.body.classList.remove('verificando');
+    map.off('zoomend',verZoom); [vCuadros,vPuntos].forEach(l=>{if(l)map.removeLayer(l);}); vCuadros=vPuntos=null;
+    if(vSel!==null&&vSel.marca)map.removeLayer(vSel.marca); vSel=null;
+    const el=g('verif'); el.hidden=true; document.body.classList.remove('ficha-abierta');
+    if(vPrevio){ if(!vPrevio.sat){map.removeLayer(baseSat);baseDark.addTo(map);} vPrevio.capas.forEach(l=>l.addTo(map)); }
+    if(g('vBtnEntrar'))g('vBtnEntrar').textContent='🔎 Verificar el estado actual';
+  }
+  function siguiente(){const O=VOBJ(); const pend=[]; O.id.forEach((id,i)=>{if(!vHechas[id])pend.push(i);});
+    if(!pend.length){pintarVerif(null);return;} abrirVerif(pend[Math.floor(Math.random()*pend.length)],true);}
+  async function abrirVerif(i,asignado){
+    const O=VOBJ(); if(vSel&&vSel.marca)map.removeLayer(vSel.marca);
+    const lat=O.lat[i],lng=O.lng[i];
+    vSel={i,marca:L.rectangle(cuadro(lat,lng),{color:'#ffffff',weight:3,fill:false,interactive:false,dashArray:'4 3'}).addTo(map)};
+    vAsignado=asignado; vResp=vHechas[O.id[i]]||null; vMeta=null;
+    map.setView([lat,lng],18,{animate:false}); pintarVerif(i); centrarSobrePanel(lat,lng);
+    vMeta=await metaImagen(lat,lng); if(vSel&&vSel.i===i) pintarVerif(i);
+  }
+  // El cuadro no debe quedar bajo el panel: arriba del panel en móvil, a su izquierda en escritorio.
+  function centrarSobrePanel(lat,lng){const el=g('verif'), sz=map.getSize(), pt=map.latLngToContainerPoint([lat,lng]);
+    if(window.matchMedia('(max-width:820px)').matches){const libre=sz.y-el.offsetHeight-70; map.panBy([0,pt.y-Math.max(90,libre/2)],{animate:false});}
+    else map.panBy([pt.x-(sz.x-370)/2,0],{animate:false});}
+  function pintarVerif(i){
+    const el=g('verif'), O=VOBJ(); const n=Object.keys(vHechas).length;
+    let h='<div class="f-head"><b>¿Qué hay hoy en este cuadro?</b><button class="f-x" type="button" aria-label="Salir de verificar">×</button></div>';
+    if(i===null){ h+='<p>Ya verificaste todos los cuadros. ¡Gracias!</p>'; }
+    else{
+      h+='<p class="f-nota" style="margin-top:0">Decide por lo que ocupa la mitad del cuadro o más.</p>';
+      h+='<div class="v-meta">'+(vMeta?textoMeta(vMeta):'Consultando la fecha de la imagen…')+'</div>';
+      h+='<div class="v-ops">'+OPCIONES.map(([k,t])=>'<button type="button" data-op="'+k+'" class="'+(vResp===k?'on':'')+'">'+t+'</button>').join('')+'</div>';
+      h+='<label class="v-dudas"><input type="checkbox" id="vDudas"> Tengo dudas</label>';
+      h+='<div class="v-acts"><button type="button" id="vGuardar"'+(vResp?'':' disabled')+'>Guardar</button><button type="button" id="vSaltar">Otro cuadro →</button></div>';
+      h+='<div class="v-msg" id="vMsgPanel"></div>';
+    }
+    h+='<p class="f-nota"><a href="#" id="vVerEj" style="color:var(--accent2)">Ver los ejemplos</a></p>';
+    h+='<p class="f-nota">Llevas '+n+' de '+O.id.length+' cuadros. Cada respuesta se compara con las de otras personas; ninguna corrige el mapa por sí sola.</p>';
+    el.innerHTML=h; el.hidden=false; document.body.classList.add('ficha-abierta');
+    el.querySelector('.f-x').onclick=salirVerificar;
+    g('vVerEj').onclick=e=>{e.preventDefault(); iniciarTutorial(0);};
+    if(i===null)return;
+    el.querySelectorAll('[data-op]').forEach(b=>b.onclick=()=>{vResp=b.dataset.op;
+      el.querySelectorAll('[data-op]').forEach(x=>x.classList.toggle('on',x===b)); g('vGuardar').disabled=false;});
+    g('vSaltar').onclick=siguiente;
+    g('vGuardar').onclick=()=>guardarVerif(i);
+  }
+  async function guardarVerif(i){
+    const O=VOBJ(), id=O.id[i]; if(!vResp)return; g('vGuardar').disabled=true;
+    const reg={user_id:user.id,objetivo_id:id,version:O.version,respuesta:vResp,segura:!g('vDudas').checked,
+      img_fecha:vMeta?vMeta.fecha:null,img_fuente:vMeta?vMeta.fuente:null,img_res_m:vMeta?vMeta.res:null,
+      zoom:Math.round(map.getZoom()),asignado:vAsignado,geom:'SRID=4326;POINT('+O.lng[i]+' '+O.lat[i]+')'};
+    const{error}=await sb.from('verificaciones').upsert(reg,{onConflict:'user_id,objetivo_id,version'});
+    if(error){setMsg(g('vMsgPanel'),'No se guardó: '+error.message,false); g('vGuardar').disabled=false; return;}
+    vHechas[id]=vResp;
+    [vCuadros,vPuntos].forEach(lg=>lg&&lg.eachLayer(x=>{if(x._vi===i)x.setStyle(x instanceof L.CircleMarker?{fillColor:'#3fb27f'}:{color:'#3fb27f'});}));
+    setMsg(g('vMsgPanel'),'Guardado.',true); pintarContador(); setTimeout(siguiente,450);
+  }
+  // Solo para revisar la interfaz en local (file:// o localhost): simula una sesión
+  // aprobada. No da acceso a nada: la base rechaza cualquier escritura sin sesión real.
+  if(location.protocol==='file:'||['localhost','127.0.0.1'].includes(location.hostname)) window.__probarVerificar=()=>{user={id:'prueba-local'};perfil={aprobado:true};
+    g('apLogin').style.display='none';g('apSession').style.display='block';pintarParticipacion();entrarVerificar();};
+
+  async function verTerritorio(id){
+    const {data}=await sb.from('territorios').select('nombre,stats,geom').eq('id',id).maybeSingle();
+    if(!data||!data.geom)return;
+    if(tLayer)map.removeLayer(tLayer);
+    tLayer=L.geoJSON(data.geom,{pane:'partPane',style:{color:'#3fb27f',weight:2,fillColor:'#3fb27f',fillOpacity:0.12}}).addTo(map);
+    map.fitBounds(tLayer.getBounds(),{padding:[30,30]}); mostrarStats(data.stats); }
+})();
+</script>
+</body>
+</html>
