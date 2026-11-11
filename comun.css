@@ -1,0 +1,39 @@
+/* Estilos comunes de las páginas de sección (inicio, datos, participación). El mapa
+   conserva los suyos. Tokens iguales a los del mapa. */
+:root{--bg:#0f1720;--panel:#16212e;--panel2:#1e2c3c;--ink:#e8eef4;--muted:#9fb2c4;--line:#2b3d4f;--accent:#3fb27f;--accent2:#f0a020}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-text-size-adjust:100%}
+a{color:var(--accent2)}
+.contenedor{max-width:1080px;margin:0 auto;padding:0 18px}
+.seccion{padding:34px 0;border-top:1px solid var(--line)}
+.seccion:first-of-type{border-top:none}
+h1{font-size:clamp(26px,4.4vw,40px);line-height:1.15;margin:0 0 12px}
+h2{font-size:clamp(19px,2.6vw,24px);margin:0 0 6px}
+h3{font-size:15px;margin:0 0 6px}
+.lede{font-size:clamp(15px,2vw,18px);color:var(--muted);line-height:1.55;max-width:760px;margin:0 0 20px}
+.sub{color:var(--muted);font-size:13.5px;line-height:1.55;margin:0 0 16px;max-width:760px}
+.btns{display:flex;gap:10px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:6px;background:var(--accent);color:#06231a;border:none;border-radius:9px;padding:11px 18px;font-size:15px;font-weight:700;text-decoration:none;cursor:pointer;font-family:inherit}
+.btn.sec{background:transparent;color:var(--ink);border:1px solid var(--line);font-weight:500}
+.btn:hover{filter:brightness(1.07)}
+.tarjetas{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.tarjeta{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;text-decoration:none;color:var(--ink);display:flex;flex-direction:column;gap:6px}
+a.tarjeta:hover{border-color:var(--accent)}
+.tarjeta p{margin:0;color:var(--muted);font-size:13.5px;line-height:1.5}
+.tarjeta .ir{margin-top:auto;color:var(--accent);font-size:13.5px;font-weight:600;padding-top:6px}
+.cifras{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:6px 0 22px}
+.cifra{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+.cifra .n{font-size:clamp(26px,4vw,34px);font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1}
+.cifra .ic{font-size:13px;color:var(--muted);margin-top:3px;font-variant-numeric:tabular-nums}
+.cifra .t{font-size:13.5px;line-height:1.45;margin-top:8px}
+.aviso{background:var(--panel);border-left:3px solid #d9a441;border-radius:0 10px 10px 0;padding:12px 14px;font-size:13px;line-height:1.5;color:var(--muted)}
+.aviso b{color:var(--ink)}
+table.tabla{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numeric:tabular-nums}
+table.tabla th{text-align:left;color:var(--muted);font-weight:600;font-size:12px;padding:7px 8px;border-bottom:1px solid var(--line)}
+table.tabla td{padding:8px;border-bottom:1px solid rgba(43,61,79,.6);vertical-align:top}
+table.tabla td.num,table.tabla th.num{text-align:right;white-space:nowrap}
+.nota{font-size:12.5px;color:var(--muted);line-height:1.5;margin:8px 0 0}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:14px}
+.sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:baseline}
+footer.pie{padding:22px 0 40px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted);line-height:1.6}
+@media(max-width:600px){.btn{flex:1;justify-content:center}}

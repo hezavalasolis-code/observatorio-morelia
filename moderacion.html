@@ -4,8 +4,9 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Moderación · Observatorio Forestal de Morelia</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
 <script src="./sb-config.js"></script>
+<script src="./nav.js"></script>
 <style>
   :root{--bg:#0f1720;--panel:#16212e;--panel2:#1e2c3c;--ink:#e8eef4;--muted:#9fb2c4;
         --line:#2b3d4f;--accent:#3fb27f;--accent2:#f0a020;--danger:#b2323f;}
@@ -36,9 +37,10 @@
 </style>
 </head>
 <body>
+<div data-ofm-barra="Moderación"></div>
 <div class="wrap">
   <h1>Panel de moderación</h1>
-  <div class="sub">Observatorio Forestal (Peri)urbano de Morelia · <a href="./aportes.html">← volver a aportes</a></div>
+  <div class="sub"><a href="./index.html">← Volver al inicio</a></div>
 
   <div id="login">
     <b>Acceso de moderador</b>
@@ -51,6 +53,14 @@
   <div id="panel" class="hidden">
     <div class="sub">Sesión: <b id="who"></b> · <button class="btn sec" id="btnLogout">Salir</button></div>
     <div id="noauth" class="msg err hidden">Tu cuenta no tiene rol de moderador. Pide que te asignen el rol.</div>
+    <div id="solicitudesBox" class="hidden">
+      <h2 style="font-size:15px;margin:18px 0 6px">Verificar el estado actual · solicitudes de participación</h2>
+      <div id="solicitudes"></div>
+      <h2 style="font-size:15px;margin:22px 0 6px">Participantes aprobados</h2>
+      <div class="sub" style="margin-bottom:8px">Acuerdo con los puntos de control: proporción de controles en que la respuesta coincide con la referencia (sin contar «no se distingue»).</div>
+      <div id="aprobados"></div>
+      <h2 style="font-size:15px;margin:22px 0 6px">Aportes ciudadanos</h2>
+    </div>
     <div id="stats" class="sub"></div>
     <div id="lista"></div>
   </div>
@@ -58,7 +68,7 @@
 
 <script>
 const { url, key } = window.SB_CONFIG;
-const sb = supabase.createClient(url, key);
+const sb = (window.ofmAuth&&window.ofmAuth.sb) || supabase.createClient(url, key);   // un solo cliente por página
 const $ = id => document.getElementById(id);
 let user=null;
 
@@ -68,7 +78,7 @@ $('btnLogin').onclick = async ()=>{
 };
 $('btnLogout').onclick = ()=> sb.auth.signOut();
 
-sb.auth.onAuthStateChange((_e,s)=>handle(s));
+sb.auth.onAuthStateChange((_e,s)=>{setTimeout(()=>handle(s),0);});
 sb.auth.getSession().then(({data})=>handle(data.session));
 
 async function handle(session){
@@ -79,10 +89,48 @@ async function handle(session){
   $('who').textContent = user.email;
   const {data:prof} = await sb.from('profiles').select('role').eq('id',user.id).maybeSingle();
   const esMod = prof && (prof.role==='moderator'||prof.role==='admin');
+  const esAdmin = prof && prof.role==='admin';
+  $('solicitudesBox').classList.toggle('hidden', !esAdmin);
+  if(esAdmin) cargarSolicitudes();
   $('noauth').classList.toggle('hidden', esMod);
   if(esMod) cargar(); else $('lista').innerHTML='';
 }
 
+// ── Verificar el estado actual (D15): aprobación de registros y acuerdo con controles ──
+const esc = t => String(t??'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+async function cargarSolicitudes(){
+  const {data:perf, error} = await sb.from('profiles')
+    .select('id,display_name,organizacion,motivo,acepta_aviso_at,aprobado,aprobado_at,created_at')
+    .not('motivo','is',null).order('created_at',{ascending:true});
+  if(error){ $('solicitudes').innerHTML=`<div class="msg err">${esc(error.message)}</div>`; return; }
+  const pend=(perf||[]).filter(p=>!p.aprobado), apr=(perf||[]).filter(p=>p.aprobado);
+  $('solicitudes').innerHTML = pend.length ? '' : '<div class="sub">No hay solicitudes pendientes.</div>';
+  for(const p of pend){
+    const d=document.createElement('div'); d.className='card';
+    d.innerHTML=`<div class="top"><b>${esc(p.display_name)}</b><span class="sub">${new Date(p.created_at).toLocaleDateString('es-MX')}</span></div>
+      <div class="meta">${p.organizacion?esc(p.organizacion)+' · ':''}${p.acepta_aviso_at?'aceptó las condiciones el '+new Date(p.acepta_aviso_at).toLocaleDateString('es-MX'):'<b>no ha aceptado las condiciones</b>'}</div>
+      <div class="desc">${esc(p.motivo)}</div>
+      <div class="acts"><button class="btn" data-apr="${p.id}" ${p.acepta_aviso_at?'':'disabled'}>Aprobar</button></div>`;
+    $('solicitudes').appendChild(d);
+  }
+  $('solicitudes').querySelectorAll('[data-apr]').forEach(b=>b.onclick=()=>aprobar(b.dataset.apr,true));
+  const {data:ac} = await sb.from('v_acuerdo_controles').select('user_id,controles_respondidos,coincidencias,acuerdo');
+  const {data:vs} = await sb.from('verificaciones').select('user_id');
+  const nVer={}; (vs||[]).forEach(v=>nVer[v.user_id]=(nVer[v.user_id]||0)+1);
+  const acu={}; (ac||[]).forEach(a=>acu[a.user_id]=a);
+  $('aprobados').innerHTML = apr.length ? `<table style="width:100%;border-collapse:collapse;font-size:13px">
+    <tr style="color:var(--muted);text-align:left"><th style="padding:6px 4px">Participante</th><th>Verificaciones</th><th>Controles</th><th>Acuerdo</th><th></th></tr>
+    ${apr.map(p=>{const a=acu[p.id]; return `<tr style="border-top:1px solid var(--line)"><td style="padding:7px 4px">${esc(p.display_name)}</td>
+      <td>${nVer[p.id]||0}</td><td>${a?a.controles_respondidos:0}</td><td>${a?(100*a.acuerdo).toFixed(0)+' %':'—'}</td>
+      <td style="text-align:right"><button class="btn sec" data-ret="${p.id}">Retirar aprobación</button></td></tr>`;}).join('')}</table>`
+    : '<div class="sub">Todavía no hay participantes aprobados.</div>';
+  $('aprobados').querySelectorAll('[data-ret]').forEach(b=>b.onclick=()=>{ if(confirm('¿Retirar la aprobación? Sus respuestas se conservan.')) aprobar(b.dataset.ret,false); });
+}
+async function aprobar(id, valor){
+  const {error} = await sb.from('profiles').update({aprobado:valor}).eq('id',id);
+  if(error){ alert('No se pudo: '+error.message); return; }
+  cargarSolicitudes();
+}
 async function cargar(){
   const {data, error} = await sb.from('aportes')
     .select('id,tipo,descripcion,estado,created_at,user_id,geom,aporte_fotos(storage_path)')

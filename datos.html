@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Datos · Observatorio Forestal de Morelia</title>
+<link rel="stylesheet" href="./comun.css" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
+<script src="./sb-config.js"></script>
+<script src="./nav.js"></script>
+<style>
+  .grafica{width:100%;overflow:visible;display:block}
+  .grafica text{fill:var(--ink);font-size:13px;font-family:inherit}
+  .grafica .eje{fill:var(--muted);font-size:11.5px}
+  .grafica .rejilla{stroke:var(--line);stroke-width:1}
+  .grafica .bigote{stroke:var(--ink);stroke-width:1.6}
+  .grafica rect.barra:hover,.grafica rect.barra:focus{opacity:.85;outline:none}
+  .tip{position:fixed;pointer-events:none;background:#0b1118;border:1px solid var(--line);border-radius:8px;padding:7px 10px;font-size:12.5px;line-height:1.45;color:var(--ink);z-index:60;display:none;max-width:280px}
+  .indice{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 0}
+  .indice a{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:6px 12px;font-size:13px;color:var(--ink);text-decoration:none}
+  .indice a:hover{border-color:var(--accent)}
+  .dos{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:820px){.dos{grid-template-columns:1fr}}
+  .noacot{color:var(--muted);font-style:italic}
+  .descargas{display:flex;gap:8px;flex-wrap:wrap}
+  .descargas a,.descargas button{background:var(--panel2);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:8px 12px;font-size:13px;text-decoration:none;cursor:pointer;font-family:inherit}
+  .descargas a:hover,.descargas button:hover{border-color:var(--accent)}
+  .tabla-wrap{overflow-x:auto}
+</style>
+</head>
+<body>
+<div data-ofm-barra></div>
+<main class="contenedor">
+  <section class="seccion">
+    <h1>Datos</h1>
+    <p class="lede" id="resumen">Cargando…</p>
+    <nav class="indice" aria-label="En esta página">
+      <a href="#tipo">Por tipo</a><a href="#cuando">Cuándo</a><a href="#donde">Dónde</a><a href="#confianza">Qué tan confiable</a><a href="#participacion">Participación</a><a href="#descargas">Descargas</a><a href="#metodo">Método</a>
+    </nav>
+  </section>
+
+  <section class="seccion" id="tipo">
+    <h2>Cuánto bosque se perdió, por tipo de pérdida</h2>
+    <p class="sub">Superficie perdida entre 2006 y 2024 en el municipio, con su margen de error (intervalo de 95 %). Cuando el margen es mayor que la cifra, no se publica la cifra: se dice que todavía no se puede acotar.</p>
+    <div class="panel"><svg class="grafica" id="gTipo" role="img" aria-labelledby="gTipoT"><title id="gTipoT">Pérdida por tipo, en hectáreas, con intervalo de 95 %</title></svg></div>
+    <div class="tabla-wrap"><table class="tabla" id="tTipo"></table></div>
+    <p class="nota" id="notaRegla08"></p>
+  </section>
+
+  <section class="seccion" id="cuando">
+    <h2>Cuándo se perdió</h2>
+    <p class="sub">Hectáreas perdidas por año, en promedio, en cada periodo de cinco años (el último tiene cuatro).</p>
+    <p class="sub" id="notaFechado">Cada cambio se fecha con la primera imagen de alta resolución que lo muestra, y hay años sin imágenes (2008, 2010, 2018 y 2022). Por eso la comparación se hace entre periodos y no año por año. Un desmonte de 2021-2024 todavía no muestra en qué se convirtió y se cuenta como degradación.</p>
+    <div class="panel"><svg class="grafica" id="gCuando" role="img" aria-labelledby="gCuandoT"><title id="gCuandoT">Pérdida promedio por año en cada periodo, con intervalo de 95 %</title></svg></div>
+    <div class="tabla-wrap"><table class="tabla" id="tCuando"></table></div>
+  </section>
+
+  <section class="seccion" id="donde">
+    <h2>Dónde se perdió: por tipo de suelo del PMDU</h2>
+    <p class="sub">Qué parte del bosque y matorral que había en cada tipo de suelo se perdió entre 2006 y 2024.</p>
+    <div class="panel"><svg class="grafica" id="gDonde" role="img" aria-labelledby="gDondeT"><title id="gDondeT">Porcentaje del bosque y matorral previo que se perdió, por tipo de suelo</title></svg></div>
+    <div class="tabla-wrap"><table class="tabla" id="tDonde"></table></div>
+    <p class="nota">«No se puede acotar»: el margen de error es mayor que la cifra, así que no se publica. Ocurre donde la revisión encontró pocos lugares con ese tipo de pérdida.</p>
+  </section>
+
+  <section class="seccion" id="distancia">
+    <h2>A qué distancia se perdió</h2>
+    <p class="sub">La distancia se mide de dos maneras. Las franjas no tienen el mismo ancho: para comparar entre ellas, usa el porcentaje de cada tabla. El detalle por tipo de pérdida va en las descargas.</p>
+    <h3>De la ciudad de Morelia</h3>
+    <p class="sub">Distancia al borde de la ciudad, sin contar las localidades.</p>
+    <div class="panel"><svg class="grafica" id="gCiudad" role="img" aria-labelledby="gCiudadT"><title id="gCiudadT">Pérdida en hectáreas por franja de distancia a la ciudad de Morelia, con intervalo de 95 %</title></svg></div>
+    <div class="tabla-wrap"><table class="tabla" id="tCiudad"></table></div>
+    <h3 style="margin-top:22px">Del suelo urbano más cercano</h3>
+    <p class="sub">El suelo urbano del PMDU es la ciudad y cerca de cien localidades: esta medida dice qué tan cerca de cualquier asentamiento ocurrió la pérdida.</p>
+    <div class="panel"><svg class="grafica" id="gDist" role="img" aria-labelledby="gDistT"><title id="gDistT">Pérdida en hectáreas por franja de distancia al suelo urbano, con intervalo de 95 %</title></svg></div>
+    <div class="tabla-wrap"><table class="tabla" id="tDist"></table></div>
+  </section>
+
+  <section class="seccion" id="caminos">
+    <h2>Junto a qué se perdió: caminos</h2>
+    <p class="sub">Qué parte del área tiene un camino que toca el cuadro revisado de 30 m, en el bosque y matorral que se perdió y en el que se conserva. Describe dónde ocurre la pérdida, no qué la causa.</p>
+    <div class="tabla-wrap"><table class="tabla" id="tCaminos"></table></div>
+    <p class="nota" id="caminosSec"></p>
+  </section>
+
+  <section class="seccion" id="confianza">
+    <h2>Qué tan confiable es el mapa</h2>
+    <p class="sub" id="confTexto"></p>
+    <div class="dos">
+      <div class="panel"><h3>Exactitud del mapa por tipo</h3><div class="tabla-wrap"><table class="tabla" id="tExact"></table></div>
+        <p class="nota"><b>Usuario:</b> de lo que el mapa marca con ese tipo, qué parte lo es. <b>Productor:</b> de lo que en realidad es de ese tipo, qué parte capta el mapa.</p></div>
+      <div class="panel"><h3>Lugares revisados, por tipo de suelo</h3><div class="tabla-wrap"><table class="tabla" id="tMuestra"></table></div>
+        <p class="nota" id="muestraNota"></p></div>
+    </div>
+  </section>
+
+  <section class="seccion" id="participacion">
+    <h2>Participación ciudadana</h2>
+    <p class="sub" id="partTexto">Cargando…</p>
+    <a class="btn sec" href="./participacion.html">Ir a participación</a>
+  </section>
+
+  <section class="seccion" id="descargas">
+    <h2>Descargas</h2>
+    <p class="sub">Los datos que alimentan esta página y el mapa. Licencia CC BY-NC-ND 4.0; cita la fuente.</p>
+    <div class="descargas">
+      <button type="button" data-csv="tipo">Pérdida por tipo (CSV)</button>
+      <button type="button" data-csv="cuando">Pérdida por periodo (CSV)</button>
+      <button type="button" data-csv="donde">Pérdida por tipo de suelo (CSV)</button>
+      <button type="button" data-csv="ciudad">Pérdida por distancia a la ciudad (CSV)</button>
+      <button type="button" data-csv="distancia">Pérdida por distancia al suelo urbano (CSV)</button>
+      <button type="button" data-csv="caminos">Caminos (CSV)</button>
+      <a href="./data/estadisticas.json" download>Estadísticas completas (JSON)</a>
+      <a href="./data/manifest.json" download>Manifiesto de la corrida (JSON)</a>
+      <a href="./data/perdida_clasificada.geojson" download>Pérdida por tipo, mapa (GeoJSON)</a>
+      <a href="./data/unidades.geojson" download>Tipos de suelo (GeoJSON)</a>
+    </div>
+  </section>
+
+  <section class="seccion" id="metodo">
+    <h2>Método</h2>
+    <p class="sub"><b>Detección.</b> LandTrendr segmenta, píxel por píxel, la serie anual del índice NBR de Landsat 5, 7, 8 y 9 (compuestos de temporada seca, 2002 a 2025) y marca dónde y cuándo cae la cubierta leñosa. Cada evento se clasifica en degradación, conversión construida o conversión cultivada según su magnitud y el estado de la cubierta cinco años después.</p>
+    <p class="sub"><b>Validación.</b> Se sortearon lugares por tipo de suelo y por clase del mapa y se interpretaron a ciegas en imágenes de alta resolución. Con esa referencia se mide la exactitud del mapa y se estiman las superficies con el estimador de Stehman (2014), que da cada cifra con su intervalo de confianza. Contar los píxeles del mapa daría la superficie mapeada, que arrastra los errores del mapa; por eso no se publica.</p>
+    <p class="sub"><b>Qué cubierta se ve.</b> Los compuestos son de temporada seca: el bosque caducifolio sin hoja queda fuera, tanto de lo que se pierde como de lo que había.</p>
+    <p class="sub"><b>Tipos de suelo.</b> Cartografía del Programa Municipal de Desarrollo Urbano (PMDU) de Morelia 2022-2041 (IMPLAN): áreas naturales protegidas y zonificación primaria.</p>
+    <div class="aviso"><b>Ejercicio de investigación científica, no documento legal.</b> Los límites provienen del PMDU de Morelia 2022-2041, simplificados para el mapa. La pérdida detectada describe un cambio en la vegetación, no quién lo hizo ni si fue legal.</div>
+  </section>
+</main>
+<footer class="pie contenedor">Cómo citar: Zavala Solís, H. E. (2026). <i>Observatorio Forestal de Morelia</i>. Posgrado en Geografía, CIGA-UNAM. · <span id="corrida"></span></footer>
+<div class="tip" id="tip"></div>
+<script>
+const CLAS={degradacion:['Degradación','#ccffcc'],cultivada:['Conversión cultivada','#ffd000'],construida:['Conversión construida','#9b30ff']};
+const UNI={'Áreas protegidas':'#1ed760','No urbanizable':'#ffd400','Urbanizable':'#ff7a00','Urbano':'#d63cf0'};
+const NOMBRE={perdida:'Pérdida (cualquier tipo)',estable:'Estable',degradacion:'Degradación',construida:'Conversión construida',cultivada:'Conversión cultivada',perdida_reciente:'Pérdida reciente'};
+const miles=n=>Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,' ');
+const pct=v=>(100*v).toFixed(1)+' %';
+const NOACOT='<span class="noacot">no se puede acotar</span>';
+const celda=(o,suf)=>o&&o.acotada?miles(o.ha)+' <span style="color:var(--muted)">± '+miles(o.ic95)+'</span>'+(suf||''):(o&&o.ha===0&&o.ic95===0?'0':NOACOT);
+const tip=document.getElementById('tip');
+function mostrarTip(e,html){tip.innerHTML=html;tip.style.display='block';const x=Math.min(e.clientX+14,innerWidth-tip.offsetWidth-8);tip.style.left=x+'px';tip.style.top=(e.clientY+14)+'px';}
+const ocultarTip=()=>{tip.style.display='none';};
+
+/* Barras horizontales con intervalo. filas: {etq, v, ic, acotada, color, tip}. Una fila no
+   acotada no lleva barra: lleva el texto «no se puede acotar». */
+function barras(svg,filas,unidad){
+  const ancho=svg.parentElement.clientWidth-36, izq=Math.min(190,ancho*.38), der=86, alto=34, sep=12;
+  const max=Math.max(...filas.filter(f=>f.acotada).map(f=>f.v+f.ic),1);
+  const paso=Math.pow(10,Math.floor(Math.log10(max))); const tope=Math.ceil(max/paso)*paso;
+  const w=ancho-izq-der, X=v=>izq+w*v/tope, H=filas.length*(alto+sep)+26;
+  svg.setAttribute('viewBox','0 0 '+ancho+' '+H); svg.setAttribute('height',H);
+  let s=svg.querySelector('title').outerHTML;
+  const nt=w<300?2:4;   // en pantallas angostas, menos marcas: las etiquetas del eje se encimaban
+  for(let k=0;k<=nt;k++){const v=tope*k/nt,x=X(v); s+='<line class="rejilla" x1="'+x+'" x2="'+x+'" y1="0" y2="'+(H-22)+'"/><text class="eje" x="'+x+'" y="'+(H-6)+'" text-anchor="middle">'+miles(v)+'</text>';}
+  filas.forEach((f,i)=>{const y=i*(alto+sep)+4, cy=y+alto/2;
+    s+='<text x="'+(izq-10)+'" y="'+(cy+4)+'" text-anchor="end">'+f.etq+'</text>';
+    if(f.acotada){const x0=X(0),x1=X(f.v),a=X(Math.max(0,f.v-f.ic)),b=X(f.v+f.ic);
+      s+='<rect class="barra" tabindex="0" data-i="'+i+'" x="'+x0+'" y="'+y+'" width="'+Math.max(2,x1-x0)+'" height="'+alto+'" rx="4" fill="'+f.color+'"/>';
+      s+='<line class="bigote" x1="'+a+'" x2="'+b+'" y1="'+cy+'" y2="'+cy+'"/><line class="bigote" x1="'+a+'" x2="'+a+'" y1="'+(cy-7)+'" y2="'+(cy+7)+'"/><line class="bigote" x1="'+b+'" x2="'+b+'" y1="'+(cy-7)+'" y2="'+(cy+7)+'"/>';
+      s+='<text x="'+(b+8)+'" y="'+(cy+4)+'">'+miles(f.v)+(unidad==='%'?' %':'')+'</text>';}
+    else s+='<text x="'+(izq+4)+'" y="'+(cy+4)+'" font-style="italic" style="fill:var(--muted)">no se puede acotar</text>';});
+  svg.innerHTML=s;
+  svg.querySelectorAll('rect.barra').forEach(r=>{const f=filas[+r.dataset.i];
+    r.addEventListener('mousemove',e=>mostrarTip(e,f.tip)); r.addEventListener('mouseleave',ocultarTip);
+    r.addEventListener('focus',e=>{const b=r.getBoundingClientRect();mostrarTip({clientX:b.right,clientY:b.top},f.tip);}); r.addEventListener('blur',ocultarTip);});
+}
+let E=null, M=null;
+const CSV={};
+function descargar(nombre,filas){const t=filas.map(f=>f.map(c=>/[",\n]/.test(String(c))?'"'+String(c).replace(/"/g,'""')+'"':c).join(',')).join('\n');
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob(['﻿'+t],{type:'text/csv'})); a.download=nombre; a.click();}
+document.querySelectorAll('[data-csv]').forEach(b=>b.onclick=()=>{const c=CSV[b.dataset.csv]; if(c) descargar('observatorio_'+b.dataset.csv+'.csv',c);});
+
+function pintar(){ if(!E||!M) return;
+  const T=E.total, rot=E.rotulo;
+  document.getElementById('resumen').innerHTML=(T.perdida.acotada?'Entre '+E.periodo_reportado[0]+' y '+E.periodo_reportado[1]+' se perdieron <b>'+miles(T.perdida.ha)+' ha</b> de bosque y matorral en el municipio de Morelia (± '+miles(T.perdida.ic95)+' ha). ':'')+
+    'Todas las cifras son superficies estimadas con la revisión de '+E.puntos_evaluables+' lugares, con su margen de error; no son hectáreas contadas en el mapa.';
+  document.getElementById('corrida').textContent='Cifras: '+rot+'.';
+  // Por tipo
+  const ft=['degradacion','cultivada','construida'].map(k=>({etq:CLAS[k][0],v:T[k].ha,ic:T[k].ic95,acotada:T[k].acotada,color:CLAS[k][1],
+    tip:'<b>'+CLAS[k][0]+'</b><br>'+miles(T[k].ha)+' ha ± '+miles(T[k].ic95)+'<br><span style="color:var(--muted)">'+T[k].n_puntos+' lugares revisados con este tipo</span>'}));
+  barras(document.getElementById('gTipo'),ft,'ha');
+  document.getElementById('tTipo').innerHTML='<tr><th>Tipo de pérdida</th><th class="num">Superficie (ha)</th><th class="num">Lugares revisados con este tipo</th></tr>'+
+    ['degradacion','cultivada','construida'].map(k=>'<tr><td><span class="sw" style="background:'+CLAS[k][1]+'"></span>'+CLAS[k][0]+'</td><td class="num">'+celda(T[k])+'</td><td class="num">'+T[k].n_puntos+'</td></tr>').join('')+
+    '<tr><td><b>Total</b></td><td class="num"><b>'+celda(T.perdida)+'</b></td><td class="num">'+T.perdida.n_puntos+'</td></tr>';
+  CSV.tipo=[['tipo','ha','ic95_ha','acotada','lugares']].concat(['degradacion','cultivada','construida','perdida'].map(k=>[k,T[k].ha,T[k].ic95,T[k].acotada,T[k].n_puntos]));
+  const r8=((E.regla08||{}).categorias||[]).find(c=>c.categoria==='degradacion');
+  document.getElementById('notaRegla08').innerHTML=r8&&r8.acotada&&r8.ic95_fraccion<r8.fraccion?
+    'La degradación de esta tabla incluye lugares donde el bosque no volvió a crecer y tampoco llegó otro uso. Con una regla más estricta, que los separa, la degradación es <b>'+Math.round(100*r8.fraccion)+' ± '+Math.round(100*r8.ic95_fraccion)+' %</b> de la pérdida ('+miles(r8.ha)+' ± '+miles(r8.ic95)+' ha). Esa regla está en revisión.':'';
+  // Cuándo
+  const P=E.por_periodo;
+  barras(document.getElementById('gCuando'),P.map(p=>{const t=p['pérdida total'];return {etq:p.periodo,v:t.ha_anio,ic:t.ic95_anio,acotada:t.acotada,color:'#ff6347',
+    tip:'<b>'+p.periodo+'</b><br>'+miles(t.ha_anio)+' ha/año ± '+miles(t.ic95_anio)+'<br><span style="color:var(--muted)">'+miles(t.ha)+' ha en el periodo</span>'};}),'ha');
+  const cAnio=o=>o&&o.acotada?miles(o.ha_anio)+' <span style="color:var(--muted)">± '+miles(o.ic95_anio)+'</span>':(o&&o.ha===0?'0':NOACOT);
+  document.getElementById('tCuando').innerHTML='<tr><th>Periodo</th><th class="num">Total (ha/año)</th><th class="num">Degradación</th><th class="num">Cultivada</th><th class="num">Construida</th></tr>'+
+    P.map(p=>'<tr><td>'+p.periodo+'</td><td class="num">'+cAnio(p['pérdida total'])+'</td><td class="num">'+cAnio(p.degradacion)+'</td><td class="num">'+cAnio(p.cultivada)+'</td><td class="num">'+cAnio(p.construida)+'</td></tr>').join('');
+  CSV.cuando=[['periodo','tipo','ha','ic95_ha','ha_anio','ic95_ha_anio','acotada']];
+  P.forEach(p=>['pérdida total','degradacion','cultivada','construida'].forEach(k=>{const o=p[k]; if(o) CSV.cuando.push([p.periodo,k,o.ha,o.ic95,o.ha_anio,o.ic95_anio,o.acotada]);}));
+  const FE=(E.periodo_fechado||[]).filter(x=>/modelo/.test(x.fechado));
+  // pintar() se repite al cambiar el tamaño de la ventana: el texto base se guarda una vez.
+  const nf=document.getElementById('notaFechado'); if(!nf.dataset.base) nf.dataset.base=nf.innerHTML;
+  if(FE.length===P.length&&FE.every(x=>x.acotada)) nf.innerHTML=nf.dataset.base+
+    ' <b>La tendencia no depende de cómo se feche:</b> con el año que da el algoritmo en lugar del de la imagen, las tasas son '+
+    FE.map(x=>miles(x.ha_anio)+' ± '+miles(x.ic95_anio)).join(', ')+' ha por año en los mismos periodos.';
+  // Dónde
+  // El porcentaje perdido solo se muestra si también se pueden acotar sus hectáreas (10-11-2026).
+  const tasaOk=x=>x.tasa_pct.acotada&&x.perdida.acotada;
+  const U=E.por_unidad;
+  barras(document.getElementById('gDonde'),U.map(u=>({etq:u.unidad,v:u.tasa_pct.valor,ic:u.tasa_pct.ic95,acotada:tasaOk(u),color:UNI[u.unidad]||'#888',
+    tip:'<b>'+u.unidad+'</b> ('+u.bosque+')<br>'+u.tasa_pct.valor.toFixed(1)+' % ± '+u.tasa_pct.ic95.toFixed(1)+' del bosque y matorral previo'})),'%');
+  document.getElementById('tDonde').innerHTML='<tr><th>Tipo de suelo</th><th class="num">Bosque y matorral en 2006 (ha)</th><th class="num">Perdido (ha)</th><th class="num">Perdido (%)</th><th class="num">Degradación</th><th class="num">Cultivada</th><th class="num">Construida</th></tr>'+
+    U.map(u=>'<tr><td><span class="sw" style="background:'+(UNI[u.unidad]||'#888')+'"></span>'+u.unidad+'<br><span style="color:var(--muted);font-size:12px">'+u.bosque+'</span></td><td class="num">'+celda(u.lenosa_previa)+'</td><td class="num">'+celda(u.perdida)+'</td><td class="num">'+
+      (tasaOk(u)?u.tasa_pct.valor.toFixed(1)+' <span style="color:var(--muted)">± '+u.tasa_pct.ic95.toFixed(1)+'</span>':NOACOT)+'</td><td class="num">'+celda(u.degradacion)+'</td><td class="num">'+celda(u.cultivada)+'</td><td class="num">'+celda(u.construida)+'</td></tr>').join('');
+  CSV.donde=[['tipo_de_suelo','bosque','lenosa_previa_ha','ic95','perdida_ha','ic95','tasa_pct','ic95','degradacion_ha','ic95','cultivada_ha','ic95','construida_ha','ic95']].concat(
+    U.map(u=>[u.unidad,u.bosque,u.lenosa_previa.ha,u.lenosa_previa.ic95,u.perdida.ha,u.perdida.ic95,u.tasa_pct.valor,u.tasa_pct.ic95,u.degradacion.ha,u.degradacion.ic95,u.cultivada.ha,u.cultivada.ic95,u.construida.ha,u.construida.ic95]));
+  // Distancia: dos medidas, la misma tabla
+  const pintarDist=(lista,rot,idG,idT,enc,clave)=>{ if(!lista.length) return;
+    const F=lista.map(f=>Object.assign({},f,{clave:f.franja,franja:rot[f.franja]||f.franja}));
+    barras(document.getElementById(idG),F.map(f=>({etq:f.franja,v:f.perdida.ha,ic:f.perdida.ic95,acotada:f.perdida.acotada,color:'#ff6347',
+      tip:'<b>'+f.franja+'</b><br>'+miles(f.perdida.ha)+' ha ± '+miles(f.perdida.ic95)})),'ha');
+    const tp=f=>tasaOk(f)?f.tasa_pct.valor.toFixed(1)+' <span style="color:var(--muted)">± '+f.tasa_pct.ic95.toFixed(1)+'</span>':NOACOT;
+    document.getElementById(idT).innerHTML='<tr><th>'+enc+'</th><th class="num">Perdido (ha)</th><th class="num">Perdido (% del bosque y matorral previo)</th><th class="num">Lugares revisados con pérdida</th></tr>'+
+      F.map(f=>'<tr><td>'+f.franja+'</td><td class="num">'+celda(f.perdida)+'</td><td class="num">'+tp(f)+'</td><td class="num">'+f.n_puntos_perdida+'</td></tr>').join('');
+    CSV[clave]=[['franja','perdida_ha','ic95','tasa_pct','ic95','degradacion_ha','ic95','cultivada_ha','ic95','construida_ha','ic95']].concat(
+      F.map(f=>[f.clave,f.perdida.ha,f.perdida.ic95,f.tasa_pct.valor,f.tasa_pct.ic95,f.degradacion.ha,f.degradacion.ic95,f.cultivada.ha,f.cultivada.ic95,f.construida.ha,f.construida.ic95])); };
+  pintarDist(E.por_franja_ciudad||[],{'dentro de la ciudad':'Dentro de la ciudad','hasta 1 km':'Hasta 1 km','1-2 km':'1 a 2 km','2-5 km':'2 a 5 km','5-10 km':'5 a 10 km','más de 10 km':'Más de 10 km'},'gCiudad','tCiudad','Distancia a la ciudad','ciudad');
+  pintarDist(E.por_franja||[],{'dentro del suelo urbano':'En suelo urbano','0-500 m':'Hasta 500 m','500-1000 m':'500 m a 1 km','1-2 km':'1 a 2 km','2-5 km':'2 a 5 km','más de 5 km':'Más de 5 km'},'gDist','tDist','Distancia al suelo urbano','distancia');
+  // Caminos
+  const C=E.caminos||[], R=x=>Math.round(100*x), pc=o=>o?(o.acotada?R(o.proporcion)+' <span style="color:var(--muted)">± '+R(o.ic95)+'</span>':NOACOT):'—';
+  const busca=(g,i)=>C.find(x=>(g==='p'?x.grupo==='pérdida':x.grupo!=='pérdida')&&x.indicador===i);
+  const FIL=[['con camino junto o dentro','Con algún camino'],['caminos: red_ramificada','Red de caminos ramificada'],['caminos: aislado','Un camino aislado'],['caminos: vialidad_formal','Calle o carretera']];
+  if(C.length){
+    document.getElementById('tCaminos').innerHTML='<tr><th>Condición</th><th class="num">Área perdida (%)</th><th class="num">Bosque que se conserva (%)</th></tr>'+
+      FIL.map(([k,t])=>'<tr><td>'+t+'</td><td class="num">'+pc(busca('p',k))+'</td><td class="num">'+pc(busca('c',k))+'</td></tr>').join('');
+    const sq=busca('p','secuencia: camino de acceso previo');
+    document.getElementById('caminosSec').innerHTML=sq&&sq.acotada?'En <b>'+R(sq.proporcion)+' ± '+R(sq.ic95)+' %</b> del área perdida, el camino de acceso ya existía antes de la pérdida. Los casos en que el camino se abrió junto con el desmonte son pocos y no se pueden acotar.':'';
+    CSV.caminos=[['grupo','indicador','proporcion','ic95','acotada','lugares']].concat(C.map(x=>[x.grupo,x.indicador,x.proporcion,x.ic95,x.acotada,x.n_puntos]));
+  }
+  // Confianza
+  const v=M.validacion||{}, p=(v.por_clase||{}).perdida||{}, d10=x=>Math.max(0,Math.min(10,Math.round(10*x)));
+  document.getElementById('confTexto').innerHTML=(p.usuario&&p.productor)?'<b>De cada 10 lugares que el mapa marca como pérdida, la revisión confirma '+d10(p.usuario.estimado)+'; y de cada 10 lugares donde hubo pérdida, el mapa capta '+d10(p.productor.estimado)+'.</b> El mapa sirve para ver dónde ocurre la pérdida; para saber cuánto, se usa la revisión. Exactitud global: '+pct(v.global.tematica.estimado)+' ± '+(100*v.global.tematica.ic95).toFixed(1)+' (casi todo el municipio no cambió, y eso el mapa lo acierta).':'';
+  document.getElementById('tExact').innerHTML='<tr><th>Tipo</th><th class="num">Usuario</th><th class="num">Productor</th></tr>'+
+    Object.entries(v.por_clase||{}).map(([k,o])=>'<tr><td>'+(NOMBRE[k]||k)+'</td><td class="num">'+(o.usuario?pct(o.usuario.estimado)+' <span style="color:var(--muted)">± '+(100*o.usuario.ic95).toFixed(1)+'</span>':'—')+'</td><td class="num">'+(o.productor?pct(o.productor.estimado)+' <span style="color:var(--muted)">± '+(100*o.productor.ic95).toFixed(1)+'</span>':'—')+'</td></tr>').join('');
+  const m=M.muestra||{};
+  document.getElementById('tMuestra').innerHTML='<tr><th>Tipo de suelo</th><th class="num">Revisados</th><th class="num">Sorteados</th></tr>'+
+    Object.entries(m.por_unidad||{}).map(([u,o])=>'<tr><td><span class="sw" style="background:'+(UNI[u]||'#888')+'"></span>'+u+'</td><td class="num">'+o.interpretados+'</td><td class="num">'+o.sorteados+'</td></tr>').join('');
+  document.getElementById('muestraNota').textContent=(v.estimador?'Estimador: '+v.estimador+'. ':'')+(v.corrida?'Corrida del '+v.corrida.split('-').reverse().join('/')+'.':'');
+}
+Promise.all([fetch('./data/estadisticas.json').then(r=>r.json()),fetch('./data/manifest.json').then(r=>r.json())]).then(([e,m])=>{E=e;M=m;pintar();})
+  .catch(()=>{document.getElementById('resumen').textContent='No se pudieron cargar los datos.';});
+let rz; addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(pintar,150);});
+// Participación ciudadana: solo totales (función pública resumen_participacion)
+(async()=>{const el=document.getElementById('partTexto'); const A=window.ofmAuth;
+  try{ const m=await (await fetch('./data/manifest.json')).json(); if(!A||!A.sb) throw 0;
+    const {data}=await A.sb.rpc('resumen_participacion',{p_version:m.version}); const r=data&&data[0];
+    const n=r?+r.cuadros_verificados:0, k=r?+r.personas:0;
+    el.innerHTML=n?'<b>'+miles(n)+'</b> cuadro'+(n===1?'':'s')+' del mapa revisado'+(n===1?'':'s')+' por <b>'+k+'</b> persona'+(k===1?'':'s')+' sobre la imagen de satélite actual. Cada respuesta se compara con las de otras personas y con lugares de referencia.':'Todavía no hay cuadros revisados por la ciudadanía.';
+  }catch(e){ el.textContent='El conteo de participación no está disponible en este momento.'; }})();
+</script>
+</body>
+</html>

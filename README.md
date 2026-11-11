@@ -1,4 +1,4 @@
-# Observatorio Forestal (Peri)urbano de Morelia
+# Observatorio Forestal de Morelia
 
 Mapa web interactivo de la **pérdida de vegetación 1990–2023** en las 4 ANP periurbanas de Morelia
 (cerros del Águila, Pico Azul–La Escalera, Punhuato y Quinceo), con proyección de riesgo (Random Forest),
@@ -8,7 +8,7 @@ comparación satelital 2003↔2025 y zonificación del PMDU.
 - **Licencia:** CC BY-NC-ND 4.0 (ver `LICENSE.txt`)
 
 ## Cómo citar
-Zavala Solís, H. E. (2026). *Observatorio Forestal (Peri)urbano de Morelia*. Posgrado en Geografía, CIGA-UNAM.
+Zavala Solís, H. E. (2026). *Observatorio Forestal de Morelia*. Posgrado en Geografía, CIGA-UNAM.
 
 ## Archivos
 - `observatorio_standalone.html` — versión autocontenida (abrir con doble clic).

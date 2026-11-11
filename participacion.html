@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Participación · Observatorio Forestal de Morelia</title>
+<link rel="stylesheet" href="./comun.css" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
+<script src="./sb-config.js"></script>
+<script src="./nav.js"></script>
+<style>
+  .estado{display:inline-block;font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:20px}
+  .e-pendiente{color:#f0c060;background:rgba(240,160,32,.2)} .e-validado{color:#3fb27f;background:rgba(63,178,127,.2)} .e-rechazado{color:#ff8a95;background:rgba(178,50,63,.25)}
+  textarea{width:100%;background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:9px 11px;font-size:14px;font-family:inherit}
+  .check{display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--muted);line-height:1.45;margin:10px 0}
+  .check input{margin-top:3px}
+  .msg{font-size:13px;margin-top:8px;min-height:1em}
+  .vacio{color:var(--muted);font-size:13.5px}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 12px}
+  .tabs button{background:var(--panel);border:1px solid var(--line);color:var(--ink);border-radius:20px;padding:7px 14px;font-size:13.5px;cursor:pointer;font-family:inherit}
+  .tabs button[aria-selected="true"]{border-color:var(--accent);background:rgba(63,178,127,.12)}
+  .tabla-wrap{overflow-x:auto}
+</style>
+</head>
+<body>
+<div data-ofm-barra></div>
+<main class="contenedor">
+  <section class="seccion">
+    <h1>Participación</h1>
+    <p class="lede">Cualquier persona registrada puede dejar aportes sobre lo que observa y trazar su territorio. Con el registro aprobado, también puede ayudar a revisar el mapa sobre la imagen de satélite. Aquí queda tu historial.</p>
+    <div id="anon" hidden>
+      <div class="tarjetas">
+        <div class="tarjeta"><h3>Verificar el estado actual</h3><p>Miras un cuadro de 30 m sobre la imagen de satélite y eliges qué hay hoy. Cada respuesta se compara con las de otras personas y con lugares de referencia.</p></div>
+        <div class="tarjeta"><h3>Dejar aportes</h3><p>Reporta lo que observas en un lugar (tala, incendio, construcción, cambio agrícola) con una descripción y, si quieres, una foto. Se publica después de revisarlo.</p></div>
+        <div class="tarjeta"><h3>Trazar tu territorio</h3><p>Dibuja tu ejido, comunidad o microcuenca y guárdalo para consultarlo después.</p></div>
+      </div>
+      <p style="margin-top:18px"><button class="btn" type="button" id="bEntrar">Entrar para participar</button></p>
+      <p class="nota">Al entrar aceptas el <a href="./privacidad.html">aviso de privacidad</a>. Solo se publican totales, nunca tu nombre ni tus respuestas una por una.</p>
+    </div>
+  </section>
+
+  <div id="conSesion" hidden>
+    <section class="seccion">
+      <h2 id="saludo">Tu participación</h2>
+      <div class="cifras" id="resumen"></div>
+      <div class="panel" id="solicitud"></div>
+    </section>
+    <section class="seccion">
+      <h2>Tu historial</h2>
+      <div class="tabs" role="tablist">
+        <button type="button" role="tab" aria-selected="true" data-tab="ver">Verificaciones</button>
+        <button type="button" role="tab" aria-selected="false" data-tab="apo">Aportes</button>
+        <button type="button" role="tab" aria-selected="false" data-tab="ter">Territorios</button>
+      </div>
+      <div data-panel="ver"></div>
+      <div data-panel="apo" hidden></div>
+      <div data-panel="ter" hidden></div>
+    </section>
+    <section class="seccion">
+      <h2>Tus datos</h2>
+      <p class="sub">Para corregir o borrar tus datos, o para dejar de participar, escribe a <a href="mailto:hezavalasolis@pmip.unam.mx">hezavalasolis@pmip.unam.mx</a>. Si borras tu cuenta, se borran también tus respuestas. Más en el <a href="./privacidad.html">aviso de privacidad</a>.</p>
+      <button class="btn sec" type="button" id="bSalir">Cerrar sesión</button>
+    </section>
+  </div>
+</main>
+<footer class="pie contenedor">Observatorio Forestal de Morelia · Posgrado en Geografía, CIGA-UNAM · <a href="./privacidad.html">Aviso de privacidad</a></footer>
+<script>
+const A=window.ofmAuth, sb=A&&A.sb, $=s=>document.querySelector(s);
+const esc=t=>String(t??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fecha=f=>f?new Date(f).toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'}):'';
+const RESP={arboles_matorral:'Árboles o matorral',construccion:'Construcción',cultivo_huerta:'Cultivo o huerta',pasto_suelo:'Pasto o suelo desnudo',agua:'Agua',no_se_distingue:'No se distingue'};
+const ESTADO={pendiente:'En revisión',validado:'Validado',rechazado:'No validado'};
+// Punto como GeoJSON (PostgREST) o como WKB hexadecimal con SRID (respaldo).
+function lonlat(g){ if(!g) return null; if(g.coordinates) return g.coordinates;
+  if(typeof g==='string'&&g.length>=50){ const f=h=>{const b=new DataView(new ArrayBuffer(8)); for(let i=0;i<8;i++) b.setUint8(i,parseInt(h.substr(i*2,2),16)); return b.getFloat64(0,true);};
+    return [f(g.substr(18,16)),f(g.substr(34,16))]; } return null; }
+const enMapa=g=>{const c=lonlat(g); return c?'./mapa.html#18/'+c[1].toFixed(5)+'/'+c[0].toFixed(5)+'/2024/acc/anio':null;};
+function cifra(n,t){return '<div class="cifra"><div class="n">'+n+'</div><div class="t">'+t+'</div></div>';}
+
+document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.setAttribute('aria-selected',x===b));
+  document.querySelectorAll('[data-panel]').forEach(p=>p.hidden=p.dataset.panel!==b.dataset.tab);});
+$('#bEntrar').onclick=()=>A&&A.abrirAcceso();
+$('#bSalir').onclick=()=>A&&A.salir();
+
+async function pintar(sesion,perfil){
+  $('#anon').hidden=!!sesion; $('#conSesion').hidden=!sesion; if(!sesion||!sb) return;
+  const uid=sesion.user.id;
+  $('#saludo').textContent='Tu participación · '+(sesion.user.email||'');
+  const [v,a,t,ac]=await Promise.all([
+    sb.from('verificaciones').select('objetivo_id,respuesta,segura,img_fecha,img_fuente,created_at,updated_at,geom').eq('user_id',uid).order('updated_at',{ascending:false}),
+    sb.from('aportes').select('tipo,descripcion,estado,motivo_rechazo,created_at,geom').eq('user_id',uid).order('created_at',{ascending:false}),
+    sb.from('territorios').select('id,nombre,publico,created_at').eq('user_id',uid).order('created_at',{ascending:false}),
+    sb.rpc('mi_acuerdo')]);
+  const V=v.data||[], AP=a.data||[], TE=t.data||[], acu=(ac.data&&ac.data[0])||null;
+  // Resumen
+  let r=cifra(V.length,'cuadros verificados'+(V.filter(x=>!x.segura).length?' ('+V.filter(x=>!x.segura).length+' con dudas)':''));
+  r+=acu&&acu.suficiente?cifra(acu.acuerdo_decimos+' de 10','veces coincides con la referencia en los lugares de control')
+                        :cifra('—','Tu acuerdo con la referencia aparece después de unos cuantos cuadros más');
+  r+=cifra(AP.length,'aportes'+(AP.length?' ('+AP.filter(x=>x.estado==='validado').length+' validados)':''));
+  r+=cifra(TE.length,'territorios trazados');
+  $('#resumen').innerHTML=r;
+  // Solicitud y acceso a verificar
+  const s=$('#solicitud');
+  if(perfil&&perfil.aprobado){ s.innerHTML='<h3>Registro aprobado</h3><p class="sub" style="margin:0 0 12px">Puedes verificar el estado actual del mapa. Cada cuadro toma unos segundos.</p><a class="btn" href="./mapa.html?modo=verificar">Verificar en el mapa</a>'; }
+  else if(perfil&&perfil.motivo&&perfil.acepta_aviso_at){ s.innerHTML='<h3>Solicitud en revisión</h3><p class="sub" style="margin:0">Enviaste tu solicitud el '+fecha(perfil.acepta_aviso_at)+'. Mientras se aprueba, puedes dejar aportes y trazar tu territorio en el <a href="./mapa.html">mapa</a>.</p>'; }
+  else { s.innerHTML='<h3>Solicitar participar en la verificación</h3>'+
+      '<p class="sub" style="margin:0 0 10px"><b>Qué pasa con tus respuestas.</b> Cada cuadro toma unos segundos: miras la imagen y eliges qué hay hoy. Tus respuestas se comparan con las de otras personas y con lugares de referencia; ninguna corrige el mapa por sí sola. Solo se publican totales.</p>'+
+      '<textarea id="sMotivo" rows="3" placeholder="¿Por qué quieres participar? (una o dos frases)"></textarea>'+
+      '<label class="check"><input type="checkbox" id="sAcepto"><span>Entiendo que es un ejercicio de investigación científica, no un documento legal: registro lo que se ve en la imagen, no quién lo hizo ni si fue legal. Acepto el <a href="./privacidad.html">aviso de privacidad</a>.</span></label>'+
+      '<button class="btn" type="button" id="sEnviar">Enviar solicitud</button><div class="msg" id="sMsg"></div>';
+    $('#sEnviar').onclick=async()=>{const m=$('#sMotivo').value.trim(), msg=(x,ok)=>{$('#sMsg').textContent=x;$('#sMsg').style.color=ok?'var(--accent)':'#ff8a95';};
+      if(m.length<10) return msg('Cuéntanos en una o dos frases por qué quieres participar.',false);
+      if(!$('#sAcepto').checked) return msg('Hace falta aceptar las condiciones.',false);
+      const {error}=await sb.from('profiles').update({motivo:m,acepta_aviso_at:new Date().toISOString()}).eq('id',uid);
+      if(error) return msg(error.message,false);
+      pintar(sesion,Object.assign({},perfil||{},{motivo:m,acepta_aviso_at:new Date().toISOString()}));}; }
+  // Historial
+  $('[data-panel="ver"]').innerHTML=V.length?'<div class="tabla-wrap"><table class="tabla"><tr><th>Fecha</th><th>Tu respuesta</th><th>Imagen que viste</th><th></th></tr>'+
+    V.map(x=>'<tr><td>'+fecha(x.updated_at||x.created_at)+'</td><td>'+esc(RESP[x.respuesta]||x.respuesta)+(x.segura?'':' <span class="vacio">(con dudas)</span>')+'</td><td>'+(x.img_fecha?fecha(x.img_fecha+'T12:00')+' · '+esc(x.img_fuente||''):'—')+'</td><td>'+(enMapa(x.geom)?'<a href="'+enMapa(x.geom)+'">ver en el mapa</a>':'')+'</td></tr>').join('')+'</table></div>'
+    :'<p class="vacio">Todavía no has verificado cuadros.'+(perfil&&perfil.aprobado?' <a href="./mapa.html?modo=verificar">Empezar</a>.':'')+'</p>';
+  $('[data-panel="apo"]').innerHTML=AP.length?'<div class="tabla-wrap"><table class="tabla"><tr><th>Fecha</th><th>Tipo</th><th>Descripción</th><th>Estado</th><th></th></tr>'+
+    AP.map(x=>'<tr><td>'+fecha(x.created_at)+'</td><td style="text-transform:capitalize">'+esc(String(x.tipo).replace('_',' '))+'</td><td>'+esc((x.descripcion||'').slice(0,140))+(x.estado==='rechazado'&&x.motivo_rechazo?'<br><span class="vacio">Motivo: '+esc(x.motivo_rechazo)+'</span>':'')+'</td><td><span class="estado e-'+x.estado+'">'+(ESTADO[x.estado]||x.estado)+'</span></td><td>'+(enMapa(x.geom)?'<a href="'+enMapa(x.geom)+'">ver en el mapa</a>':'')+'</td></tr>').join('')+'</table></div>'
+    :'<p class="vacio">Todavía no has dejado aportes. Se dejan desde «Participar» en el <a href="./mapa.html?seccion=participar">mapa</a>.</p>';
+  $('[data-panel="ter"]').innerHTML=TE.length?'<div class="tabla-wrap"><table class="tabla"><tr><th>Fecha</th><th>Nombre</th><th>Visible para otros</th></tr>'+
+    TE.map(x=>'<tr><td>'+fecha(x.created_at)+'</td><td>'+esc(x.nombre)+'</td><td>'+(x.publico?'Sí':'No')+'</td></tr>').join('')+'</table></div><p class="nota">Se consultan y dibujan en el <a href="./mapa.html?seccion=participar">mapa</a>, en «Mi territorio».</p>'
+    :'<p class="vacio">Todavía no has trazado territorios. Se trazan en el <a href="./mapa.html?seccion=participar">mapa</a>.</p>';
+}
+if(A) A.onSesion(pintar); else { $('#anon').hidden=false; $('#bEntrar').disabled=true; }
+</script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-Observatorio Forestal (Peri)urbano de Morelia
+Observatorio Forestal de Morelia
 © 2026 Héctor Eduardo Zavala Solís (M.C.S.)
 Posgrado en Geografía — Centro de Investigaciones en Geografía Ambiental (CIGA), UNAM.
 
@@ -24,5 +24,5 @@ Resumen legible:      https://creativecommons.org/licenses/by-nc-nd/4.0/deed.es
 Las fuentes de datos de terceros conservan sus respectivas licencias (ver README.md).
 
 Cómo citar:
-Zavala Solís, H. E. (2026). Observatorio Forestal (Peri)urbano de Morelia.
+Zavala Solís, H. E. (2026). Observatorio Forestal de Morelia.
 Posgrado en Geografía, CIGA-UNAM.
