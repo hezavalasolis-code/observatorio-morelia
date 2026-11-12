@@ -524,7 +524,7 @@
       <div id="tForm" style="display:none;margin-top:8px">
         <input id="tNombre" placeholder="Nombre (p. ej. Tumbisca)" style="width:100%;background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:8px 10px;font-size:13px;margin-bottom:6px" />
         <input id="tComunidad" placeholder="Comunidad (opcional)" style="width:100%;background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:8px 10px;font-size:13px;margin-bottom:6px" />
-        <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;margin-bottom:8px"><input type="checkbox" id="tPublico" style="width:auto"> Hacerlo visible a otros</label>
+        <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;margin-bottom:8px"><input type="checkbox" id="tPublico" style="width:auto"> Pedir que sea visible para otras personas (se revisa antes de mostrarse)</label>
         <div style="display:flex;gap:6px">
           <button class="dlbtn" id="tGuardar" style="flex:1;background:var(--accent);color:#06231a;border-color:var(--accent)">Guardar</button>
           <button class="dlbtn" id="tCancelar" style="flex:1">Cancelar</button>
@@ -1315,14 +1315,14 @@ botonPlay(false);
     g('apLogin').style.display=user?'none':'block';
     g('apSession').style.display=user?'block':'none';
     g('territorioBlock').style.display=user?'block':'none';
-    if(!user){salirAportar(); salirTerritorio(); perfil=null; salirVerificar(); pintarParticipacion(); if(g('apMios'))g('apMios').innerHTML=''; autoVerificar(); return;}
+    if(!user){salirAportar(); salirTerritorio(); perfil=null; salirVerificar(); pintarParticipacion(); if(g('apMios'))g('apMios').innerHTML=''; autoVerificar(); verPedido(); return;}
     g('apUser').textContent=user.email;
-    const{data:p}=await sb.from('profiles').select('role,aprobado,motivo,acepta_aviso_at').eq('id',user.id).maybeSingle();
+    const{data:p}=await sb.from('profiles').select('role,aprobado,motivo,acepta_aviso_at,rechazado_at,motivo_rechazo').eq('id',user.id).maybeSingle();
     perfil=p||null; pintarParticipacion(); cargarMisAportes(); autoVerificar();
     esMod=p&&(p.role==='moderator'||p.role==='admin');
     g('apMod').textContent=esMod?'· admin':'';
     g('apModLink').style.display=esMod?'block':'none';
-    cargarTerritorios();
+    cargarTerritorios(); verPedido();
   }
 
   // -- Modo aportar --
@@ -1442,11 +1442,15 @@ botonPlay(false);
     g('tStats').style.display='block'; g('tStats').innerHTML='<span style="color:var(--accent)">¡Territorio guardado!</span>';
     g('tDibujar').textContent='Dibujar territorio';
     cargarTerritorios(); };
+  // Etiqueta de visibilidad (M7): público solo cuando un moderador lo aprobó.
+  function tEtiqueta(r){ const e=ESTADO_AP[r==='aprobado'?'validado':r==='rechazado'?'rechazado':'pendiente'],
+      txt=r==='aprobado'?'público':r==='rechazado'?'no aprobado':'en revisión';
+    return '<span style="font-size:12px;padding:2px 7px;border-radius:20px;font-weight:700;color:'+e[1]+';background:'+e[2]+'">'+txt+'</span>'; }
   window.cargarTerritorios=async function(){ if(!user){g('tLista').innerHTML='';return;}
-    const {data}=await sb.from('territorios').select('id,nombre,publico,stats').eq('user_id',user.id).order('created_at',{ascending:false});
+    const {data}=await sb.from('territorios').select('id,nombre,publico,revision,stats').eq('user_id',user.id).order('created_at',{ascending:false});
     if(!data||!data.length){ g('tLista').innerHTML='<div style="font-size:12px;color:var(--muted)">Aún no has guardado territorios.</div>'; return; }
     g('tLista').innerHTML='<div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Mis territorios</div>'+
-      data.map(t=>{const s=t.stats||{}; return '<div class="aporte" data-id="'+t.id+'" style="cursor:pointer"><div class="top"><b>'+t.nombre+'</b>'+(t.publico?'<span class="tag validado">público</span>':'')+'</div>'
+      data.map(t=>{const s=t.stats||{}; return '<div class="aporte" data-id="'+t.id+'" style="cursor:pointer"><div class="top"><b>'+t.nombre+'</b>'+(t.publico?tEtiqueta(t.revision):'')+'</div>'
         +'<div style="color:var(--muted)">'+(s.tot?s.tot.toFixed(1)+' ha · '+(s.n||0)+' parches':'sin cifras')+'</div></div>';}).join('');
     g('tLista').querySelectorAll('[data-id]').forEach(el=>el.onclick=()=>verTerritorio(el.dataset.id)); };
   // ===== Verificar el estado actual (D15) =====
@@ -1458,6 +1462,7 @@ botonPlay(false);
     const sol=g('vSolicitud'), est=g('vEstado'), btn=g('vBtnEntrar');
     if(!user){sol.style.display='none';est.textContent='';btn.style.display='none';return;}
     if(perfil&&perfil.aprobado){sol.style.display='none';est.textContent='Registro aprobado: puedes verificar el estado actual del mapa.';btn.style.display='block';}
+    else if(perfil&&perfil.rechazado_at){sol.style.display='none';est.textContent='Tu solicitud para verificar no se aprobó'+(perfil.motivo_rechazo?' ('+perfil.motivo_rechazo+')':'')+'. Puedes seguir dejando aportes y trazando tu territorio.';btn.style.display='none';}
     else if(perfil&&perfil.motivo&&perfil.acepta_aviso_at){sol.style.display='none';est.textContent='Tu solicitud para verificar está en revisión.';btn.style.display='none';}
     else{sol.style.display='block';est.textContent='';btn.style.display='none';}
   }
@@ -1608,6 +1613,10 @@ botonPlay(false);
     if(tLayer)map.removeLayer(tLayer);
     tLayer=L.geoJSON(data.geom,{pane:'partPane',style:{color:'#3fb27f',weight:2,fillColor:'#3fb27f',fillOpacity:0.12}}).addTo(map);
     map.fitBounds(tLayer.getBounds(),{padding:[30,30]}); mostrarStats(data.stats); }
+  // mapa.html?territorio=<id>: abre ese territorio (desde Moderación). La base decide si se
+  // puede ver: el propio, uno público aprobado o, para moderadores, uno en revisión.
+  const tPedido=new URLSearchParams(location.search).get('territorio'); let tPedidoHecho=false;
+  function verPedido(){ if(!tPedido||tPedidoHecho)return; tPedidoHecho=true; verTerritorio(tPedido); }
 })();
 </script>
 </body>

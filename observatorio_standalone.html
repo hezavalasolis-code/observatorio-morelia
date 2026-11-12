@@ -49,7 +49,7 @@
   const oyentes=[]; let sesion=null, perfil=null, listo=false;
   const sb=(window.supabase&&window.SB_CONFIG)?window.supabase.createClient(SB_CONFIG.url,SB_CONFIG.key):null;
   async function cargarPerfil(){ perfil=null; if(!sb||!sesion)return;
-    const {data}=await sb.from('profiles').select('role,aprobado,motivo,acepta_aviso_at,display_name').eq('id',sesion.user.id).maybeSingle();
+    const {data}=await sb.from('profiles').select('role,aprobado,motivo,acepta_aviso_at,display_name,rechazado_at,motivo_rechazo').eq('id',sesion.user.id).maybeSingle();
     perfil=data||null; }
   async function avisar(){ await cargarPerfil(); listo=true; oyentes.forEach(f=>{try{f(sesion,perfil);}catch(e){}}); pintarSesion(); }
   if(sb){ sb.auth.getSession().then(({data})=>{sesion=data.session; avisar();});
@@ -94,6 +94,9 @@
   .ofm-cajon nav a span{display:block;font-size:14.5px}
   .ofm-cajon nav a small{display:block;font-size:12px;color:#9fb2c4;margin-top:1px}
   .ofm-cajon nav a.ofm-admin{border-top:1px solid #2b3d4f;margin-top:6px}
+  .ofm-pend{display:inline-block;min-width:18px;padding:1px 6px;margin-left:6px;border-radius:9px;background:#f0a020;color:#1a1200;font-size:11.5px;font-weight:700;text-align:center;vertical-align:1px}
+  .ofm-burger{position:relative}
+  .ofm-burger[data-pend]::after{content:"";position:absolute;top:8px;right:8px;width:8px;height:8px;border-radius:50%;background:#f0a020}
   .ofm-cajon .ofm-cuenta{padding:12px 16px;border-top:1px solid #2b3d4f;display:flex;flex-direction:column;gap:8px;font-size:12.5px;color:#9fb2c4}
   .ofm-cajon footer{margin-top:auto;padding:12px 16px;border-top:1px solid #2b3d4f;font-size:12px;color:#9fb2c4;line-height:1.5}
   .ofm-modal{position:fixed;inset:0;z-index:4100;display:none;align-items:center;justify-content:center;background:rgba(5,9,14,.65);padding:16px;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
@@ -185,9 +188,22 @@
   function abrirAcceso(){ cerrar(); modal.classList.add('abierto'); setTimeout(()=>modal.querySelector('#ofmAccMail').focus(),30); }
   function cerrarAcceso(){ modal.classList.remove('abierto'); }
 
+  // Pendientes de moderación (M10 · 12-11-2026): un número junto a «Moderación» y un punto en el ☰.
+  // La función de la base solo cuenta lo que a cada rol le toca revisar.
+  async function pintarPendientes(admin){ if(!caj) return;
+    let n=0;
+    if(admin&&sb){ const {data}=await sb.rpc('pendientes_moderacion');
+      const r=data&&data[0]; if(r) n=(+r.solicitudes||0)+(+r.aportes||0)+(+r.territorios||0); }
+    caj.querySelectorAll('[data-admin] span').forEach(sp=>{ const b=sp.querySelector('.ofm-pend'); if(b)b.remove();
+      if(n){ const e=el('b',{class:'ofm-pend','aria-label':n+' pendientes'},String(n)); sp.appendChild(e);} });
+    document.querySelectorAll('[data-ofm-abre]').forEach(b=>{ if(n)b.setAttribute('data-pend','1'); else b.removeAttribute('data-pend');
+      b.setAttribute('aria-label', n?'Abrir el menú ('+n+' pendientes de moderación)':'Abrir el menú'); });
+  }
+  window.ofmAuth.refrescarPendientes=()=>pintarPendientes(perfil&&(perfil.role==='admin'||perfil.role==='moderator'));
   function pintarSesion(){ if(!caj)return;
     const admin=perfil&&(perfil.role==='admin'||perfil.role==='moderator');
     caj.querySelectorAll('[data-admin]').forEach(a=>a.hidden=!admin);
+    pintarPendientes(admin);
     const c=caj.querySelector('[data-ofm-cuenta]');
     if(!sb){c.innerHTML='';}
     else if(sesion){ c.innerHTML='<span>Sesión: <b style="color:#e8eef4">'+(sesion.user.email||'')+'</b></span>';

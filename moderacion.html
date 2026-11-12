@@ -9,172 +9,218 @@
 <link rel="icon" href="./img/icono.svg" type="image/svg+xml" />
 <link rel="icon" href="./img/icono-32.png" sizes="32x32" type="image/png" />
 <link rel="apple-touch-icon" href="./img/icono-180.png" />
+<link rel="stylesheet" href="./comun.css" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
 <script src="./sb-config.js"></script>
 <script src="./nav.js"></script>
 <style>
-  :root{--bg:#0f1720;--panel:#16212e;--panel2:#1e2c3c;--ink:#e8eef4;--muted:#9fb2c4;
-        --line:#2b3d4f;--accent:#3fb27f;--accent2:#f0a020;--danger:#b2323f;}
-  *{box-sizing:border-box}
-  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
-  .wrap{max-width:860px;margin:0 auto;padding:22px 18px 60px}
-  h1{font-size:20px;margin:0 0 2px}
-  .sub{color:var(--muted);font-size:13px;margin-bottom:18px}
-  input{background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:8px 10px;font-size:13px}
-  button{cursor:pointer;border:none;border-radius:8px;padding:8px 13px;font-size:13px;font-weight:600}
-  .btn{background:var(--accent);color:#06231a}
-  .btn.sec{background:var(--panel2);color:var(--ink);border:1px solid var(--line);font-weight:500}
-  .btn.rej{background:var(--danger);color:#fff}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:14px 16px;margin-bottom:12px}
-  .card .top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
-  .card b.tipo{font-size:15px;text-transform:capitalize}
-  .meta{color:var(--muted);font-size:12px;margin:4px 0 8px;line-height:1.5}
-  .desc{font-size:13px;line-height:1.5;margin-bottom:10px}
+  /* Panel de moderación (sprint A · 12-11-2026, PROPUESTA_moderacion M1–M11).
+     El acceso es el de nav.js; qué ve cada rol lo decide la base (migración 09). */
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 16px}
+  .tabs button{background:var(--panel);color:var(--muted);border:1px solid var(--line);border-radius:9px;padding:9px 14px;font-size:14px;cursor:pointer;font-family:inherit}
+  .tabs button[aria-selected="true"]{color:var(--ink);border-color:var(--accent);background:rgba(63,178,127,.12)}
+  .tabs .n{display:inline-block;min-width:18px;margin-left:6px;padding:0 6px;border-radius:9px;background:#f0a020;color:#1a1200;font-size:12px;font-weight:700}
+  .tabs .n:empty{display:none}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:12px}
+  .card .top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .meta{color:var(--muted);font-size:12.5px;margin:4px 0 8px;line-height:1.5}
+  .desc{font-size:13.5px;line-height:1.5;margin-bottom:10px;white-space:pre-wrap}
   .acts{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-  .acts input{flex:1;min-width:160px}
-  img.foto{max-width:180px;border-radius:8px;border:1px solid var(--line);margin-bottom:10px;display:block}
-  .msg{font-size:13px;margin:10px 0}.msg.err{color:#ff8a95}
-  .hidden{display:none!important}
-  #login{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;max-width:380px}
-  #login label{display:block;font-size:12px;color:var(--muted);margin:8px 0 4px}
-  #login input{width:100%}
-  a{color:var(--accent2)}
+  .acts input{flex:1;min-width:180px}
+  input,select,textarea{background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:13.5px;font-family:inherit}
+  .bt{cursor:pointer;border:none;border-radius:8px;padding:8px 13px;font-size:13.5px;font-weight:600;font-family:inherit;background:var(--accent);color:#06231a}
+  .bt.sec{background:transparent;color:var(--ink);border:1px solid var(--line);font-weight:500}
+  .bt.rej{background:#b2323f;color:#fff}
+  .bt:disabled{opacity:.5;cursor:not-allowed}
+  a.bt{text-decoration:none;display:inline-block}
+  img.foto{max-width:200px;border-radius:8px;border:1px solid var(--line);margin:0 8px 10px 0}
+  .msg{font-size:13px;margin:8px 0}.msg.err{color:#ff8a95}.msg.ok{color:var(--accent)}
+  .vacio{color:var(--muted);font-size:13.5px}
+  details{margin-top:18px} summary{cursor:pointer;color:var(--muted);font-size:13.5px}
+  .rol{display:inline-block;font-size:12px;padding:2px 8px;border-radius:20px;background:var(--panel2);color:var(--muted)}
+  .aviso-correo{background:rgba(240,160,32,.1);border:1px solid rgba(240,160,32,.35);border-radius:9px;padding:9px 12px;font-size:13px;margin-top:10px}
 </style>
 </head>
 <body>
 <div data-ofm-barra="Moderación"></div>
-<div class="wrap">
-  <h1>Panel de moderación</h1>
-  <div class="sub"><a href="./index.html">← Volver al inicio</a></div>
+<main class="contenedor">
+  <section class="seccion">
+    <h1>Moderación</h1>
+    <p class="sub">Revisión de solicitudes, aportes y territorios antes de que cuenten o se muestren. Los avisos a las personas se envían por correo desde tu buzón.</p>
 
-  <div id="login">
-    <b>Acceso de moderador</b>
-    <label>Correo</label><input id="email" type="email" />
-    <label>Contraseña</label><input id="pass" type="password" />
-    <div style="margin-top:12px"><button class="btn" id="btnLogin">Entrar</button></div>
-    <div class="msg err" id="loginMsg"></div>
-  </div>
+    <div id="anon" class="panel" hidden><p class="sub" style="margin:0 0 12px">Entra con tu cuenta para moderar.</p><button class="btn" type="button" id="bEntrar">Entrar</button></div>
+    <div id="sinRol" class="panel" hidden><p class="sub" style="margin:0">Tu cuenta no tiene rol de moderación. Si debería tenerlo, pide que te lo asignen.</p></div>
 
-  <div id="panel" class="hidden">
-    <div class="sub">Sesión: <b id="who"></b> · <button class="btn sec" id="btnLogout">Salir</button></div>
-    <div id="noauth" class="msg err hidden">Tu cuenta no tiene rol de moderador. Pide que te asignen el rol.</div>
-    <div id="solicitudesBox" class="hidden">
-      <h2 style="font-size:15px;margin:18px 0 6px">Verificar el estado actual · solicitudes de participación</h2>
-      <div id="solicitudes"></div>
-      <h2 style="font-size:15px;margin:22px 0 6px">Participantes aprobados</h2>
-      <div class="sub" style="margin-bottom:8px">Acuerdo con los puntos de control: proporción de controles en que la respuesta coincide con la referencia (sin contar «no se distingue»).</div>
-      <div id="aprobados"></div>
-      <h2 style="font-size:15px;margin:22px 0 6px">Aportes ciudadanos</h2>
+    <div id="panel" hidden>
+      <div class="tabs" role="tablist">
+        <button type="button" role="tab" data-tab="sol" data-admin hidden>Solicitudes<span class="n" id="nSol"></span></button>
+        <button type="button" role="tab" data-tab="apo">Aportes<span class="n" id="nApo"></span></button>
+        <button type="button" role="tab" data-tab="ter">Territorios<span class="n" id="nTer"></span></button>
+        <button type="button" role="tab" data-tab="cue" data-admin hidden>Cuentas y roles</button>
+      </div>
+      <div data-panel="sol" hidden></div>
+      <div data-panel="apo" hidden></div>
+      <div data-panel="ter" hidden></div>
+      <div data-panel="cue" hidden></div>
     </div>
-    <div id="stats" class="sub"></div>
-    <div id="lista"></div>
-  </div>
-</div>
-
+  </section>
+</main>
+<footer class="pie contenedor">Observatorio Forestal de Morelia · Posgrado en Geografía, CIGA-UNAM · <a href="./privacidad.html">Aviso de privacidad</a></footer>
 <script>
-const { url, key } = window.SB_CONFIG;
-const sb = (window.ofmAuth&&window.ofmAuth.sb) || supabase.createClient(url, key);   // un solo cliente por página
-const $ = id => document.getElementById(id);
-let user=null;
+const A=window.ofmAuth, sb=A&&A.sb, $=s=>document.querySelector(s);
+const esc=t=>String(t??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fecha=f=>f?new Date(f).toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'}):'';
+const P=k=>$('[data-panel="'+k+'"]');
+let yo=null, esAdmin=false, nombres={}, correos={};
 
-$('btnLogin').onclick = async ()=>{
-  const {error} = await sb.auth.signInWithPassword({email:$('email').value.trim(),password:$('pass').value});
-  if(error) $('loginMsg').textContent = error.message;
+// ── Plantillas de aviso por correo (M5: avisos manuales, texto neutro) ───────────
+const FIRMA='\n\nObservatorio Forestal de Morelia\nhttps://hezavalasolis-code.github.io/observatorio-morelia/';
+const PLANTILLA={
+  aprobada:n=>['Tu registro para verificar fue aprobado',
+    'Hola'+(n?' '+n:'')+':\n\nTu solicitud para verificar el estado actual del mapa fue aprobada. Ya puedes entrar desde «Participación» y empezar: cada cuadro toma unos segundos.\n\nhttps://hezavalasolis-code.github.io/observatorio-morelia/participacion.html\n\nGracias por participar.'],
+  rechazada:(n,m)=>['Sobre tu solicitud para verificar',
+    'Hola'+(n?' '+n:'')+':\n\nGracias por tu interés. Por ahora tu solicitud para verificar no fue aprobada'+(m?'. Motivo: '+m:'')+'.\n\nPuedes seguir dejando aportes y trazando tu territorio en el mapa. Si crees que hay un error, responde a este correo.'],
+  libre:n=>['Observatorio Forestal de Morelia','Hola'+(n?' '+n:'')+':\n\n']
 };
-$('btnLogout').onclick = ()=> sb.auth.signOut();
+function mailto(uid,clave,motivo){ const c=correos[uid]; if(!c) return '';
+  const [asunto,cuerpo]=PLANTILLA[clave](nombres[uid]||'',motivo);
+  return 'mailto:'+encodeURIComponent(c)+'?subject='+encodeURIComponent(asunto)+'&body='+encodeURIComponent(cuerpo+FIRMA); }
+function avisoCorreo(cont,uid,clave,motivo){ const h=mailto(uid,clave,motivo);
+  const d=document.createElement('div'); d.className='aviso-correo';
+  d.innerHTML=h?'Hecho. <a href="'+h+'">Avisarle por correo</a> (se abre tu programa de correo con el texto listo para revisar).':'Hecho.';
+  cont.prepend(d); }
 
-sb.auth.onAuthStateChange((_e,s)=>{setTimeout(()=>handle(s),0);});
-sb.auth.getSession().then(({data})=>handle(data.session));
+// ── Pestañas ─────────────────────────────────────────────────────────────────────
+function abrirTab(k){ document.querySelectorAll('[data-tab]').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===k));
+  document.querySelectorAll('[data-panel]').forEach(p=>p.hidden=p.dataset.panel!==k);
+  try{localStorage.setItem('ofm_mod_tab',k);}catch(e){} }
+document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>abrirTab(b.dataset.tab));
+$('#bEntrar').onclick=()=>A&&A.abrirAcceso();
 
-async function handle(session){
-  user = session?.user||null;
-  $('login').classList.toggle('hidden', !!user);
-  $('panel').classList.toggle('hidden', !user);
-  if(!user) return;
-  $('who').textContent = user.email;
-  const {data:prof} = await sb.from('profiles').select('role').eq('id',user.id).maybeSingle();
-  const esMod = prof && (prof.role==='moderator'||prof.role==='admin');
-  const esAdmin = prof && prof.role==='admin';
-  $('solicitudesBox').classList.toggle('hidden', !esAdmin);
-  if(esAdmin) cargarSolicitudes();
-  $('noauth').classList.toggle('hidden', esMod);
-  if(esMod) cargar(); else $('lista').innerHTML='';
+async function contar(){ const {data}=await sb.rpc('pendientes_moderacion'); const r=(data&&data[0])||{};
+  $('#nSol').textContent=+r.solicitudes||''; $('#nApo').textContent=+r.aportes||''; $('#nTer').textContent=+r.territorios||'';
+  if(A.refrescarPendientes) A.refrescarPendientes(); }
+
+async function iniciar(sesion,perfil){
+  const mod=!!(perfil&&(perfil.role==='admin'||perfil.role==='moderator'));
+  $('#anon').hidden=!!sesion; $('#sinRol').hidden=!sesion||mod; $('#panel').hidden=!mod;
+  if(!sesion||!mod||!sb) return;
+  yo=sesion.user.id; esAdmin=perfil.role==='admin';
+  document.querySelectorAll('[data-tab][data-admin]').forEach(b=>b.hidden=!esAdmin);
+  if(esAdmin){ // nombres y correos solo para administración (la base no se los da a moderadores)
+    const [pf,co]=await Promise.all([sb.from('profiles').select('id,display_name'),sb.rpc('correos_participantes')]);
+    (pf.data||[]).forEach(p=>nombres[p.id]=p.display_name||''); (co.data||[]).forEach(c=>correos[c.id]=c.email); }
+  let t=null; try{t=localStorage.getItem('ofm_mod_tab');}catch(e){}
+  if(!t||(!esAdmin&&(t==='sol'||t==='cue'))) t=esAdmin?'sol':'apo';
+  abrirTab(t);
+  contar(); cargarAportes(); cargarTerritorios(); if(esAdmin){ cargarSolicitudes(); cargarCuentas(); }
 }
+const quien=uid=>esAdmin?esc(nombres[uid]||correos[uid]||'participante'):'una persona participante';
 
-// ── Verificar el estado actual (D15): aprobación de registros y acuerdo con controles ──
-const esc = t => String(t??'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-async function cargarSolicitudes(){
-  const {data:perf, error} = await sb.from('profiles')
-    .select('id,display_name,organizacion,motivo,acepta_aviso_at,aprobado,aprobado_at,created_at')
-    .not('motivo','is',null).order('created_at',{ascending:true});
-  if(error){ $('solicitudes').innerHTML=`<div class="msg err">${esc(error.message)}</div>`; return; }
-  const pend=(perf||[]).filter(p=>!p.aprobado), apr=(perf||[]).filter(p=>p.aprobado);
-  $('solicitudes').innerHTML = pend.length ? '' : '<div class="sub">No hay solicitudes pendientes.</div>';
-  for(const p of pend){
-    const d=document.createElement('div'); d.className='card';
-    d.innerHTML=`<div class="top"><b>${esc(p.display_name)}</b><span class="sub">${new Date(p.created_at).toLocaleDateString('es-MX')}</span></div>
-      <div class="meta">${p.organizacion?esc(p.organizacion)+' · ':''}${p.acepta_aviso_at?'aceptó las condiciones el '+new Date(p.acepta_aviso_at).toLocaleDateString('es-MX'):'<b>no ha aceptado las condiciones</b>'}</div>
-      <div class="desc">${esc(p.motivo)}</div>
-      <div class="acts"><button class="btn" data-apr="${p.id}" ${p.acepta_aviso_at?'':'disabled'}>Aprobar</button></div>`;
-    $('solicitudes').appendChild(d);
-  }
-  $('solicitudes').querySelectorAll('[data-apr]').forEach(b=>b.onclick=()=>aprobar(b.dataset.apr,true));
-  const {data:ac} = await sb.from('v_acuerdo_controles').select('user_id,controles_respondidos,coincidencias,acuerdo');
-  const {data:vs} = await sb.from('verificaciones').select('user_id');
-  const nVer={}; (vs||[]).forEach(v=>nVer[v.user_id]=(nVer[v.user_id]||0)+1);
-  const acu={}; (ac||[]).forEach(a=>acu[a.user_id]=a);
-  $('aprobados').innerHTML = apr.length ? `<table style="width:100%;border-collapse:collapse;font-size:13px">
-    <tr style="color:var(--muted);text-align:left"><th style="padding:6px 4px">Participante</th><th>Verificaciones</th><th>Controles</th><th>Acuerdo</th><th></th></tr>
-    ${apr.map(p=>{const a=acu[p.id]; return `<tr style="border-top:1px solid var(--line)"><td style="padding:7px 4px">${esc(p.display_name)}</td>
-      <td>${nVer[p.id]||0}</td><td>${a?a.controles_respondidos:0}</td><td>${a?(100*a.acuerdo).toFixed(0)+' %':'—'}</td>
-      <td style="text-align:right"><button class="btn sec" data-ret="${p.id}">Retirar aprobación</button></td></tr>`;}).join('')}</table>`
-    : '<div class="sub">Todavía no hay participantes aprobados.</div>';
-  $('aprobados').querySelectorAll('[data-ret]').forEach(b=>b.onclick=()=>{ if(confirm('¿Retirar la aprobación? Sus respuestas se conservan.')) aprobar(b.dataset.ret,false); });
+// ── Solicitudes para verificar (admin) ───────────────────────────────────────────
+async function cargarSolicitudes(aviso){
+  const {data,error}=await sb.from('profiles').select('id,display_name,organizacion,motivo,acepta_aviso_at,aprobado,rechazado_at,motivo_rechazo,created_at')
+    .not('motivo','is',null).order('acepta_aviso_at',{ascending:true});
+  const c=P('sol'); if(error){ c.innerHTML='<div class="msg err">'+esc(error.message)+'</div>'; return; }
+  const pend=(data||[]).filter(p=>!p.aprobado&&!p.rechazado_at&&p.acepta_aviso_at), rech=(data||[]).filter(p=>p.rechazado_at);
+  c.innerHTML=(pend.length?'':'<p class="vacio">No hay solicitudes pendientes.</p>')+pend.map(p=>
+    '<div class="card"><div class="top"><b>'+esc(p.display_name||correos[p.id]||'Sin nombre')+'</b><span class="meta">'+fecha(p.acepta_aviso_at)+'</span></div>'+
+    '<div class="meta">'+(correos[p.id]?esc(correos[p.id])+' · ':'')+(p.organizacion?esc(p.organizacion)+' · ':'')+'aceptó las condiciones</div>'+
+    '<div class="desc">'+esc(p.motivo)+'</div>'+
+    '<div class="acts"><button class="bt" data-apr="'+p.id+'">Aprobar</button><input placeholder="Motivo si no se aprueba (lo verá la persona)" data-mot="'+p.id+'"><button class="bt rej" data-rec="'+p.id+'">No aprobar</button>'+
+    (correos[p.id]?'<a class="bt sec" href="'+mailto(p.id,'libre')+'">Escribirle</a>':'')+'</div></div>').join('')+
+    (rech.length?'<details><summary>Solicitudes no aprobadas ('+rech.length+')</summary>'+rech.map(p=>
+      '<div class="card"><div class="top"><b>'+esc(p.display_name||correos[p.id]||'Sin nombre')+'</b><span class="meta">no aprobada el '+fecha(p.rechazado_at)+'</span></div>'+
+      '<div class="desc">'+esc(p.motivo)+'</div>'+(p.motivo_rechazo?'<div class="meta">Motivo: '+esc(p.motivo_rechazo)+'</div>':'')+
+      '<div class="acts"><button class="bt sec" data-apr="'+p.id+'">Aprobar ahora</button></div></div>').join('')+'</details>':'');
+  c.querySelectorAll('[data-apr]').forEach(b=>b.onclick=()=>decidir(b.dataset.apr,{aprobado:true},'aprobada'));
+  c.querySelectorAll('[data-rec]').forEach(b=>b.onclick=()=>{ const m=c.querySelector('[data-mot="'+b.dataset.rec+'"]').value.trim();
+    decidir(b.dataset.rec,{rechazado_at:new Date().toISOString(),motivo_rechazo:m||null},'rechazada',m); });
+  if(aviso) avisoCorreo(c,aviso.uid,aviso.clave,aviso.motivo);
 }
-async function aprobar(id, valor){
-  const {error} = await sb.from('profiles').update({aprobado:valor}).eq('id',id);
+async function decidir(uid,cambio,clave,motivo){
+  const {error}=await sb.from('profiles').update(cambio).eq('id',uid);
   if(error){ alert('No se pudo: '+error.message); return; }
-  cargarSolicitudes();
-}
-async function cargar(){
-  const {data, error} = await sb.from('aportes')
-    .select('id,tipo,descripcion,estado,created_at,user_id,geom,aporte_fotos(storage_path)')
-    .eq('estado','pendiente').order('created_at',{ascending:true});
-  if(error){ $('lista').innerHTML=`<div class="msg err">${error.message}</div>`; return; }
-  $('stats').textContent = `${(data||[]).length} aporte(s) pendiente(s) de revisión.`;
-  if(!data || !data.length){ $('lista').innerHTML='<div class="sub">Nada pendiente. 🎉</div>'; return; }
-  $('lista').innerHTML='';
-  for(const a of data){
-    const c = a.geom ? a.geom.coordinates : null;
-    const div = document.createElement('div'); div.className='card';
-    div.innerHTML = `<div class="top"><b class="tipo">${a.tipo}</b>
-        <span class="sub">${new Date(a.created_at).toLocaleString('es-MX')}</span></div>
-      <div class="meta">${c?`📍 ${c[1].toFixed(5)}, ${c[0].toFixed(5)} · `:''}autor: ${a.user_id.slice(0,8)}…</div>
-      <div class="desc">${a.descripcion||'<i>sin descripción</i>'}</div>
-      <div class="fotos"></div>
-      <div class="acts">
-        <button class="btn" data-ok="${a.id}">Validar</button>
-        <input placeholder="motivo de rechazo (opcional)" data-motivo="${a.id}" />
-        <button class="btn rej" data-no="${a.id}">Rechazar</button>
-      </div>`;
-    $('lista').appendChild(div);
-    // fotos con URL firmada
-    for(const f of (a.aporte_fotos||[])){
-      const {data:signed} = await sb.storage.from('aportes-fotos').createSignedUrl(f.storage_path,120);
-      if(signed){ const img=document.createElement('img'); img.className='foto'; img.src=signed.signedUrl;
-        div.querySelector('.fotos').appendChild(img);}
-    }
-  }
-  $('lista').querySelectorAll('[data-ok]').forEach(b=>b.onclick=()=>moderar(b.dataset.ok,'validado'));
-  $('lista').querySelectorAll('[data-no]').forEach(b=>b.onclick=()=>{
-    const m=$('lista').querySelector(`[data-motivo="${b.dataset.no}"]`).value;
-    moderar(b.dataset.no,'rechazado',m);});
+  cargarSolicitudes({uid,clave,motivo}); cargarCuentas(); contar();
 }
 
-async function moderar(id,estado,motivo){
-  const {error} = await sb.rpc('moderar_aporte',{p_aporte_id:id,p_estado:estado,p_motivo:motivo||null});
-  if(error) alert(error.message); else cargar();
+// ── Cuentas y roles (admin) ─────────────────────────────────────────────────────
+async function cargarCuentas(){
+  const [pf,ac,vs]=await Promise.all([
+    sb.from('profiles').select('id,display_name,role,aprobado,rechazado_at,motivo,created_at').order('created_at',{ascending:true}),
+    sb.from('v_acuerdo_controles').select('user_id,controles_respondidos,acuerdo'),
+    sb.from('verificaciones').select('user_id')]);
+  const c=P('cue'); if(pf.error){ c.innerHTML='<div class="msg err">'+esc(pf.error.message)+'</div>'; return; }
+  const nVer={}; (vs.data||[]).forEach(v=>nVer[v.user_id]=(nVer[v.user_id]||0)+1);
+  const acu={}; (ac.data||[]).forEach(a=>acu[a.user_id]=a);
+  const estado=p=>p.aprobado?'Aprobada':p.rechazado_at?'No aprobada':p.motivo?'En revisión':'Sin solicitud';
+  c.innerHTML='<p class="sub">El rol de moderación permite revisar aportes y territorios; no da acceso a correos, perfiles ni verificaciones de otras personas. Solo administración aprueba solicitudes.</p>'+
+    '<div class="tabla-wrap" style="overflow-x:auto"><table class="tabla"><tr><th>Persona</th><th>Rol</th><th>Verificar</th><th class="num">Cuadros</th><th class="num">Controles</th><th class="num">Acuerdo</th><th></th></tr>'+
+    (pf.data||[]).map(p=>{ const a=acu[p.id], fijo=p.id===yo||p.role==='admin';
+      return '<tr><td>'+esc(p.display_name||'Sin nombre')+(correos[p.id]?'<br><span class="meta">'+esc(correos[p.id])+'</span>':'')+'</td>'+
+        '<td>'+(fijo?'<span class="rol">'+(p.role==='admin'?'administración':esc(p.role))+'</span>':
+          '<select data-rol="'+p.id+'" aria-label="Rol"><option value="contributor"'+(p.role==='contributor'?' selected':'')+'>participante</option><option value="moderator"'+(p.role==='moderator'?' selected':'')+'>moderación</option></select>')+'</td>'+
+        '<td>'+estado(p)+'</td><td class="num">'+(nVer[p.id]||0)+'</td><td class="num">'+(a?a.controles_respondidos:0)+'</td><td class="num">'+(a&&a.acuerdo!=null?(100*a.acuerdo).toFixed(0)+' %':'—')+'</td>'+
+        '<td style="text-align:right;white-space:nowrap">'+(p.aprobado&&p.id!==yo?'<button class="bt sec" data-ret="'+p.id+'">Retirar aprobación</button> ':'')+
+          (correos[p.id]&&p.id!==yo?'<a class="bt sec" href="'+mailto(p.id,'libre')+'">Escribirle</a>':'')+'</td></tr>'; }).join('')+
+    '</table></div><p class="nota">Acuerdo: proporción de puntos de control en que la respuesta coincide con la referencia, sin contar «no se distingue».</p>';
+  c.querySelectorAll('[data-rol]').forEach(s=>s.onchange=async()=>{
+    const nuevo=s.value, txt=nuevo==='moderator'?'¿Dar el rol de moderación? Podrá revisar aportes y territorios.':'¿Quitar el rol de moderación?';
+    if(!confirm(txt)){ cargarCuentas(); return; }
+    const {error}=await sb.from('profiles').update({role:nuevo}).eq('id',s.dataset.rol);
+    if(error) alert('No se pudo: '+error.message); cargarCuentas(); });
+  c.querySelectorAll('[data-ret]').forEach(b=>b.onclick=async()=>{
+    if(!confirm('¿Retirar la aprobación? Sus respuestas se conservan.')) return;
+    const {error}=await sb.from('profiles').update({aprobado:false}).eq('id',b.dataset.ret);
+    if(error) alert('No se pudo: '+error.message); cargarCuentas(); cargarSolicitudes(); });
 }
+
+// ── Aportes (moderación) ─────────────────────────────────────────────────────────
+async function cargarAportes(){
+  const {data,error}=await sb.from('aportes').select('id,tipo,descripcion,created_at,user_id,geom,aporte_fotos(storage_path)')
+    .eq('estado','pendiente').order('created_at',{ascending:true});
+  const c=P('apo'); if(error){ c.innerHTML='<div class="msg err">'+esc(error.message)+'</div>'; return; }
+  if(!data||!data.length){ c.innerHTML='<p class="vacio">No hay aportes pendientes.</p>'; return; }
+  c.innerHTML='';
+  for(const a of data){
+    const xy=a.geom&&a.geom.coordinates, enMapa=xy?'./mapa.html#18/'+xy[1].toFixed(5)+'/'+xy[0].toFixed(5)+'/2024/acc/anio/f':null;
+    const d=document.createElement('div'); d.className='card';
+    d.innerHTML='<div class="top"><b style="text-transform:capitalize">'+esc(String(a.tipo).replace('_',' '))+'</b><span class="meta">'+fecha(a.created_at)+'</span></div>'+
+      '<div class="meta">De '+quien(a.user_id)+(enMapa?' · <a href="'+enMapa+'" target="_blank" rel="noopener">ver el lugar en el mapa</a>':'')+'</div>'+
+      '<div class="desc">'+(a.descripcion?esc(a.descripcion):'<i>Sin descripción</i>')+'</div><div class="fotos"></div>'+
+      '<div class="acts"><button class="bt" data-ok>Validar</button><input placeholder="Motivo si no se valida (lo verá la persona)" data-mot><button class="bt rej" data-no>No validar</button></div>';
+    c.appendChild(d);
+    d.querySelector('[data-ok]').onclick=()=>moderarAporte(a.id,'validado',null);
+    d.querySelector('[data-no]').onclick=()=>moderarAporte(a.id,'rechazado',d.querySelector('[data-mot]').value.trim()||null);
+    for(const f of (a.aporte_fotos||[])){
+      const {data:s}=await sb.storage.from('aportes-fotos').createSignedUrl(f.storage_path,300);
+      if(s){ const img=document.createElement('img'); img.className='foto'; img.src=s.signedUrl; img.alt='Foto del aporte'; d.querySelector('.fotos').appendChild(img); } }
+  }
+}
+async function moderarAporte(id,estado,motivo){
+  const {error}=await sb.rpc('moderar_aporte',{p_aporte_id:id,p_estado:estado,p_motivo:motivo});
+  if(error){ alert('No se pudo: '+error.message); return; } cargarAportes(); contar();
+}
+
+// ── Territorios que piden ser públicos (moderación) ──────────────────────────────
+async function cargarTerritorios(){
+  const {data,error}=await sb.from('territorios').select('id,nombre,comunidad,created_at,user_id')
+    .eq('publico',true).eq('revision','pendiente').order('created_at',{ascending:true});
+  const c=P('ter'); if(error){ c.innerHTML='<div class="msg err">'+esc(error.message)+'</div>'; return; }
+  c.innerHTML='<p class="sub">Un territorio se muestra a otras personas solo si se aprueba aquí. Si su autor lo edita, vuelve a revisión.</p>'+
+    (!data||!data.length?'<p class="vacio">No hay territorios por revisar.</p>':data.map(t=>
+    '<div class="card"><div class="top"><b>'+esc(t.nombre)+'</b><span class="meta">'+fecha(t.created_at)+'</span></div>'+
+    '<div class="meta">'+(t.comunidad?esc(t.comunidad)+' · ':'')+'de '+quien(t.user_id)+' · <a href="./mapa.html?territorio='+t.id+'" target="_blank" rel="noopener">ver el trazo en el mapa</a></div>'+
+    '<div class="acts"><button class="bt" data-tok="'+t.id+'">Aprobar</button><input placeholder="Motivo si no se aprueba (lo verá la persona)" data-tmot="'+t.id+'"><button class="bt rej" data-tno="'+t.id+'">No aprobar</button></div></div>').join(''));
+  c.querySelectorAll('[data-tok]').forEach(b=>b.onclick=()=>revisarTerritorio(b.dataset.tok,'aprobado',null));
+  c.querySelectorAll('[data-tno]').forEach(b=>b.onclick=()=>revisarTerritorio(b.dataset.tno,'rechazado',c.querySelector('[data-tmot="'+b.dataset.tno+'"]').value.trim()||null));
+}
+async function revisarTerritorio(id,revision,motivo){
+  const {error}=await sb.from('territorios').update({revision,motivo_rechazo:motivo}).eq('id',id);
+  if(error){ alert('No se pudo: '+error.message); return; } cargarTerritorios(); contar();
+}
+
+if(A&&sb) A.onSesion(iniciar); else { $('#anon').hidden=false; $('#bEntrar').disabled=true; }
 </script>
 </body>
 </html>
