@@ -7,6 +7,10 @@
    - window.ofmAuth: cliente de Supabase compartido y sesión, para las páginas.
    ══════════════════════════════════════════════════════════════════════════ */
 (function(){
+  // Aviso de D9, en un solo lugar para todas las páginas (A6 · 12-11-2026). Las páginas lo piden con
+  // <div data-ofm-aviso></div>; el mapa lo lee de window.OFM_AVISO para la ficha y el panel.
+  const AVISO='<b>Ejercicio de investigación científica, no documento legal.</b> Los límites provienen del Programa Municipal de Desarrollo Urbano (PMDU) de Morelia 2022-2041, simplificados para el mapa. La pérdida detectada describe un cambio en la vegetación, no quién lo hizo ni si fue legal.';
+  window.OFM_AVISO=AVISO;
   // Cliente compartido: se crea al cargar el script (va en <head>, después de supabase-js
   // y sb-config.js), para que los scripts de cada página lo encuentren listo.
   const oyentes=[]; let sesion=null, perfil=null, listo=false;
@@ -26,6 +30,7 @@
     {t:'Mapa',          d:'Consultar un lugar y ver la pérdida de bosque', href:'./mapa.html'},
     {t:'Datos',         d:'Cuánto bosque se perdió, cuándo y dónde', href:'./datos.html'},
     {t:'Participación', d:'Tu historial: verificaciones, aportes y territorios', href:'./participacion.html'},
+    {t:'Acerca de',     d:'Quién lo hace, qué se puede afirmar y cómo citar', href:'./acerca.html'},
     {t:'Aviso de privacidad', d:'Qué datos se guardan y para qué', href:'./privacidad.html'},
     {t:'Moderación',    d:'Solicitudes, participantes y aportes', href:'./moderacion.html', admin:true}
   ];
@@ -57,7 +62,7 @@
   .ofm-cajon nav a small{display:block;font-size:12px;color:#9fb2c4;margin-top:1px}
   .ofm-cajon nav a.ofm-admin{border-top:1px solid #2b3d4f;margin-top:6px}
   .ofm-cajon .ofm-cuenta{padding:12px 16px;border-top:1px solid #2b3d4f;display:flex;flex-direction:column;gap:8px;font-size:12.5px;color:#9fb2c4}
-  .ofm-cajon footer{margin-top:auto;padding:12px 16px;border-top:1px solid #2b3d4f;font-size:11.5px;color:#9fb2c4;line-height:1.5}
+  .ofm-cajon footer{margin-top:auto;padding:12px 16px;border-top:1px solid #2b3d4f;font-size:12px;color:#9fb2c4;line-height:1.5}
   .ofm-modal{position:fixed;inset:0;z-index:4100;display:none;align-items:center;justify-content:center;background:rgba(5,9,14,.65);padding:16px;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
   .ofm-modal.abierto{display:flex}
   .ofm-modal .caja{background:#16212e;border:1px solid #2b3d4f;border-radius:14px;padding:20px 22px;width:min(400px,100%);color:#e8eef4;box-shadow:0 12px 40px rgba(0,0,0,.6)}
@@ -69,7 +74,9 @@
   .ofm-modal .fila button{flex:1}
   .ofm-modal .msg{font-size:12.5px;margin-top:10px;min-height:1em;line-height:1.4}
   .ofm-modal a{color:#f0a020}
-  .ofm-modal .cerrar{float:right;background:none;border:none;color:#9fb2c4;font-size:22px;cursor:pointer;line-height:1}`;
+  .ofm-modal .cerrar{float:right;background:none;border:none;color:#9fb2c4;font-size:22px;cursor:pointer;line-height:1}
+  .ofm-barra a:focus-visible,.ofm-barra button:focus-visible,.ofm-cajon a:focus-visible,.ofm-modal :focus-visible{outline:2px solid #3fb27f;outline-offset:2px}
+  @media (prefers-reduced-motion:reduce){.ofm-velo,.ofm-cajon{transition:none}}`;
   const el=(tag,attrs,html)=>{const e=document.createElement(tag);Object.entries(attrs||{}).forEach(([k,v])=>e.setAttribute(k,v));if(html!=null)e.innerHTML=html;return e;};
   const pagina=()=>location.pathname.split('/').pop()||'index.html';
   const esActual=it=>it.href.replace('./','')===pagina();
@@ -100,11 +107,12 @@
       c.className='ofm-barra'; c.appendChild(boton());
       c.appendChild(el('a',{class:'ofm-titulo',href:'./index.html'},'Observatorio Forestal de Morelia'));
       const secs=el('nav',{class:'ofm-secs','aria-label':'Secciones'});
-      ITEMS.slice(1,4).forEach(it=>{const a=el('a',{href:it.href},it.t); if(esActual(it))a.setAttribute('aria-current','page'); secs.appendChild(a);});
+      ITEMS.slice(1,5).forEach(it=>{const a=el('a',{href:it.href},it.t); if(esActual(it))a.setAttribute('aria-current','page'); secs.appendChild(a);});
       c.appendChild(secs);
       c.appendChild(el('span',{class:'ofm-entrar-sitio','data-ofm-entrar':'1',style:'margin-left:auto'}));});
     // En el mapa, el ☰ va dentro del buscador
     const bf=document.getElementById('bForm'); if(bf) bf.insertBefore(boton(),bf.firstChild);
+    document.querySelectorAll('[data-ofm-aviso]').forEach(e=>{e.innerHTML=AVISO;});
     construirAcceso();
     pintarSesion();
   }

@@ -5,6 +5,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Observatorio Forestal de Morelia</title>
 <meta name="description" content="Dónde y cuánto bosque se ha perdido en el municipio de Morelia desde 2006, medido con imágenes de satélite y revisado lugar por lugar." />
+<link rel="canonical" href="https://hezavalasolis-code.github.io/observatorio-morelia/" />
+<meta property="og:type" content="website" />
+<meta property="og:locale" content="es_MX" />
+<meta property="og:site_name" content="Observatorio Forestal de Morelia" />
+<meta property="og:title" content="Observatorio Forestal de Morelia" />
+<meta property="og:description" content="Dónde y cuánto bosque se ha perdido en el municipio de Morelia desde 2006, medido con imágenes de satélite y revisado lugar por lugar." />
+<meta property="og:url" content="https://hezavalasolis-code.github.io/observatorio-morelia/" />
+<meta property="og:image" content="https://hezavalasolis-code.github.io/observatorio-morelia/img/vista-previa.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="Mapa del municipio de Morelia con la pérdida de bosque y matorral detectada entre 2006 y 2024" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="theme-color" content="#0f1720" />
+<link rel="icon" href="./img/icono.svg" type="image/svg+xml" />
+<link rel="icon" href="./img/icono-32.png" sizes="32x32" type="image/png" />
+<link rel="apple-touch-icon" href="./img/icono-180.png" />
 <script>
 /* El mapa vivía en index.html hasta el 10-11-2026 (D21). Los enlaces viejos se mandan a
    su nuevo lugar antes de pintar nada. */
@@ -30,6 +46,7 @@
       <a class="btn sec" href="./datos.html">Ver los datos</a>
       <a class="btn sec" href="./participacion.html">Participar</a>
     </div>
+    <a class="portada-mapa" href="./mapa.html" aria-label="Abrir el mapa"><img src="./img/portada.jpg" width="1200" height="640" loading="lazy" alt="Mapa del municipio de Morelia con los tipos de suelo del PMDU y la pérdida de bosque y matorral detectada entre 2006 y 2024, en tonos de rojo según el año"></a>
   </section>
 
   <section class="seccion">
@@ -48,11 +65,11 @@
   <section class="seccion">
     <h2>Cómo se hizo</h2>
     <p class="sub" id="como">Un algoritmo recorre año por año las imágenes Landsat de 2002 a 2025 y marca dónde se perdió bosque y matorral. Después se revisaron uno por uno cientos de lugares sorteados en imágenes de alta resolución para medir cuánto acierta el mapa, y con esa revisión se calcula la superficie perdida con su margen de error. El detalle está en <a href="./datos.html#metodo">Datos</a>.</p>
-    <div class="aviso"><b>Ejercicio de investigación científica, no documento legal.</b> Los límites provienen del Programa Municipal de Desarrollo Urbano (PMDU) de Morelia 2022-2041, simplificados para el mapa. La pérdida detectada describe un cambio en la vegetación, no quién lo hizo ni si fue legal.</div>
+    <div class="aviso" data-ofm-aviso></div>
   </section>
 </main>
 <footer class="pie contenedor">
-  Investigación doctoral de Héctor Eduardo Zavala Solís · Posgrado en Geografía, CIGA-UNAM · Asesor principal: Dr. Jaime Paneque-Gálvez<br>
+  Investigación doctoral de Héctor Eduardo Zavala Solís · Posgrado en Geografía, CIGA-UNAM<br>
   Cómo citar: Zavala Solís, H. E. (2026). <i>Observatorio Forestal de Morelia</i>. Posgrado en Geografía, CIGA-UNAM. · Licencia CC BY-NC-ND 4.0 · <a href="./privacidad.html">Aviso de privacidad</a>
 </footer>
 <script>
