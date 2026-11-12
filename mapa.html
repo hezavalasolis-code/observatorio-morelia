@@ -11,6 +11,23 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Mapa · Observatorio Forestal de Morelia</title>
+<meta name="description" content="Mapa interactivo de la pérdida de bosque y matorral en Morelia, 2006–2024: busca un lugar y consulta su tipo de suelo del PMDU, si está en un área natural protegida y si se detectó pérdida cerca." />
+<link rel="canonical" href="https://hezavalasolis-code.github.io/observatorio-morelia/mapa.html" />
+<meta property="og:type" content="website" />
+<meta property="og:locale" content="es_MX" />
+<meta property="og:site_name" content="Observatorio Forestal de Morelia" />
+<meta property="og:title" content="Mapa · Observatorio Forestal de Morelia" />
+<meta property="og:description" content="Mapa interactivo de la pérdida de bosque y matorral en Morelia, 2006–2024: busca un lugar y consulta su tipo de suelo del PMDU, si está en un área natural protegida y si se detectó pérdida cerca." />
+<meta property="og:url" content="https://hezavalasolis-code.github.io/observatorio-morelia/mapa.html" />
+<meta property="og:image" content="https://hezavalasolis-code.github.io/observatorio-morelia/img/vista-previa.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="Mapa del municipio de Morelia con la pérdida de bosque y matorral detectada entre 2006 y 2024" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="theme-color" content="#0f1720" />
+<link rel="icon" href="./img/icono.svg" type="image/svg+xml" />
+<link rel="icon" href="./img/icono-32.png" sizes="32x32" type="image/png" />
+<link rel="apple-touch-icon" href="./img/icono-180.png" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <link rel="stylesheet" href="https://unpkg.com/@geoman-io/leaflet-geoman-free@2.18.3/dist/leaflet-geoman.css" />
@@ -32,29 +49,29 @@
   #sidebar h1{font-size:18px;margin:0 0 3px;line-height:1.25}
   #sidebar .sub{font-size:12px;color:var(--muted);line-height:1.35}
   .block{padding:14px 18px;border-top:1px solid var(--line)}
-  .block h2{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 10px}
+  .block h2{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 10px}
   /* Secciones densas (metodología, créditos, metadatos): plegadas por defecto.
      El texto permanece en la página —imprimible, buscable y accesible—, solo deja de competir
      visualmente con los datos. */
   details.fold>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:7px;
-    font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;
+    font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;
     padding:2px 0;user-select:none}
   details.fold>summary::-webkit-details-marker{display:none}
-  details.fold>summary::before{content:'▸';font-size:11px;line-height:1;display:inline-block;transition:transform .15s ease}
+  details.fold>summary::before{content:'▸';font-size:12px;line-height:1;display:inline-block;transition:transform .15s ease}
   details.fold[open]>summary::before{transform:rotate(90deg)}
   details.fold>summary:hover{color:var(--ink)}
   details.fold>summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
   details.fold .fold-body{margin-top:11px}
   .stat{background:linear-gradient(135deg,#7a1f2b,#b2323f);border-radius:10px;padding:14px 16px;margin-bottom:6px}
   .stat-sec{background:rgba(240,160,32,.14);border:1px solid rgba(240,160,32,.38);border-radius:10px;padding:9px 12px;margin-bottom:6px;color:#f0c060;font-size:12px;line-height:1.4}
-  .stat-sec .rate{font-size:11px;color:#d9a94e;margin-top:3px}
+  .stat-sec .rate{font-size:12px;color:#d9a94e;margin-top:3px}
   .stat-sec b{color:#ffd27a}
   .stat .big{font-size:30px;font-weight:700;line-height:1}
   .stat .lbl{font-size:12px;color:#ffe3e6;margin-top:5px;line-height:1.3}
   .mini{display:flex;gap:8px;margin-top:10px}
   .mini div{flex:1;background:var(--panel2);border-radius:8px;padding:9px 10px}
   .mini .n{font-size:17px;font-weight:700}
-  .mini .t{font-size:10.5px;color:var(--muted);margin-top:2px}
+  .mini .t{font-size:12px;color:var(--muted);margin-top:2px}
   /* Solo las gráficas del panel se ajustan al ancho. OJO: una regla global
      `canvas{max-width:100%}` colapsa a 0 px el canvas del renderizador de Leaflet
      (sus panes miden 0), dejando invisibles las capas vectoriales. */
@@ -62,7 +79,7 @@
   .leaflet-container canvas{max-width:none!important;max-height:none!important}
   .chartwrap{background:var(--panel2);border-radius:10px;padding:10px 12px 6px}
   select{width:100%;background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:7px 9px;font-size:12px;margin-bottom:8px}
-  .credits{font-size:11px;color:var(--muted);line-height:1.5}
+  .credits{font-size:12px;color:var(--muted);line-height:1.5}
   .credits b{color:var(--ink)}
   .credits .todo{color:var(--accent2)}
   /* Map */
@@ -81,13 +98,13 @@
   .wcard #wclose{background:var(--accent);color:#06231a;border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer}
   .wcard #wclose:hover{filter:brightness(1.08)}
   .dl-row{display:flex;flex-wrap:wrap;gap:5px}
-  .dlbtn{background:var(--panel2);border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:6px 9px;font-size:11px;cursor:pointer}
+  .dlbtn{background:var(--panel2);border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:6px 9px;font-size:12px;cursor:pointer}
   .dlbtn:hover{background:var(--accent);color:#06231a;border-color:var(--accent)}
   #sidebar .block>h2.coll-h{cursor:pointer;user-select:none}
-  #sidebar .block>h2.coll-h::before{content:'▾';font-size:9px;margin-right:5px;display:inline-block;transition:transform .15s}
+  #sidebar .block>h2.coll-h::before{content:'▾';font-size:12px;margin-right:5px;display:inline-block;transition:transform .15s}
   #sidebar .block.collapsed>h2.coll-h::before{transform:rotate(-90deg)}
   #sidebar .block.collapsed>*:not(h2){display:none}
-  @media(max-width:820px){#legendYears,#legendZon,#legendRF{width:128px;font-size:10px}#legendZon{top:118px}#legendRF{top:262px}.wcard{padding:16px 18px}}
+  @media(max-width:820px){#legendYears,#legendZon,#legendRF{width:128px;font-size:12px}#legendZon{top:118px}#legendRF{top:262px}.wcard{padding:16px 18px}}
   /* Timebar */
   #timebar{position:absolute;left:50%;transform:translateX(-50%);bottom:12px;width:calc(100% - 24px);max-width:640px;z-index:1000;background:rgba(16,24,34,.93);
     border:1px solid var(--line);border-radius:12px;padding:11px 16px;backdrop-filter:blur(6px);display:flex;align-items:center;gap:14px}
@@ -107,14 +124,14 @@
   .tb-mode{display:flex;flex-direction:column;gap:5px;flex:0 0 auto}
   .tb-mode-btns{display:flex;gap:5px}
   .tb-op{display:flex;align-items:center;gap:6px}
-  .tb-op span{font-size:10px;color:var(--muted)}
+  .tb-op span{font-size:12px;color:var(--muted)}
   .tb-op input[type=range]{flex:1;accent-color:var(--accent)}
   .tb-main .grad{margin:2px 0 3px}
   .tb-main .grad-lbl{margin-top:2px}
-  .tb-mode button{background:var(--panel2);border:1px solid var(--line);color:var(--muted);font-size:11px;padding:6px 10px;border-radius:7px;cursor:pointer;flex:1}
+  .tb-mode button{background:var(--panel2);border:1px solid var(--line);color:var(--muted);font-size:12px;padding:6px 10px;border-radius:7px;cursor:pointer;flex:1}
   .tb-mode button.on{background:var(--accent);color:#06231a;border-color:var(--accent);font-weight:700}
   /* Legends */
-  .legend{position:absolute;z-index:1000;background:rgba(16,24,34,.93);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:11px;backdrop-filter:blur(6px)}
+  .legend{position:absolute;z-index:1000;background:rgba(16,24,34,.93);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:12px;backdrop-filter:blur(6px)}
   #legendYears{left:12px;top:12px;width:150px}
   #legendZon{left:12px;top:150px;width:172px;display:none}
   #legendRF{left:12px;top:352px;width:186px;display:none}
@@ -129,9 +146,9 @@
   .ctl-left{width:256px;max-width:46vw}
   .ctl-left .legend{position:static;left:auto;top:auto;right:auto;width:100%}
   .ctl-left .leaflet-control-layers{width:100%}
-  .legend h3{margin:0 0 7px;font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+  .legend h3{margin:0 0 7px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
   .grad{height:11px;border-radius:5px;background:linear-gradient(90deg,#ffd6c4,#ffa080,#ff6347,#f01e1e,#d70000);margin-bottom:3px}
-  .grad-lbl{display:flex;justify-content:space-between;color:var(--muted);font-size:10px}
+  .grad-lbl{display:flex;justify-content:space-between;color:var(--muted);font-size:12px}
   .row{display:flex;align-items:center;gap:7px;margin:3px 0}
   .sw{width:13px;height:13px;border-radius:3px;flex:0 0 auto}
   .leaflet-tooltip.anp-tip{background:#06231a;border:1px solid var(--accent);color:#eafff5;font-weight:600;font-size:12px}
@@ -142,16 +159,18 @@
   #swipe-divider .grip{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:36px;height:36px;border-radius:50%;background:#fff;color:#111;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;box-shadow:0 1px 6px rgba(0,0,0,.55);cursor:ew-resize}
   .sat-label{position:absolute;bottom:74px;z-index:900;background:rgba(0,0,0,.72);color:#fff;font-size:12px;font-weight:700;padding:3px 9px;border-radius:6px;display:none}
   #sat-label-l{left:12px}
+  body.comparando #timebar{display:none!important}
+  body.comparando .leaflet-control-scale{display:none}
   #sat-label-r{right:12px}
   #cerroBar{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:1000;display:flex;gap:6px;background:rgba(16,24,34,.9);border:1px solid var(--line);border-radius:10px;padding:6px;backdrop-filter:blur(6px)}
   #cerroBar .cbtn{width:60px;height:60px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;color:var(--muted);padding:3px}
   #cerroBar .cbtn:hover{background:var(--accent);color:#06231a;border-color:var(--accent)}
   #cerroBar .cbtn svg{width:32px;height:30px}
   #cerroBar .cbtn svg path,#cerroBar .cbtn svg rect{fill:currentColor}
-  #cerroBar .cbtn .cl{font-size:8.5px;line-height:1;text-align:center;white-space:nowrap}
-  @media(max-width:820px){#cerroBar{display:none}#swipeBtn{top:calc(58px + env(safe-area-inset-top));font-size:11px;padding:6px 9px}}
+  #cerroBar .cbtn .cl{font-size:12px;line-height:1;text-align:center;white-space:nowrap}
+  @media(max-width:820px){#cerroBar{display:none}#swipeBtn{top:calc(58px + env(safe-area-inset-top));font-size:12px;padding:6px 9px}}
   .op-row{display:flex;align-items:center;gap:6px;margin-top:6px}
-  .op-row span{font-size:10px;color:var(--muted)}
+  .op-row span{font-size:12px;color:var(--muted)}
   .op-row input[type=range]{flex:1;accent-color:var(--accent)}
   #cerroSelectWrap{display:none}
   #cerroSelect{width:100%;background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:9px 10px;font-size:14px}
@@ -159,7 +178,7 @@
   #sheetHandle{display:none;align-items:center;gap:10px;padding:14px 18px 10px;cursor:pointer;position:sticky;top:0;background:var(--panel);z-index:3;border-radius:18px 18px 0 0}
   #sheetHandle .grab{position:absolute;top:7px;left:50%;transform:translateX(-50%);width:40px;height:5px;border-radius:3px;background:var(--line)}
   #sheetHandle .lbl{font-size:13px;font-weight:600}
-  #sheetHandle .chev{margin-left:auto;color:var(--muted);font-size:11px;transition:transform .28s}
+  #sheetHandle .chev{margin-left:auto;color:var(--muted);font-size:12px;transition:transform .28s}
   #sidebar.sheet-open #sheetHandle .chev{transform:rotate(180deg)}
   @media(max-width:820px){
     #app{flex-direction:column}
@@ -179,10 +198,10 @@
     .leaflet-control-scale{display:none}
     /* leyendas compactas */
     details.fold>summary{min-height:44px;align-items:center}  /* área táctil cómoda en móvil */
-    .ctl-left .legend{width:100%!important;font-size:9.5px;padding:7px 9px}
-    .ctl-left .legend h3{font-size:10px;margin-bottom:4px}
+    .ctl-left .legend{width:100%!important;font-size:12px;padding:7px 9px}
+    .ctl-left .legend h3{font-size:12px;margin-bottom:4px}
     /* línea de tiempo por encima de la hoja colapsada */
-    #timebar{bottom:calc(74px + env(safe-area-inset-bottom))}
+    #timebar{bottom:calc(66px + env(safe-area-inset-bottom))}
   }
   /* Móvil: áreas táctiles ≥44px, safe-area (notch iOS) y buscador acotado */
   @media(max-width:820px){
@@ -191,7 +210,7 @@
     #playBtn{width:44px;height:44px}
     .leaflet-control-geocoder-form input{max-width:58vw}
     .leaflet-top.leaflet-left{padding-top:max(10px,env(safe-area-inset-top));padding-left:max(10px,env(safe-area-inset-left))}
-    #timebar{bottom:max(12px,env(safe-area-inset-bottom))}
+    #timebar{bottom:calc(66px + env(safe-area-inset-bottom))}   /* encima del asa de la hoja (54 px): antes 12 px, y el asa tapaba los modos */
   }
   /* Pantallas muy angostas: modos/opacidad bajan y el deslizador queda a ancho completo */
   @media(max-width:520px){
@@ -203,26 +222,26 @@
 
   /* ---- Vista 2 (28-09-2026): unidades, clases y estado de la validación ---- */
   #cerroBar .cbtn{width:auto;height:34px;flex-direction:row;gap:6px;padding:0 10px}
-  #cerroBar .cbtn .cl{font-size:11px}
+  #cerroBar .cbtn .cl{font-size:12px}
   .sw{display:inline-block;width:11px;height:11px;border-radius:3px;flex:none;vertical-align:-1px;margin-right:6px}
   #cerroBar .cbtn .sw{margin-right:0}
   .val-head{display:flex;gap:8px;align-items:flex-start;font-size:12px;line-height:1.4;margin-bottom:10px}
-  .val-badge{background:rgba(217,164,65,.16);border:1px solid rgba(217,164,65,.55);color:#f2c46b;border-radius:999px;padding:2px 9px;font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+  .val-badge{background:rgba(217,164,65,.16);border:1px solid rgba(217,164,65,.55);color:#f2c46b;border-radius:999px;padding:2px 9px;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
   .val-bar{height:8px;background:var(--panel2);border-radius:999px;overflow:hidden;border:1px solid var(--line)}
   .val-bar span{display:block;height:100%;background:var(--accent);min-width:2px}
   .val-lbl{font-size:12px;margin:6px 0 10px}
-  .val-tab{width:100%;border-collapse:collapse;font-size:11.5px;margin-bottom:8px}
-  .val-tab th{text-align:left;color:var(--muted);font-weight:600;font-size:10.5px;padding:4px 4px;border-bottom:1px solid var(--line)}
+  .val-tab{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:8px}
+  .val-tab th{text-align:left;color:var(--muted);font-weight:600;font-size:12px;padding:4px 4px;border-bottom:1px solid var(--line)}
   .val-tab td{padding:5px 4px;border-bottom:1px solid rgba(43,61,79,.5)}
   .val-tab td+td,.val-tab th+th{text-align:right;font-variant-numeric:tabular-nums}
-  .val-tab .ic{color:var(--muted);font-size:10.5px}
+  .val-tab .ic{color:var(--muted);font-size:12px}
   .val-txt{font-size:12.5px;line-height:1.5;margin:4px 0 6px}
-  .val-nota{font-size:11px;color:var(--muted);line-height:1.5;margin:6px 0 0}
+  .val-nota{font-size:12px;color:var(--muted);line-height:1.5;margin:6px 0 0}
   .defs{font-size:12px;line-height:1.45}
   .defs .row{display:flex;align-items:flex-start;gap:0;margin:0 0 7px}
   .defs .row .sw{margin-top:3px}
-  .defs h3{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:12px 0 7px;font-weight:600}
-  .tb-acc{font-size:11px;color:var(--muted)}
+  .defs h3{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:12px 0 7px;font-weight:600}
+  .tb-acc{font-size:12px;color:var(--muted)}
   /* ---- Buscador y ficha del lugar (D8, D9, D10 · 09-11-2026) ---- */
   #buscador{position:absolute;top:12px;left:330px;width:min(460px,calc(100% - 350px));z-index:1100;display:flex;flex-direction:column;gap:6px}
   #bForm{display:flex;background:rgba(16,24,34,.96);border:1px solid var(--line);border-radius:12px;box-shadow:0 6px 22px rgba(0,0,0,.45);overflow:hidden}
@@ -247,11 +266,11 @@
   #ficha[hidden]{display:none}
   .f-head{display:flex;align-items:baseline;gap:8px;margin-bottom:10px}
   .f-head b{font-size:15px}
-  .f-coord{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .f-coord{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
   .f-x{margin-left:auto;background:none;border:none;color:var(--muted);font-size:22px;line-height:1;cursor:pointer;padding:0 2px}
   .f-x:hover{color:var(--ink)}
   .f-dl{margin:0 0 10px}
-  .f-dl dt{font-size:11.5px;color:var(--muted);margin-top:8px}
+  .f-dl dt{font-size:12px;color:var(--muted);margin-top:8px}
   .f-dl dd{margin:2px 0 0}
   .f-dl dd .sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:baseline}
   .f-dl dd small{display:block;color:var(--muted);font-size:12px}
@@ -263,8 +282,8 @@
   .f-nota{font-size:12px;color:var(--muted);margin:6px 0 0}
   .f-sat{width:100%;margin-top:12px;background:var(--panel2);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:8px;font-size:12.5px;cursor:pointer}
   .f-sat:hover{border-color:var(--accent)}
-  .f-sat-meta{font-size:11.5px;color:var(--muted);margin-top:5px}
-  .f-aviso{margin-top:12px;padding-top:10px;border-top:1px solid var(--line);font-size:11.5px;color:var(--muted);line-height:1.45}
+  .f-sat-meta{font-size:12px;color:var(--muted);margin-top:5px}
+  .f-aviso{margin-top:12px;padding-top:10px;border-top:1px solid var(--line);font-size:12px;color:var(--muted);line-height:1.45}
   .f-aviso b{color:var(--ink)}
   #verif{position:absolute;top:184px;right:12px;width:340px;max-height:calc(100% - 300px);overflow-y:auto;z-index:1150;background:rgba(16,24,34,.97);border:1px solid #ffe600;border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.55);padding:14px 16px 12px;font-size:13px;line-height:1.45}
   #verif[hidden]{display:none}
@@ -295,21 +314,135 @@
     #ficha{top:auto;left:8px;right:8px;width:auto;bottom:calc(62px + env(safe-area-inset-bottom));max-height:58dvh}
     body.ficha-abierta #timebar{display:none}
   }
+
+  /* ══ Panel plegable con pestañas, barra del sitio, «qué ver» y leyenda única (A1, A2, A4, A5 y F9 · 12-11-2026) ══ */
+  #app{height:calc(100vh - var(--barra-h,0px));height:calc(100dvh - var(--barra-h,0px))}
+  #sidebar{width:auto;min-width:0;flex-direction:row;overflow:visible}
+  #pTabs{display:flex;flex-direction:column;gap:4px;width:72px;flex:0 0 72px;padding:8px 6px;background:var(--panel)}
+  #pTabs button{display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:1px solid transparent;border-radius:9px;color:var(--muted);font-size:12px;padding:9px 2px;cursor:pointer;font-family:inherit;min-height:44px}
+  #pTabs svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  #pTabs button:hover{color:var(--ink);background:rgba(255,255,255,.06)}
+  #pTabs button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+  #pTabs button[aria-selected="true"]{color:var(--ink);background:rgba(63,178,127,.14);border-color:rgba(63,178,127,.5)}
+  #pCuerpo{display:none;width:316px;overflow-y:auto;border-left:1px solid var(--line)}
+  #sidebar.sheet-open #pCuerpo{display:block}
+  #pCuerpo>section{display:none}
+  #sidebar[data-tab="resumen"] #pResumen,#sidebar[data-tab="capas"] #pCapas,#sidebar[data-tab="participar"] #pParticipar{display:block}
+  #pCuerpo>section>.block:first-child{border-top:none}
+  #cerroSelectWrap{display:block}
+  .q-grupo{display:flex;gap:6px;flex-wrap:wrap}
+  .q-op{display:flex;align-items:center;gap:8px;font-size:13px;line-height:1.3;padding:7px 0;cursor:pointer}
+  .q-grupo .q-op{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:7px 10px}
+  .q-grupo .q-op:has(input:checked){border-color:var(--accent);background:rgba(63,178,127,.14)}
+  .q-op input{width:auto;margin:0;accent-color:var(--accent)}
+  #pCapas [hidden]{display:none!important}
+  #pCapas .op-row{margin:8px 0 2px}
+  #pCapas .op-row span{font-size:12px}
+  /* El control de capas de Leaflet sigue vivo (emite los avisos de capa) pero no se ve: lo sustituye «Capas». */
+  .leaflet-control-layers,.ctl-left,#cerroBar{display:none!important}
+  #buscador{left:62px;width:min(460px,calc(100% - 74px))}
+  #leyenda{left:12px;bottom:132px;width:212px;max-height:calc(100% - 320px);overflow-y:auto;padding:8px 10px}
+  #leyBtn{display:flex;width:100%;align-items:center;justify-content:space-between;background:none;border:none;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;font-weight:600;cursor:pointer;padding:2px 0;font-family:inherit}
+  #leyBtn::after{content:'▾';font-size:12px}
+  #leyBtn[aria-expanded="false"]::after{content:'▸'}
+  #leyenda.cerrada .ley-dest,#leyenda.cerrada #leyPie{display:none}
+  .ley-dest h3{margin:9px 0 5px;font-size:12px;text-transform:none;letter-spacing:0;color:var(--muted);font-weight:600}
+  .ley-dest .row{font-size:12px;margin:3px 0;align-items:center}
+  .ley-dest .ley-u{display:flex;align-items:center;width:100%;text-align:left;background:none;border:1px solid transparent;border-radius:6px;color:var(--ink);font-size:12px;padding:4px 5px;margin:1px 0 1px -5px;cursor:pointer;font-family:inherit}
+  .ley-dest .ley-u:hover{border-color:var(--line)}
+  .ley-dest .ley-u[aria-pressed="true"]{background:rgba(63,178,127,.16);border-color:rgba(63,178,127,.5)}
+  .ley-dest .ln{display:inline-block;width:16px;height:0;border-top:2px dashed #fff;margin-right:6px;flex:none}
+  .ley-nota{font-size:12px;color:var(--muted);line-height:1.35;margin-top:4px}
+  #leyPie{font-size:12px;color:var(--muted);line-height:1.4;margin-top:8px;padding-top:7px;border-top:1px solid var(--line)}
+  #leyPie a{color:var(--accent2)}
+  body.verificando #leyenda{display:none!important}
+  #cargaCapa{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:1300;display:none;background:rgba(16,24,34,.95);border:1px solid var(--line);border-radius:8px;padding:9px 16px;font-size:13px;color:var(--ink);pointer-events:none}
+  /* Iconos dibujados, foco visible y movimiento reducido (F16 · 12-11-2026) */
+  .ico{display:inline-flex;vertical-align:-3px;margin-right:6px}
+  .ico svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .ico svg.rell{fill:currentColor;stroke:none}
+  #playBtn .ico{margin:0;vertical-align:middle}
+  #playBtn .ico svg{width:18px;height:18px}
+  .fs-ctl a{display:flex!important;align-items:center;justify-content:center}
+  .fs-ctl .ico{margin:0}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  #map.leaflet-container:focus-visible{outline:2px solid var(--accent);outline-offset:-3px}
+  #map.leaflet-container:focus-visible::after{content:'';position:absolute;left:50%;top:50%;width:22px;height:22px;margin:-11px 0 0 -11px;border:2px solid #fff;border-radius:50%;box-shadow:0 0 0 2px rgba(0,0,0,.6);z-index:1200;pointer-events:none}
+  @media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}}
+  @media(min-width:821px){ #bForm .ofm-burger{display:none} #leyPanel{display:none} }
+  @media(max-width:820px){
+    .ofm-barra{display:none!important}
+    #sidebar{flex-direction:column;max-height:none!important;overflow:visible!important}
+    #pTabs{flex-direction:row;width:auto;flex:0 0 auto;gap:6px;padding:5px 8px calc(5px + env(safe-area-inset-bottom));border-radius:18px 18px 0 0}
+    #pTabs button{flex:1;flex-direction:row;justify-content:center;gap:7px;font-size:13px;padding:0 6px}
+    #pCuerpo{width:auto;border-left:none;border-top:1px solid var(--line);max-height:52dvh}
+    #leyenda{display:none}
+    #buscador{left:10px;right:10px;width:auto}
+    .b-acc{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+    .b-acc::-webkit-scrollbar{display:none}
+    .b-acc button,#buscador #swipeBtn{flex:0 0 auto;white-space:nowrap}
+    body.panel-abierto #timebar{display:none!important}
+    body.verificando #sidebar{display:none}
+  }
 </style>
 </head>
 <body>
+<div data-ofm-barra></div>
 <div id="app">
-  <aside id="sidebar">
-    <div id="sheetHandle" role="button" aria-label="Mostrar u ocultar detalles"><span class="grab"></span><span class="lbl">Detalles y estado de la validación</span><span class="chev">▲</span></div>
+  <aside id="sidebar" data-tab="resumen" aria-label="Panel del mapa">
+    <nav id="pTabs" role="tablist" aria-label="Secciones del panel">
+      <button type="button" role="tab" data-tab="resumen" aria-controls="pResumen" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg><span>Resumen</span></button>
+      <button type="button" role="tab" data-tab="capas" aria-controls="pCapas" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5 9-5zM3 12l9 5 9-5M3 16l9 5 9-5"/></svg><span>Capas</span></button>
+      <button type="button" role="tab" data-tab="participar" aria-controls="pParticipar" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1-4L16 5l3 3L8 19l-4 1zM14 7l3 3"/></svg><span>Participar</span></button>
+    </nav>
+    <div id="pCuerpo">
+    <section id="pResumen" role="tabpanel" aria-label="Resumen">
     <header>
       <h1>Observatorio Forestal de Morelia</h1>
       <div class="sub">Dónde se ha perdido bosque y matorral en el municipio de Morelia entre 2006 y 2024, según imágenes de satélite, y en qué tipo de suelo del PMDU ocurrió. <span id="subVal"></span></div>
     </header>
+    <div class="block" id="estadoBlock">
+      <h2>Estado de la validación</h2>
+      <div id="estadoVal"><div class="val-nota">Cargando…</div></div>
+    </div>
+    <div class="block">
+      <p class="val-nota" style="margin-top:0">El método, la exactitud por tipo, las fuentes y las descargas están en <a href="./datos.html#metodo" style="color:var(--accent2)">Datos</a>.</p>
+      <div class="f-aviso" id="avisoPanel"></div>
+      <div class="credits" style="margin-top:10px">© 2026 H. E. Zavala Solís · Posgrado en Geografía, CIGA-UNAM · Licencia <b>CC BY-NC-ND 4.0</b> · Ref. HZS-OFM-2026-e4372558ba98</div>
+    </div>
+    </section>
 
+    <section id="pCapas" role="tabpanel" aria-label="Capas">
+    <div class="block">
+      <h2>Pérdida de bosque</h2>
+      <div class="q-grupo" role="radiogroup" aria-label="Cómo ver la pérdida de bosque">
+        <label class="q-op"><input type="radio" name="qPerd" value="anio" checked> Por año</label>
+        <label class="q-op"><input type="radio" name="qPerd" value="clase"> Por tipo</label>
+        <label class="q-op"><input type="radio" name="qPerd" value="no"> Oculta</label>
+      </div>
+      <div class="op-row" id="qOpAnio"><span>Opacidad</span><input type="range" id="lossOpacity" min="0.15" max="1" step="0.05" value="0.85"></div>
+      <div class="op-row" id="qOpClase" hidden><span>Opacidad</span><input type="range" id="clasOpacity" min="0.1" max="1" step="0.05" value="0.95" aria-label="Opacidad de la pérdida por tipo"></div>
+    </div>
+    <div class="block">
+      <h2>Contexto</h2>
+      <label class="q-op"><input type="checkbox" data-capa="uni" checked> Tipos de suelo (PMDU)</label>
+      <label class="q-op"><input type="checkbox" data-capa="anp" checked> Áreas naturales protegidas</label>
+      <label class="q-op"><input type="checkbox" data-capa="zon"> Usos previstos (PMDU)</label>
+      <div class="op-row" id="qOpZon" hidden><span>Opacidad</span><input type="range" id="zonOpacity" min="0.1" max="1" step="0.05" value="0.4"></div>
+      <label class="q-op" id="qDist" hidden><input type="checkbox" data-capa="dist"> Distancia al suelo urbano (0.5, 1, 2 y 5 km)</label>
+      <label class="q-op" id="qApo" hidden><input type="checkbox" data-capa="apo"> Aportes ciudadanos</label>
+    </div>
+    <div class="block">
+      <h2>Mapa base</h2>
+      <div class="q-grupo" role="radiogroup" aria-label="Mapa base">
+        <label class="q-op"><input type="radio" name="qBase" value="oscuro" checked> Mapa oscuro</label>
+        <label class="q-op"><input type="radio" name="qBase" value="sat"> Satélite (Esri)</label>
+      </div>
+    </div>
     <div class="block" id="cerroSelectWrap">
       <h2>Ir a</h2>
       <select id="cerroSelect" aria-label="Ir a una unidad o a un área protegida">
-        <option value="__all">Municipio de Morelia (4 unidades)</option>
+        <option value="__all">Municipio de Morelia</option>
         <optgroup label="Tipos de suelo (PMDU)">
           <option value="1">Áreas protegidas</option>
           <option value="2">No urbanizable</option>
@@ -319,13 +452,14 @@
         <optgroup label="Áreas naturales protegidas" id="optAnp"></optgroup>
       </select>
     </div>
-    <div class="block" id="estadoBlock">
-      <h2>Estado de la validación</h2>
-      <div id="estadoVal"><div class="val-nota">Cargando…</div></div>
+    <div class="block" id="leyPanel">
+      <h2>Leyenda</h2>
+      <div class="ley-dest"></div>
     </div>
-
     <div class="block">
-      <h2>Qué muestra el mapa</h2>
+      <details class="fold">
+        <summary>Qué significa cada color</summary>
+        <div class="fold-body">
       <div class="defs">
         <h3>Tipos de pérdida</h3>
         <div class="row"><span class="sw" style="background:#ccffcc"></span><div><b>Degradación.</b> El bosque se aclara o se corta, pero vuelve a crecer o no se ve qué lo reemplaza.</div></div>
@@ -339,56 +473,53 @@
         <div class="row"><span class="sw" style="background:#d63cf0"></span><div><b>Urbano.</b> La ciudad actual, según el PMDU.</div></div>
         <p class="val-nota">Los cuatro tipos de suelo cubren todo el municipio sin encimarse. Donde un área protegida y otro tipo de suelo coinciden, cuenta como área protegida.</p>
       </div>
+        </div>
+      </details>
     </div>
+    </section>
 
-
+    <section id="pParticipar" role="tabpanel" aria-label="Participar">
+    <!--PART:BEGIN-->
     <div class="block" id="participaBlock">
-      <h2>Participa · aportes ciudadanos</h2>
+      <h2>Participar</h2>
       <div id="vContador" style="font-size:12px;line-height:1.45;margin-bottom:8px"></div>
       <div id="apLogin">
         <div style="font-size:12px;color:var(--muted);line-height:1.45;margin-bottom:8px">Entra con tu correo para dejar aportes, trazar tu territorio o, con tu registro aprobado, verificar el estado actual del mapa. Consulta el <a href="./privacidad.html" target="_blank" style="color:var(--accent2)">aviso de privacidad</a>.</div>
         <button class="dlbtn" id="apBtnEntrar" style="width:100%;background:var(--accent);color:#06231a;border-color:var(--accent);font-weight:700">Entrar o registrarme</button>
-        <div id="apMsg" style="font-size:11.5px;margin-top:6px;line-height:1.4"></div>
+        <div id="apMsg" style="font-size:12px;margin-top:6px;line-height:1.4"></div>
       </div>
       <div id="apSession" style="display:none">
         <div style="font-size:12px;color:var(--muted)">Conectado: <b id="apUser" style="color:var(--ink)"></b> <span id="apMod"></span></div>
-        <div id="vSolicitud" style="display:none;margin-top:10px">
-          <div style="font-size:12px;line-height:1.45;margin-bottom:6px"><b>Verificar el estado actual.</b> Con tu registro aprobado podrás revisar sobre la imagen de satélite qué hay hoy en los cuadros del mapa.</div>
-          <textarea id="vMotivo" rows="3" placeholder="¿Por qué quieres participar? (una o dos frases)" style="width:100%;background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:7px 9px;font-size:12px;font-family:inherit;margin-bottom:6px"></textarea>
-          <div style="font-size:11.5px;line-height:1.45;background:var(--panel2);border-radius:7px;padding:7px 9px;margin-bottom:8px"><b>Qué pasa con tus respuestas.</b> Cada cuadro toma unos segundos: miras la imagen y eliges qué hay hoy. Tus respuestas se comparan con las de otras personas y con puntos de referencia; ninguna corrige el mapa por sí sola. Solo se publican totales, nunca tu nombre ni tus respuestas una por una.</div>
-          <label style="font-size:11.5px;color:var(--muted);display:flex;gap:6px;align-items:flex-start;line-height:1.4"><input type="checkbox" id="vAcepto" style="width:auto;margin-top:2px"><span>Entiendo que es un ejercicio de investigación científica, no un documento legal: registro lo que se ve en la imagen, no quién lo hizo ni si fue legal. Acepto el <a href="./privacidad.html" target="_blank" style="color:var(--accent2)">aviso de privacidad</a>.</span></label>
-          <button class="dlbtn" id="vEnviar" style="width:100%;margin-top:8px;background:var(--accent);color:#06231a;border-color:var(--accent)">Solicitar participación</button>
-          <div id="vMsg" style="font-size:11.5px;margin-top:6px"></div>
-        </div>
+        <div id="vSolicitud" style="display:none;margin-top:10px;font-size:12px;line-height:1.45"><b>Verificar el estado actual.</b> Con tu registro aprobado podrás revisar sobre la imagen de satélite qué hay hoy en los cuadros del mapa. <a href="./participacion.html" style="color:var(--accent2)">Solicitar participar →</a><div id="vMsg" style="font-size:12px;margin-top:6px"></div></div>
         <div id="vEstado" style="font-size:12px;color:var(--muted);margin-top:8px"></div>
-        <button class="dlbtn" id="vBtnEntrar" style="display:none;width:100%;margin-top:8px;background:#ffe600;color:#1a1a00;border-color:#ffe600;font-weight:700">🔎 Verificar el estado actual</button>
-        <button class="dlbtn" id="apBtnAportar" style="width:100%;margin-top:8px;background:var(--accent);color:#06231a;border-color:var(--accent)">＋ Dejar un aporte</button>
+        <button class="dlbtn" id="vBtnEntrar" style="display:none;width:100%;margin-top:8px;background:#ffe600;color:#1a1a00;border-color:#ffe600;font-weight:700">Verificar el estado actual</button>
+        <button class="dlbtn" id="apBtnAportar" style="width:100%;margin-top:8px;background:var(--accent);color:#06231a;border-color:var(--accent)">Dejar un aporte</button>
         <div id="apForm" style="display:none;margin-top:8px">
-          <div id="apPick" style="font-size:11.5px;color:var(--muted);margin-bottom:6px">Haz clic en el mapa para ubicar el punto.</div>
-          <div id="apCoord" style="font-size:11px;color:var(--muted);margin-bottom:4px"></div>
+          <div id="apPick" style="font-size:12px;color:var(--muted);margin-bottom:6px">Haz clic en el mapa para ubicar el punto.</div>
+          <div id="apCoord" style="font-size:12px;color:var(--muted);margin-bottom:4px"></div>
           <select id="apTipo" style="margin-bottom:6px">
             <option value="tala">Tala</option><option value="incendio">Incendio</option>
             <option value="construccion">Construcción</option><option value="cambio_agricola">Cambio agrícola</option>
             <option value="invasion">Invasión</option><option value="plaga">Plaga</option><option value="otro">Otro</option>
           </select>
           <textarea id="apDesc" rows="3" placeholder="¿Qué observaste?" style="width:100%;background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:7px 9px;font-size:12px;font-family:inherit;margin-bottom:6px"></textarea>
-          <input id="apFoto" type="file" accept="image/*" style="font-size:11px;margin-bottom:6px" />
+          <input id="apFoto" type="file" accept="image/*" style="font-size:12px;margin-bottom:6px" />
           <button class="dlbtn" id="apBtnEnviar" style="width:100%;background:var(--accent);color:#06231a;border-color:var(--accent)">Enviar aporte</button>
-          <div id="apFormMsg" style="font-size:11.5px;margin-top:6px"></div>
+          <div id="apFormMsg" style="font-size:12px;margin-top:6px"></div>
         </div>
         <div id="apMios" style="margin-top:10px"></div>
         <div style="display:flex;gap:6px;margin-top:8px">
           <button class="dlbtn" id="apBtnLogout" style="flex:1">Cerrar sesión</button>
-          <a id="apModLink" href="./moderacion.html" style="display:none;flex:1;text-align:center;color:var(--accent2);font-size:11px;align-self:center">Moderación →</a>
+          <a id="apModLink" href="./moderacion.html" style="display:none;flex:1;text-align:center;color:var(--accent2);font-size:12px;align-self:center">Moderación →</a>
         </div>
       </div>
     </div>
 
     <div class="block" id="territorioBlock" style="display:none">
       <h2>Mi territorio</h2>
-      <div style="font-size:12px;color:var(--muted);line-height:1.45">Dibuja tu zona (ejido, comunidad, microcuenca) y guárdala. Cuando la validación cierre, aquí se verá la pérdida estimada dentro de ella.</div>
-      <button class="dlbtn" id="tDibujar" style="width:100%;margin-top:8px;background:var(--accent);color:#06231a;border-color:var(--accent)">✏️ Dibujar territorio</button>
-      <div id="tHint" style="display:none;font-size:11px;color:var(--muted);margin-top:6px">Clic para poner vértices · doble clic para cerrar el polígono.</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.45">Dibuja tu zona (ejido, comunidad, microcuenca) y guárdala para volver a ella. Todavía no se calcula la pérdida dentro de un territorio trazado: las superficies del sitio se estiman con la muestra de referencia, no contando el mapa.</div>
+      <button class="dlbtn" id="tDibujar" style="width:100%;margin-top:8px;background:var(--accent);color:#06231a;border-color:var(--accent)">Dibujar territorio</button>
+      <div id="tHint" style="display:none;font-size:12px;color:var(--muted);margin-top:6px">Clic para poner vértices · doble clic para cerrar el polígono.</div>
       <div id="tStats" style="display:none;margin-top:9px;font-size:12px;line-height:1.55"></div>
       <div id="tForm" style="display:none;margin-top:8px">
         <input id="tNombre" placeholder="Nombre (p. ej. Tumbisca)" style="width:100%;background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:8px 10px;font-size:13px;margin-bottom:6px" />
@@ -398,56 +529,13 @@
           <button class="dlbtn" id="tGuardar" style="flex:1;background:var(--accent);color:#06231a;border-color:var(--accent)">Guardar</button>
           <button class="dlbtn" id="tCancelar" style="flex:1">Cancelar</button>
         </div>
-        <div id="tMsg" style="font-size:11.5px;margin-top:6px"></div>
+        <div id="tMsg" style="font-size:12px;margin-top:6px"></div>
       </div>
       <div id="tLista" style="margin-top:10px"></div>
     </div>
-
-    <div class="block">
-      <details class="fold">
-        <summary>Metodología · cómo se obtuvieron los datos</summary>
-        <div class="fold-body credits">
-        <!-- Bloque generado desde data/manifest.json. No escribir aquí cifras de exactitud
-             ni de versión a mano: se desincronizan del mapa en cuanto cambia el umbral. -->
-        <div id="metaValidacion"></div>
-        <p style="margin:7px 0"><b>Detección.</b> LandTrendr segmenta, píxel por píxel, la serie anual del índice NBR (Landsat 5, 7, 8 y 9, reflectancia superficial, compuestos de temporada seca) de 2002 a 2025. Earth Engine hace solo la segmentación; la clasificación, la muestra y las superficies salen de un único script sobre ese mismo ráster, de modo que el mapa que se muestra es el mismo sobre el que se sortea y se estima.</p>
-        <p style="margin:7px 0"><b>Clasificación.</b> Cada evento de pérdida se asigna a degradación, conversión construida o conversión cultivada según su magnitud y el estado de la cubierta cinco años después. Los eventos de 2020 a 2024 no tienen todavía esa ventana y quedan como pérdida reciente sin clasificar. Los umbrales que separan construida de cultivada se calibran contra la fotointerpretación, no antes.</p>
-        <p style="margin:7px 0"><b>Validación y superficies.</b> Muestra aleatoria estratificada por unidad y por clase del mapa, interpretada a ciegas sobre imagen de alta resolución. Las superficies se estiman desde esa muestra con el estimador de Olofsson et al. (2014), con intervalos de confianza, sobre la franja como dominio de estimación. Contar píxeles del mapa no da la superficie: da la superficie mapeada, que arrastra comisión y omisión.</p>
-        <p style="margin:7px 0"><b>Qué cubierta se ve.</b> Los compuestos son de temporada seca, así que el bosque caducifolio sin hoja queda fuera, tanto de lo que se pierde como de lo que había. El mapa describe la cubierta que el método ve.</p>
-        <p style="margin:7px 0"><b>Unidades y zonificación.</b> Cartografía del IMPLAN (ANP, zonificación primaria y secundaria del PMDU). Las veinte claves de la zonificación secundaria se agrupan en siete grupos, que son atributo de lectura y no estrato de muestreo. Las capas del mapa están simplificadas para dibujarse; no sirven para medir.</p>
-        </div>
-      </details>
-    </div>
-
-    <div class="block">
-      <details class="fold">
-        <summary>Créditos</summary>
-      <div class="credits fold-body">
-        <div><b>Autor:</b> M.C.S. Héctor Eduardo Zavala Solís</div>
-        <div><b>Asesor principal:</b> Dr. Jaime Paneque-Gálvez</div>
-        <div style="margin-top:5px"><b>Programa:</b> Posgrado en Geografía, UNAM — Centro de Investigaciones en Geografía Ambiental (CIGA)</div>
-        <div style="margin-top:7px">
-          <b>Fuentes:</b> Landsat 5/7/8/9 C2 SR (USGS); algoritmo LandTrendr (Kennedy et&nbsp;al., 2018); estimador de áreas de Olofsson et&nbsp;al. (2014); cartografía de ANP y zonificación del PMDU de Morelia (IMPLAN).
-        </div>
-      </div>
-      </details>
-    </div>
-    <div class="block">
-      <details class="fold">
-        <summary>Datos y metadatos · descargas</summary>
-      <div class="dl-row fold-body">
-        <button class="dlbtn" data-dl="loss" aria-label="Descargar la pérdida detectada por año en GeoJSON">Pérdida por año (GeoJSON)</button>
-        <button class="dlbtn" data-dl="clas" aria-label="Descargar la pérdida detectada por clase en GeoJSON">Pérdida por clase (GeoJSON)</button>
-        <button class="dlbtn" data-dl="unid" aria-label="Descargar los tipos de suelo en GeoJSON">Tipos de suelo (GeoJSON)</button>
-        <button class="dlbtn" data-dl="zon" aria-label="Descargar la zonificación en GeoJSON">Zonificación (GeoJSON)</button>
-        <button class="dlbtn" data-dl="manifest" aria-label="Descargar el manifiesto de la corrida en JSON">Manifiesto de la corrida (JSON)</button>
-      </div>
-      <div class="credits" style="margin-top:9px">
-        <div><b>Cómo citar:</b> Zavala Solís, H. E. (2026). <i>Observatorio Forestal de Morelia</i>. Posgrado en Geografía, CIGA-UNAM.</div>
-        <div style="margin-top:5px"><b>Elaboración:</b> noviembre de 2026 · Periodo analizado 2006–2024 · Validación preliminar.</div>
-        <div style="margin-top:5px">© 2026 H. E. Zavala Solís · Licencia <b>CC BY-NC-ND 4.0</b> · Ref. HZS-OFM-2026-e4372558ba98</div>
-      </div>
-      </details>
+    <div class="block"><a href="./participacion.html" style="color:var(--accent2);font-size:12.5px">Ver mi historial y mi acuerdo con la referencia →</a></div>
+    <!--PART:END-->
+    </section>
     </div>
   </aside>
 
@@ -460,34 +548,26 @@
       </form>
       <div id="bRes" hidden></div>
       <div class="b-acc" id="bAcc">
-        <button type="button" id="bCambio">▶ Cómo ha cambiado</button>
-        <button type="button" id="bAcerca">Acerca de</button>
-        <button type="button" id="bCompartir" title="Copiar un enlace a esta vista">🔗 Compartir</button>
+        <button type="button" id="bUbic" title="Lleva el mapa a donde estás. Tu ubicación no se guarda ni se envía."><span data-ico="ubic"></span>Mi ubicación</button>
+        <button type="button" id="bCambio"><span data-ico="play"></span>Cómo ha cambiado</button>
+        <button type="button" id="bAcerca"><span data-ico="info"></span>Acerca de</button>
+        <button type="button" id="bCompartir" title="Copiar un enlace a esta vista"><span data-ico="enlace"></span>Compartir</button>
       </div>
       <div id="bHint">o toca cualquier punto del mapa para ver qué hay ahí</div>
     </div>
     <div id="ficha" role="region" aria-label="Ficha del lugar" aria-live="polite" hidden></div>
     <div id="verif" role="region" aria-label="Verificar el estado actual" aria-live="polite" hidden></div>
     <!-- La leyenda de color de año ahora vive integrada en la línea de tiempo (abajo). -->
-    <div class="legend" id="legendZon">
-      <h3>Usos previstos (PMDU)</h3>
-      <div id="legendZonRows"></div>
-      <div class="op-row"><span>Opac.</span><input type="range" id="zonOpacity" min="0.1" max="1" step="0.05" value="0.4"></div>
-    </div>
-    <div class="legend" id="legendClas">
-      <h3>Pérdida por tipo</h3>
-      <div id="legendClasRows"></div>
-      <div class="op-row"><span>Opac.</span><input type="range" id="clasOpacity" min="0.1" max="1" step="0.05" value="0.95" aria-label="Opacidad de la pérdida por clase"></div>
-    </div>
+    <div class="legend" id="leyenda"><button type="button" id="leyBtn" aria-expanded="true">Leyenda</button><div class="ley-dest"></div><div id="leyPie"></div></div>
 
-    <button id="swipeBtn" title="Compara dos imágenes satelitales (2003 y 2025). Es distinto de la línea de tiempo de abajo, que muestra la pérdida detectada." aria-label="Comparar imágenes satelitales de 2003 y 2025">🛰️ Comparar 2003 ↔ 2025</button>
+    <button id="swipeBtn" title="Compara dos imágenes satelitales (2003 y 2025) dentro del recuadro punteado; fuera de él no hay imagen. Es distinto de la línea de tiempo, que muestra la pérdida detectada." aria-label="Comparar imágenes satelitales de 2003 y 2025"><span data-ico="comparar"></span>Comparar 2003 ↔ 2025</button>
     <div id="cerroBar"></div>
     <div id="swipe-divider"><div class="hit"></div><div class="grip">⇔</div></div>
     <div class="sat-label" id="sat-label-l">2003</div>
     <div class="sat-label" id="sat-label-r">2025</div>
 
     <div id="timebar">
-      <button id="playBtn" title="Reproducir">▶</button>
+      <button id="playBtn" title="Reproducir la animación" aria-label="Reproducir la animación"></button>
       <div class="tb-main">
         <div class="tb-top">
           <span class="tb-year" id="yearLabel">2024</span>
@@ -502,7 +582,6 @@
           <button id="modeAcc" class="on">Hasta ese año</button>
           <button id="modeYr">Solo ese año</button>
         </div>
-        <div class="tb-op"><span>Opac.</span><input type="range" id="lossOpacity" min="0.15" max="1" step="0.05" value="0.85"></div>
       </div>
     </div>
   </div>
@@ -510,79 +589,21 @@
 
 <script>
 const YMIN=2006, YMAX=2024;
+// Iconos dibujados (F16 · 12-11-2026): los emoji se ven distinto en cada sistema y los lectores de pantalla los leen en voz alta.
+const ICO=(()=>{const s=(d,f)=>'<span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"'+(f?' class="rell"':'')+'>'+d+'</svg></span>';
+  return {play:s('<path d="M8 5l11 7-11 7z"/>',1), pausa:s('<rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/>',1),
+    enlace:s('<path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1"/><path d="M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1"/>'),
+    comparar:s('<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M12 4v16M8 12h-2M18 12h-2"/>'),
+    imagen:s('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 16l5-5 4 4 3-3 6 6"/>'),
+    mapa:s('<path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/>'),
+    ok:s('<path d="M5 12l5 5 9-10"/>'), info:s('<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/>'),
+    pantalla:s('<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>'),
+    ubic:s('<circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>')};})();
+function botonPlay(on){const b=document.getElementById('playBtn'); if(!b)return; b.innerHTML=on?ICO.pausa:ICO.play;
+  const t=on?'Pausar la animación':'Reproducir la animación'; b.title=t; b.setAttribute('aria-label',t);}
+// Quien desactiva las animaciones en su sistema no ve acercamientos ni desplazamientos animados.
+const REDUCIR=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-// ── Exactitud y versión: se leen del manifiesto, nunca se escriben en el HTML ──────────
-// Una exactitud pertenece a un mapa concreto, no a un método. Tenerla escrita a mano hizo
-// que sobreviviera a un cambio de umbral y quedara atribuida al mapa equivocado.
-const pct=v=>(v==null?'—':(100*v).toFixed(1)+'%');
-// La rama 'exactitud_medida' (04-11-2026) lee el bloque que escribe build_data.py --exactitud.
-// Las ramas de abajo de ella conservan el vocabulario de la v8 (deforestación/degradación) y
-// solo se alcanzan con un JSON de validación del formato viejo.
-const ic=o=>(o?`${pct(o.estimado)} <span class="ic">± ${(100*o.ic95).toFixed(1)}</span>`:'—');
-const NOM_CLASE={perdida:'Pérdida (cualquier clase)',estable:'Estable',degradacion:'Degradación',
-  construida:'Conversión construida',cultivada:'Conversión cultivada',perdida_reciente:'Pérdida reciente'};
-function tablaExactitud(v){
-  const f=Object.entries(v.por_clase||{}).map(([c,d])=>
-    `<tr><td>${NOM_CLASE[c]||c}</td><td>${ic(d.usuario)}</td><td>${d.productor?ic(d.productor):'—'}</td></tr>`).join('');
-  return `<table class="val-tab"><thead><tr><th>Clase</th><th>Usuario</th><th>Productor</th></tr></thead><tbody>${f}</tbody></table>`;
-}
-function textoExactitud(mf){
-  if(!mf||!mf.validacion) return null;
-  const v=mf.validacion;
-  if(v.estado==='exactitud_medida'||v.estado==='validado'){
-    const g=v.global||{}, p=(v.por_clase||{}).perdida||{};
-    return {tono:'aviso',html:
-      `<b>Exactitud${v.estado==='validado'?'':' preliminar'}.</b> Corrida del ${v.corrida}, medida con ${v.n_puntos} puntos de referencia fotointerpretados sobre este mismo mapa y en todo el municipio; ${v.diseno}, estimador de ${v.estimador}. `+
-      `Exactitud global <b>${ic(g.tematica)}</b> (IC 95%): el mapa acierta sobre todo en lo que no cambió. `+
-      `En la pérdida acierta menos. De lo que el mapa marca como pérdida, la referencia la confirma en <b>${pct(p.usuario&&p.usuario.estimado)}</b> (exactitud de usuario); de la pérdida que la referencia encuentra, el mapa capta <b>${pct(p.productor&&p.productor.estimado)}</b> (exactitud del productor).`+
-      tablaExactitud(v)+
-      (v.estado==='validado'?`<b>Superficies.</b> Contar los píxeles del mapa no da la superficie; las que se publican en «Datos» son áreas ajustadas por error, con su intervalo. ${v.nota||''}`
-        :`<b>Por eso no se publican superficies.</b> Contar los píxeles del mapa no da la superficie, y la estimación ajustada por error todavía no la sostiene. ${v.nota||''}`)};
-  }
-  if(v.estado==='pendiente') return {tono:'aviso',html:'<b>Sin validar.</b> Este mapa todavía no tiene validación por fotointerpretación, así que no se reporta exactitud ni superficie. Lo que sí se sabe es dónde el algoritmo detecta pérdida y de qué tipo la clasifica.'};
-  const mismo=v.coincide_con_publicado!==false;
-  if(mismo) return {tono:'ok',html:`<b>Exactitud.</b> Validado con ${v.n_puntos} puntos por fotointerpretación (${v.diseno}). Exactitud global ${pct(v.exactitud_global_mapa_publicado)} (IC 95% ${pct(v.ic95_mapa_publicado[0])}–${pct(v.ic95_mapa_publicado[1])}), estimador de ${v.estimador}.`};
-  const c=v.por_clase_mapa_publicado||{};
-  let h='';
-  // (1) Desajuste de mapa: la exactitud se midió con otro umbral.
-  if(v.coincide_con_publicado===false) h+=
-    `<b>Sobre la exactitud de este mapa.</b> La validación (${v.n_puntos} puntos, ${v.diseno}) se midió sobre el mapa <b>${v.mapa_validado}</b>, mientras que las cifras aquí publicadas provienen del mapa <b>${v.mapa_publicado}</b>. `+
-    `Reevaluada con el estimador de ${v.estimador} sobre el mapa publicado, la exactitud global es <b>${pct(v.exactitud_global_mapa_publicado)}</b> (IC 95% ${pct(v.ic95_mapa_publicado[0])}–${pct(v.ic95_mapa_publicado[1])}), frente a ${pct(v.exactitud_global_mapa_validado)} del mapa validado.<br>`+
-    `Por clase, en el mapa publicado: <b>deforestación</b> ${pct(c.deforestacion&&c.deforestacion.usuario)} de exactitud de usuario —cuando el mapa dice deforestación, casi siempre acierta—; <b>degradación</b> ${pct(c.degradacion&&c.degradacion.productor)} de exactitud del productor, es decir que el mapa capta solo una fracción de la degradación que la muestra de referencia encuentra.<br>`;
-  // (2) Desajuste de área: la muestra no cubre todo lo que el mapa muestra.
-  // Es la limitación más consecuente, porque cambia lo que la clase significa.
-  if(v.ambito_coincide===false) h+=
-    `<br><b>Y sobre qué parte del mapa está validada.</b> La muestra se extrajo del <b>${v.ambito_muestra}</b>, mientras que las cifras cubren el <b>${v.ambito_cifras}</b>. `+
-    `Como el ${100-(window.MANIFEST&&window.MANIFEST.cifras?window.MANIFEST.cifras.pct_dentro:23)}% de la pérdida ocurre fuera de las áreas protegidas, <b>esa parte del mapa no tiene exactitud medida</b>.<br>`;
-  h+=`<br><b>Léanse las superficies como cotas inferiores</b>, no como estimaciones: la validación detectó omisión sistemática de degradación sutil.`;
-  return {tono:'aviso',html:h};
-}
-// Lo que la clase 2 significa depende de dónde se mire, y eso no es un matiz: dentro de las
-// ANP el frente de conversión es agrícola, no urbano.
-function bloqueInterpretacion(mf){
-  const i=mf&&mf.interpretacion_clases; if(!i) return '';
-  return `<p style="margin:7px 0"><b>Qué mide la clase «Deforestación».</b> ${i.dentro_anp} `+
-         `<i>${i.franja_periurbana}</i> ${i.nota_fisica||''}</p>`;
-}
-function pintarMetodologia(mf){
-  const cont=document.getElementById('metaValidacion'); if(!cont) return;
-  const t=textoExactitud(mf);
-  if(!t){cont.innerHTML='';return;}
-  const col=t.tono==='ok'?'var(--accent)':'#d9a441';
-  const bg=t.tono==='ok'?'rgba(63,178,127,.10)':'rgba(217,164,65,.10)';
-  cont.innerHTML=`<div style="border-left:3px solid ${col};background:${bg};border-radius:0 8px 8px 0;padding:9px 11px;margin:2px 0 10px;line-height:1.5">${t.html}</div>`;
-  cont.insertAdjacentHTML('beforeend', tablaMuestra(mf));
-  cont.insertAdjacentHTML('beforeend', bloqueInterpretacion(mf));
-  const p=mf&&mf.parametros;
-  if(p){
-    // Serie de imágenes y años con detección son cosas distintas; mostrarlos como uno solo
-    // fue el origen de una inconsistencia de fechas entre documentos.
-    const serie=p.serie_landsat||p.periodo, ev=p.eventos_detectados;
-    cont.insertAdjacentHTML('beforeend',
-      `<p style="margin:7px 0"><b>Versión y parámetros.</b> Corrida <b>${mf.version}</b> (manifiesto generado el ${mf.generado}); umbral de magnitud <b>${(p.MAG_MIN/1000).toFixed(2)}</b> de caída de NBR. `+
-      `Serie de imágenes ${serie[0]}–${serie[1]}; periodo reportado ${(p.periodo_reportado||ev||serie).join('–')}. ${(mf.avisos&&mf.avisos.umbral)||''}</p>`);
-  }
-}
 // Colores. Unidades: tonos de su propio sentido (verde protegido, ocre rural, naranja
 // urbanizable, gris urbano). Clases de pérdida: ámbar, magenta, cian y gris, elegidos para
 // no confundirse entre sí ni con las unidades en daltonismo rojo-verde.
@@ -615,7 +636,7 @@ function colorYear(y){
   return'rgb(165,0,38)';
 }
 
-const map=L.map('map',{zoomControl:false,minZoom:9,maxZoom:19}).setView([19.66,-101.19],11);
+const map=L.map('map',{zoomControl:false,minZoom:9,maxZoom:19,zoomAnimation:!REDUCIR,fadeAnimation:!REDUCIR,markerZoomAnimation:!REDUCIR}).setView([19.66,-101.19],11);
 map.createPane('etiquetas'); map.getPane('etiquetas').style.zIndex=450; map.getPane('etiquetas').style.pointerEvents='none';
 // Base oscura de Esri (Canvas Dark Gray). CARTO dejó de servir sus teselas sin clave: el
 // 28-09-2026 devolvían una marca «API KEY REQUIRED» sobre todo el mapa, también en el sitio
@@ -629,6 +650,48 @@ const baseDark=L.layerGroup([
 const baseSat=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{
   attribution:'Imagery © Esri, Maxar, Earthstar Geographics',maxZoom:20});
 baseDark.addTo(map);
+// ── Panel con pestañas (A5): «sheet-open» = panel abierto, en escritorio y en celular ──
+(function(){ const sb=document.getElementById('sidebar'), movil=()=>window.matchMedia('(max-width:820px)').matches;
+  function pinta(){ const ab=sb.classList.contains('sheet-open'), tab=sb.dataset.tab;
+    sb.querySelectorAll('#pTabs button').forEach(b=>b.setAttribute('aria-selected',String(ab&&b.dataset.tab===tab)));
+    document.body.classList.toggle('panel-abierto',ab);
+    if(!movil()){ try{localStorage.setItem('ofm_panel',ab?tab:'cerrado');}catch(e){} } }
+  window.abrirPanel=tab=>{ sb.dataset.tab=tab; sb.classList.add('sheet-open'); pinta(); document.getElementById('pCuerpo').scrollTop=0; };
+  window.cerrarPanel=()=>{ sb.classList.remove('sheet-open'); pinta(); };
+  sb.querySelectorAll('#pTabs button').forEach(b=>b.addEventListener('click',()=>{
+    if(sb.classList.contains('sheet-open')&&sb.dataset.tab===b.dataset.tab) window.cerrarPanel(); else window.abrirPanel(b.dataset.tab); }));
+  new MutationObserver(pinta).observe(sb,{attributes:true,attributeFilter:['class']});   // otros módulos cierran el panel quitando la clase
+  let ini=null; try{ini=localStorage.getItem('ofm_panel');}catch(e){}
+  if(!movil()){ if(ini&&ini!=='cerrado') window.abrirPanel(ini); else if(!ini&&window.innerWidth>=1100) window.abrirPanel('resumen'); else pinta(); } else pinta();
+  // La barra del sitio (nav.js) ocupa alto arriba del mapa en escritorio; en celular no se muestra.
+  const altoBarra=()=>{ const b=document.querySelector('.ofm-barra'); const h=(b&&getComputedStyle(b).display!=='none')?b.offsetHeight:0;
+    document.documentElement.style.setProperty('--barra-h',h+'px'); };
+  document.addEventListener('DOMContentLoaded',altoBarra); window.addEventListener('resize',altoBarra); altoBarra();
+  if(window.ResizeObserver) new ResizeObserver(()=>map.invalidateSize({animate:false})).observe(document.getElementById('map'));
+  const lb=document.getElementById('leyBtn'), ly=document.getElementById('leyenda');
+  if(lb){ L.DomEvent.disableClickPropagation(ly); L.DomEvent.disableScrollPropagation(ly);
+    lb.addEventListener('click',()=>{const c=ly.classList.toggle('cerrada'); lb.setAttribute('aria-expanded',String(!c));}); }
+})();
+// ── Leyenda única (F9): enseña solo lo que está encendido; los tipos de suelo también enfocan ──
+let uniFoco='__all';
+function pintarLeyenda(){ const dest=[...document.querySelectorAll('.ley-dest')]; if(!dest.length||!lossLayer||!uniLayer) return;
+  const M=window.MANIFEST||{}, CL=M.clases||CLASES_DEF, GR=M.grupos||{}, fila=(c,t,r)=>`<div class="row"><span class="sw" style="background:${c}${r?';border-radius:50%':''}"></span>${t}</div>`;
+  let h='';
+  if(map.hasLayer(lossLayer)) h+=`<h3>Pérdida de bosque, por año</h3><div class="grad"></div><div class="grad-lbl"><span>${YMIN}</span><span>${YMAX}</span></div>`;
+  if(clasLayer&&map.hasLayer(clasLayer)){ h+='<h3>Pérdida de bosque, por tipo</h3>'+Object.keys(CLAS_COLORS).map(k=>fila(CLAS_COLORS[k],CL[k]||CLASES_DEF[k])).join('');
+    const a=M.cifras&&M.cifras.area_min_parche_ha; h+=`<div class="ley-nota">${a?'Se dibujan los parches de '+a+' ha o más. ':''}La línea de tiempo usa el año de la mayoría de los píxeles de cada parche.</div>`; }
+  if(window.aportesLayer&&map.hasLayer(window.aportesLayer)) h+=fila(APORTE_COLOR,'Aporte ciudadano validado',true);
+  if(map.hasLayer(uniLayer)){ h+='<h3>Tipos de suelo (PMDU) · toca para enfocar</h3>'+
+    [['__all','Todo el municipio','#ffffff'],[1,'Áreas protegidas'],[2,'No urbanizable'],[3,'Urbanizable'],[4,'Urbano']].map(([id,n,c])=>
+      `<button type="button" class="ley-u" data-u="${id}" aria-pressed="${String(uniFoco)===String(id)}"><span class="sw" style="background:${c||UNI_COLORS[id]}"></span>${n}</button>`).join(''); }
+  if(anpLayer&&map.hasLayer(anpLayer)) h+='<h3>Límites</h3><div class="row"><span class="ln"></span>Área natural protegida</div>';
+  if(zonLayer&&map.hasLayer(zonLayer)) h+='<h3>Usos previstos (PMDU)</h3>'+Object.keys(GRUPO_COLORS).map(k=>fila(GRUPO_COLORS[k],GR[k]||('Grupo '+k))).join('');
+  if(window.__distLayer&&map.hasLayer(window.__distLayer)) h+='<div class="row"><span class="ln" style="border-top:2px dotted #8fd0ff"></span>Distancia al suelo urbano</div>';
+  if(!h) h='<div class="ley-nota">No hay capas encendidas.</div>';
+  dest.forEach(d=>{ d.innerHTML=h; d.querySelectorAll('[data-u]').forEach(b=>b.onclick=()=>window.enfocarUnidad&&window.enfocarUnidad(b.dataset.u==='__all'?'__all':+b.dataset.u)); });
+  const pie=document.getElementById('leyPie'), est=M.validacion&&M.validacion.estado;
+  if(pie) pie.innerHTML=est==='validado'?'Mapa validado: muestra <b>dónde</b>. <a href="./datos.html">Cuánto, en Datos</a>.':'El mapa muestra <b>dónde</b>, todavía no cuánto.';
+}
 // Los controles de la esquina derecha (capas → buscador → zoom → pantalla completa)
 // se agregan en secuencia dentro del .then, para que queden en ese orden vertical.
 ['timebar','legendZon','legendClas','swipeBtn'].forEach(id=>{const el=document.getElementById(id);if(el){L.DomEvent.disableClickPropagation(el);L.DomEvent.disableScrollPropagation(el);}});
@@ -641,19 +704,34 @@ let lossLayer,anpLayer,zonLayer,uniLayer,clasLayer,lossOpacity=0.85,zonOpacity=0
 const uniById={}, anpById={};
 const overlays={};
 
+// Carga diferida (A7 · 12-11-2026): al abrir solo bajan las capas que se ven (tipos de suelo, áreas
+// protegidas, pérdida por año y manifiesto). La capa por tipo y los usos previstos bajan al
+// encenderlas; los píxeles de pérdida y la zonificación, al abrir la primera ficha (y en segundo
+// plano después de cargar); los cuadros de «Verificar», al entrar a verificar. En la copia
+// autocontenida todo viene incrustado y cargarDato responde sin red.
+const DIFERIDOS={zon:'zonificacion.geojson',clas:'perdida_clasificada.geojson',pix:'perdida_puntos.json',obj:'objetivos.json'};
+const _cargas={};
+function cargarDato(k){ window.DATA=window.DATA||{}; if(window.DATA[k]) return Promise.resolve(window.DATA[k]);
+  if(!_cargas[k]) _cargas[k]=fetch('./data/'+DIFERIDOS[k]).then(r=>{ if(!r.ok) throw new Error(r.status); return r.json(); })
+    .then(j=>{ window.DATA[k]=j; return j; }).catch(e=>{ delete _cargas[k]; throw e; });
+  return _cargas[k]; }
+let _nCarga=0;
+function avisoCarga(on){ let a=document.getElementById('cargaCapa');
+  if(!a){ a=document.createElement('div'); a.id='cargaCapa'; a.setAttribute('role','status'); a.textContent='Cargando…'; document.getElementById('map').appendChild(a); }
+  _nCarga=Math.max(0,_nCarga+(on?1:-1)); a.style.display=_nCarga?'block':'none'; }
 /*DATA:BEGIN*/
 Promise.all([
   fetch('./data/perdida_por_anio.geojson').then(r=>r.json()),
   fetch('./data/anps.geojson').then(r=>r.json()),
-  fetch('./data/zonificacion.geojson').then(r=>r.json()),
+  null,   // zonificación: diferida
   fetch('./data/unidades.geojson').then(r=>r.json()),
-  fetch('./data/perdida_clasificada.geojson').then(r=>r.json()).catch(()=>null),
+  null,   // pérdida por tipo: diferida
   fetch('./data/manifest.json').then(r=>r.json()).catch(()=>null),
-  fetch('./data/perdida_puntos.json').then(r=>r.json()).catch(()=>null),
-  fetch('./data/objetivos.json').then(r=>r.json()).catch(()=>null)
+  null,   // píxeles de pérdida: diferidos
+  null    // cuadros de «Verificar»: diferidos
 ]).then(([loss,anps,zon,unid,clas,manifest,pix,obj])=>{
 /*DATA:END*/
-  window.MANIFEST=manifest; pintarMetodologia(manifest); pintarEstado(manifest);
+  window.MANIFEST=manifest; pintarEstado(manifest);
   { const sv=document.getElementById('subVal'), est=manifest&&manifest.validacion&&manifest.validacion.estado;
     if(sv) sv.innerHTML = est==='validado' ? '<b>Validación cerrada:</b> <a href="./datos.html" style="color:var(--accent2)">ver cuánto se perdió</a>.'
       : est==='exactitud_medida' ? '<b>Validación preliminar:</b> muestra dónde, todavía no cuánto.' : '<b>Sin validar:</b> muestra dónde, no cuánto.'; }
@@ -671,14 +749,12 @@ Promise.all([
   const cvClas=L.canvas({padding:0.2,pane:'clasPane'});
 
   // ---- Zonificación secundaria, siete grupos (apagada por defecto) ----
-  zonLayer=L.geoJSON(zon,{
+  zonLayer=L.geoJSON(zon||null,{
     renderer:cvZon,
     style:f=>({color:GRUPO_COLORS[f.properties.grupo_id]||'#888',weight:.4,fillColor:GRUPO_COLORS[f.properties.grupo_id]||'#888',fillOpacity:zonOpacity}),
     onEachFeature:(f,l)=>{l.bindTooltip('Uso previsto · '+f.properties.grupo,{sticky:true});}
   });
-  const zr=document.getElementById('legendZonRows');
   const GR=(manifest&&manifest.grupos)||{};
-  Object.keys(GRUPO_COLORS).forEach(k=>{zr.innerHTML+=`<div class="row"><span class="sw" style="background:${GRUPO_COLORS[k]}"></span>${GR[k]||('Grupo '+k)}</div>`});
 
   // ---- Unidades de análisis (encendidas: son el marco de lectura del mapa) ----
   uniLayer=L.geoJSON(unid,{
@@ -688,7 +764,10 @@ Promise.all([
   }).addTo(map);
   const ordenarUnidades=()=>UNI_ORDEN.forEach(id=>{const l=uniById[id]; if(l&&map.hasLayer(uniLayer)) l.bringToFront();});
   ordenarUnidades();
-  map.on('overlayadd',e=>{ if(e.layer===uniLayer) ordenarUnidades(); });
+  map.on('overlayadd',e=>{ if(e.layer===uniLayer) ordenarUnidades();
+    // Una sola lectura de la pérdida a la vez (D11): por año o por tipo.
+    if(e.layer===lossLayer&&clasLayer&&map.hasLayer(clasLayer)) map.removeLayer(clasLayer);
+    if(clasLayer&&e.layer===clasLayer&&map.hasLayer(lossLayer)) map.removeLayer(lossLayer); });
 
   // ---- Pérdida detectada por año ----
   lossLayer=L.geoJSON(loss,{
@@ -719,18 +798,24 @@ Promise.all([
   map.setMaxBounds(uniLayer.getBounds().pad(0.3)); map.options.maxBoundsViscosity=0.7;
 
   // ---- Pérdida detectada por clase ----
-  if(clas){
-    clasLayer=L.geoJSON(clas,{
+  {
+    clasLayer=L.geoJSON(clas||null,{
       renderer:cvClas,
       style:f=>({color:LOSS_STROKE.color,weight:LOSS_STROKE.weight,opacity:Math.min(1,clasOpacity+.1),fillColor:CLAS_COLORS[f.properties.clase]||'#888',fillOpacity:clasOpacity}),
-      onEachFeature:(f,l)=>{ l.bindTooltip(`${CLASES[+f.properties.clase]||'Pérdida'}`,{sticky:true});
+      onEachFeature:(f,l)=>{ l.bindTooltip(`${CLASES[+f.properties.clase]||'Pérdida'}${f.properties.year?' · '+f.properties.year:''}`,{sticky:true});
         l.on('click',e=>{ if(window.aportarEnPunto&&aportando()){ L.DomEvent.stopPropagation(e); window.aportarEnPunto(f.properties,e.latlng); } }); }});
   }
-  const lr=document.getElementById('legendClasRows');
-  if(lr){ Object.keys(CLAS_COLORS).forEach(k=>{lr.innerHTML+=`<div class="row"><span class="sw" style="background:${CLAS_COLORS[k]}"></span>${CLASES[k]||CLASES_DEF[k]}</div>`});
-    lr.innerHTML+=`<div class="row"><span class="sw" style="background:${APORTE_COLOR};border-radius:50%"></span>Aporte ciudadano validado</div>`;
-    const a=manifest&&manifest.cifras&&manifest.cifras.area_min_parche_ha;
-    if(a) lr.innerHTML+=`<div style="font-size:10px;color:var(--muted);margin-top:5px;line-height:1.35">Se dibujan los parches de ${a} ha o más; el conteo usa todos los píxeles.</div>`; }
+
+  function diferida(layer,k,despues){ layer.on('add',()=>{ if(layer.getLayers().length) return;
+      avisoCarga(true); cargarDato(k).then(j=>{ if(!layer.getLayers().length){ layer.addData(j); if(despues) despues(); } })
+        .catch(()=>{}).finally(()=>avisoCarga(false)); }); }
+  diferida(clasLayer,'clas',()=>{ contornoPorZoom(); updateTime(); pintarLeyenda(); });
+  diferida(zonLayer,'zon');
+
+  // Contorno de los parches solo desde el acercamiento 13: más lejos, la línea oscura de 0.6 px
+  // cubría el relleno y la pérdida se veía negra.
+  const contornoPorZoom=()=>{const w=map.getZoom()>=13?LOSS_STROKE.weight:0; lossLayer.setStyle({weight:w}); if(clasLayer)clasLayer.setStyle({weight:w});};
+  map.on('zoomend',contornoPorZoom); contornoPorZoom();
 
   // ---- Control de capas ----
   overlays['Pérdida por año']=lossLayer;
@@ -739,8 +824,27 @@ Promise.all([
   overlays['Áreas naturales protegidas']=anpLayer;
   overlays['Usos previstos (PMDU)']=zonLayer;
   window.aportesLayer=L.layerGroup();
-  overlays['Aportes ciudadanos']=window.aportesLayer;
   const lc=L.control.layers({'Mapa oscuro':baseDark,'Satélite (Esri)':baseSat},overlays,{collapsed:true,position:'topleft'}).addTo(map);
+  window.__capasCtl=lc;
+  const CAPA=()=>({uni:uniLayer,anp:anpLayer,zon:zonLayer,dist:window.__distLayer,apo:window.aportesLayer});
+  function syncCapas(){ const v=map.hasLayer(lossLayer)?'anio':(clasLayer&&map.hasLayer(clasLayer))?'clase':'no';
+    document.querySelectorAll('input[name=qPerd]').forEach(r=>{r.checked=r.value===v;});
+    document.getElementById('qOpAnio').hidden=v!=='anio'; document.getElementById('qOpClase').hidden=v!=='clase';
+    const C=CAPA(); document.querySelectorAll('input[data-capa]').forEach(c=>{const l=C[c.dataset.capa]; c.checked=!!l&&map.hasLayer(l);});
+    document.getElementById('qOpZon').hidden=!map.hasLayer(zonLayer);
+    document.querySelectorAll('input[name=qBase]').forEach(r=>{r.checked=(r.value==='sat')===map.hasLayer(baseSat);});
+    pintarLeyenda(); }
+  window.syncCapas=syncCapas;
+  document.querySelectorAll('input[name=qPerd]').forEach(r=>r.addEventListener('change',()=>{ if(!r.checked)return;
+    if(r.value==='anio') map.addLayer(lossLayer);
+    else if(r.value==='clase'&&clasLayer) map.addLayer(clasLayer);
+    else { map.removeLayer(lossLayer); if(clasLayer) map.removeLayer(clasLayer); } syncCapas(); }));
+  document.querySelectorAll('input[data-capa]').forEach(c=>c.addEventListener('change',()=>{ const l=CAPA()[c.dataset.capa]; if(!l)return;
+    if(c.checked) map.addLayer(l); else map.removeLayer(l); syncCapas(); }));
+  document.querySelectorAll('input[name=qBase]').forEach(r=>r.addEventListener('change',()=>{ if(!r.checked)return;
+    if(r.value==='sat'){ map.removeLayer(baseDark); baseSat.addTo(map); } else { map.removeLayer(baseSat); baseDark.addTo(map); } syncCapas(); }));
+  map.on('overlayadd overlayremove baselayerchange',()=>setTimeout(syncCapas,0));
+  syncCapas();   // «Aportes ciudadanos» entra al control cuando hay aportes validados (cargarAportesValidados)
   // Líneas de distancia al suelo urbano (apagadas por defecto). Se cargan aparte: si el
   // archivo falta, como en la copia offline, el mapa sigue igual y la capa no aparece.
   fetch('./data/distancias.geojson').then(r=>r.ok?r.json():null).then(g=>{ if(!g) return;
@@ -748,17 +852,18 @@ Promise.all([
       style:f=>({color:'#8fd0ff',weight:f.properties.dist_m>=5000?2:1.3,opacity:.9,dashArray:'2 6',fill:false}),
       onEachFeature:(f,l)=>l.bindTooltip('A '+f.properties.rotulo+' del suelo urbano más cercano (ciudad o localidad)',{sticky:true,className:'anp-tip'})});
     lc.addOverlay(distLayer,'Distancia al suelo urbano (0.5, 1, 2 y 5 km)');
+    window.__distLayer=distLayer; const qd=document.getElementById('qDist'); if(qd)qd.hidden=false;
+    if((window.__urlBand||'').includes('d')) map.addLayer(distLayer);
   }).catch(()=>{});
   let gcCtl=null;
   // El geocodificador de Leaflet salió el 09-11-2026: lo sustituye #buscador.
   const zoomCtl=L.control.zoom({position:'topleft'}).addTo(map);
   if(window.cargarAportesValidados) window.cargarAportesValidados();
   map.on('overlayadd overlayremove',e=>{
-    if(e.layer===zonLayer)document.getElementById('legendZon').style.display=(map.hasLayer(zonLayer)?'block':'none');
-    const showClas=((clasLayer&&map.hasLayer(clasLayer))||map.hasLayer(window.aportesLayer));
-    const lgC=document.getElementById('legendClas'); if(lgC)lgC.style.display=showClas?'block':'none';
     const gr=document.querySelector('.tb-main .grad'), gl=document.querySelector('.tb-main .grad-lbl');
     const showYr=map.hasLayer(lossLayer); if(gr)gr.style.display=showYr?'block':'none'; if(gl)gl.style.display=showYr?'flex':'none';
+    // La línea de tiempo gobierna las dos lecturas de la pérdida (D30); sin ninguna, se oculta.
+    const clasOn=clasLayer&&map.hasLayer(clasLayer), tb=document.getElementById('timebar'); if(tb)tb.style.display=(showYr||clasOn)?'':'none';
   });
 
   // ---- Barra de unidades: enfoca una unidad y atenúa las otras ----
@@ -771,6 +876,7 @@ Promise.all([
     ordenarUnidades();   // la jerarquía de contornos se mantiene aunque se enfoque otra unidad
     map.fitBounds(id==='__all'?uniLayer.getBounds():uniById[id].getBounds(),fitOpts);
     if(cselect) cselect.value=String(id);
+    uniFoco=id; pintarLeyenda();
   }
   window.enfocarUnidad=enfocar;
   [['__all','Municipio','#ffffff'],[1,'Áreas protegidas'],[2,'No urbanizable'],[3,'Urbanizable'],[4,'Urbano']].forEach(([id,name,col])=>{
@@ -787,7 +893,7 @@ Promise.all([
     else enfocar(v==='__all'?'__all':+v);});}
 
   L.control.scale({imperial:false,maxWidth:130,position:'bottomleft'}).addTo(map);
-  const FsCtl=L.Control.extend({options:{position:'topleft'},onAdd:function(){const d=L.DomUtil.create('div','leaflet-bar fs-ctl');const a=L.DomUtil.create('a','',d);a.href='#';a.innerHTML='⛶';a.title='Pantalla completa';a.setAttribute('role','button');a.setAttribute('aria-label','Pantalla completa');L.DomEvent.on(a,'click',ev=>{L.DomEvent.preventDefault(ev);const el=document.documentElement;if(!document.fullscreenElement){(el.requestFullscreen||el.webkitRequestFullscreen||function(){}).call(el);}else{(document.exitFullscreen||document.webkitExitFullscreen||function(){}).call(document);}});return d;}});
+  const FsCtl=L.Control.extend({options:{position:'topleft'},onAdd:function(){const d=L.DomUtil.create('div','leaflet-bar fs-ctl');const a=L.DomUtil.create('a','',d);a.href='#';a.innerHTML=ICO.pantalla;a.title='Pantalla completa';a.setAttribute('role','button');a.setAttribute('aria-label','Pantalla completa');L.DomEvent.on(a,'click',ev=>{L.DomEvent.preventDefault(ev);const el=document.documentElement;if(!document.fullscreenElement){(el.requestFullscreen||el.webkitRequestFullscreen||function(){}).call(el);}else{(document.exitFullscreen||document.webkitExitFullscreen||function(){}).call(document);}});return d;}});
   const fsCtl=new FsCtl(); map.addControl(fsCtl);
   document.addEventListener('fullscreenchange',()=>setTimeout(()=>map.invalidateSize(),150));
   try{
@@ -800,30 +906,28 @@ Promise.all([
       L.DomEvent.disableClickPropagation(col); L.DomEvent.disableScrollPropagation(col);
     });
     leftCol.appendChild(lc.getContainer());
-    ['legendZon','legendClas'].forEach(id=>{const el=document.getElementById(id); if(el) leftCol.appendChild(el);});
     if(gcCtl) rightCol.appendChild(gcCtl.getContainer());
     rightCol.appendChild(zoomCtl.getContainer());
     rightCol.appendChild(fsCtl.getContainer());
   }catch(e){}
-  ['legendZon','legendClas'].forEach(id=>{const el=document.getElementById(id); if(el) el.style.display='none';});
 
-  window.DATA={loss,anps,zon,unid,clas,manifest,pix,obj};
+  window.DATA=Object.assign(window.DATA||{},Object.fromEntries(Object.entries({loss,anps,zon,unid,clas,manifest,pix,obj}).filter(([,v])=>v)));
   iniciarBuscadorYFicha();
   updateTime();
   const _ld=document.getElementById('loader'); if(_ld)_ld.style.display='none';
+  // Lo que pide la ficha baja en segundo plano, cuando el mapa ya está a la vista.
+  setTimeout(()=>{ const pre=()=>{ cargarDato('pix').catch(()=>{}); cargarDato('zon').catch(()=>{}); };
+    if('requestIdleCallback' in window) requestIdleCallback(pre,{timeout:3000}); else pre(); },2000);
 });
 
 // ================= Secciones del sitio (D18): el menú común las abre sin recargar =================
 window.ofmIrSeccion=function(sec){
-  const sb=document.getElementById('sidebar'), movil=window.matchMedia('(max-width:820px)').matches;
+  // Método, créditos y descargas viven en Datos (A2); en el mapa solo queda «participar».
+  if(sec==='acerca'){ location.href='./acerca.html'; return; }
+  if(sec==='datos'){ location.href='./datos.html#descargas'; return; }
   const q=sec?('?seccion='+sec):''; try{history.replaceState(null,'',location.pathname+q+location.hash);}catch(e){}
-  if(!sec){ if(movil) sb.classList.remove('sheet-open'); return; }
-  let destino=null;
-  if(sec==='participar') destino=document.getElementById('participaBlock');
-  if(sec==='acerca'){ const d=document.getElementById('metaValidacion').closest('details'); if(d)d.open=true; destino=document.getElementById('estadoBlock'); }
-  if(sec==='datos'){ const d=[...document.querySelectorAll('details.fold')].find(x=>/Datos y metadatos/.test(x.querySelector('summary').textContent)); if(d){d.open=true;destino=d;} }
-  if(movil) sb.classList.add('sheet-open');
-  if(destino) setTimeout(()=>{ if(movil) sb.scrollTop=destino.offsetTop-60; else destino.scrollIntoView({behavior:'smooth',block:'start'}); }, movil?320:0);
+  if(sec==='participar') window.abrirPanel('participar');
+  else if(window.matchMedia('(max-width:820px)').matches) window.cerrarPanel();
 };
 
 // ================= Metadatos de la imagen de Esri (fecha, proveedor, sensor, resolución) =================
@@ -842,24 +946,35 @@ const textoMeta=m=>m?('Imagen del '+m.fecha.split('-').reverse().join('/')+' · 
 
 // ================= Enlaces compartibles (P3) =================
 // #z/lat/lng/año/modo/capa[/f] — modo: acc|yr; capa: anio|clase; f: ficha abierta en el centro.
-function estadoURL(){const c=map.getCenter(), capa=(clasLayer&&map.hasLayer(clasLayer))?'clase':'anio';
+// #z/lat/lng/año/modo/capa[/f][/c…] — capa: anio|clase|no; f: ficha abierta; c + banderas:
+// s satélite · z usos previstos · d distancias · u sin tipos de suelo · a sin áreas protegidas (F12).
+function banderasURL(){return (map.hasLayer(baseSat)?'s':'')+(zonLayer&&map.hasLayer(zonLayer)?'z':'')+(window.__distLayer&&map.hasLayer(window.__distLayer)?'d':'')+
+  (uniLayer&&!map.hasLayer(uniLayer)?'u':'')+(anpLayer&&!map.hasLayer(anpLayer)?'a':'');}
+function estadoURL(){const c=map.getCenter(), capa=(clasLayer&&map.hasLayer(clasLayer))?'clase':(map.hasLayer(lossLayer)?'anio':'no'), b=banderasURL();
   return '#'+map.getZoom()+'/'+c.lat.toFixed(5)+'/'+c.lng.toFixed(5)+'/'+slider.value+'/'+mode+'/'+capa+
-    (document.getElementById('ficha').hidden?'':'/f');}
+    (document.getElementById('ficha').hidden?'':'/f')+(b?'/c'+b:'');}
 function guardarURL(){ if(window.__verificando)return; try{history.replaceState(null,'',estadoURL());}catch(e){} }
 function leerURL(){const p=(location.hash||'').replace('#','').split('/'); if(p.length<3)return null;
   const z=+p[0],lat=+p[1],lng=+p[2]; if(!isFinite(z)||!isFinite(lat)||!isFinite(lng))return null;
-  return {z,lat,lng,anio:+p[3]||null,modo:p[4]||null,capa:p[5]||null,ficha:p[6]==='f'};}
+  const ex=p.slice(6), c=ex.find(s=>s[0]==='c');
+  return {z,lat,lng,anio:+p[3]||null,modo:p[4]||null,capa:p[5]||null,ficha:ex.includes('f'),band:c?c.slice(1):''};}
 function aplicarURL(){const e=leerURL(); if(!e)return; map.stop();
   map.setView([e.lat,e.lng],e.z,{animate:false});
   if(e.capa==="clase"&&clasLayer){map.removeLayer(lossLayer);map.addLayer(clasLayer);}
+  if(e.capa==="no"){map.removeLayer(lossLayer);}
+  const B=e.band; window.__urlBand=B;
+  if(B.includes('s')){map.removeLayer(baseDark);baseSat.addTo(map);}
+  if(B.includes('z'))map.addLayer(zonLayer); if(B.includes('u'))map.removeLayer(uniLayer); if(B.includes('a'))map.removeLayer(anpLayer);
+  if(B.includes('d')&&window.__distLayer)map.addLayer(window.__distLayer);
   if(e.modo==='yr')document.getElementById('modeYr').click();
   if(e.anio&&e.anio>=YMIN&&e.anio<=YMAX){slider.value=e.anio;updateTime();}
   setTimeout(guardarURL,0);   // la dirección se escribe ya con el año y la capa aplicados
   if(e.ficha) setTimeout(()=>abrirFicha(e.lat,e.lng,false),50);}
 
 // ================= Buscador y ficha del lugar (D8, D9, D10 · 09-11-2026) =================
-// El aviso vive SOLO aquí (D9). Si el comité pide cambiarlo, se cambia en esta línea.
-const AVISO_FICHA='<b>Ejercicio de investigación científica, no documento legal.</b> Los límites provienen del Programa Municipal de Desarrollo Urbano (PMDU) de Morelia 2022-2041, simplificados para el mapa. La pérdida detectada describe un cambio en la vegetación, no quién lo hizo ni si fue legal.';
+// El aviso vive en nav.js (D9, A6): un solo texto para todas las páginas.
+const AVISO_FICHA=window.OFM_AVISO||'<b>Ejercicio de investigación científica, no documento legal.</b>';
+{const ap=document.getElementById('avisoPanel'); if(ap) ap.innerHTML=AVISO_FICHA;}
 const RADIO_M=250;          // D8
 const BORDE_M=50;           // a menos de esto, la cartografía simplificada no asegura el lado
 const UNI_GLOSA={1:'área natural protegida por su bosque o su agua',
@@ -920,7 +1035,7 @@ function pintarFicha(r){
       h+=`<dt>Área natural protegida</dt><dd>Dentro de <b>${r.anp.nombre}</b><small>Objeto ${r.anp.objeto}${f?' · decreto '+f:''}</small></dd>`; }
     else if(r.anpCercana){
       h+=`<dt>Área natural protegida</dt><dd>Fuera de áreas naturales protegidas<small>La más cercana: ${r.anpCercana.p.nombre}, a ${fmtDist(r.anpCercana.d)}</small></dd>`; }
-    h+=`<dt>Uso previsto (PMDU)</dt><dd>${r.zon?r.zon.grupo:'Sin dato en este punto'}</dd></dl>`;
+    h+=`<dt>Uso previsto (PMDU)</dt><dd>${r.zon?r.zon.grupo:'Sin uso previsto asignado en la capa'}</dd></dl>`;
     if(r.borde) h+=`<div class="f-alerta">Está a unos ${fmtDist(r.borde.d)} del límite con <b>${r.borde.vecina.unidad.toLowerCase()}</b>. A esa distancia el mapa no permite asegurar de qué lado cae.</div>`;
     h+=`<h4>Pérdida de bosque detectada a menos de ${RADIO_M} m</h4>`;
     if(!r.perdida) h+=`<p class="f-nota">No se pudo leer la capa de pérdida.</p>`;
@@ -928,14 +1043,14 @@ function pintarFicha(r){
     else { const MAX=8;
       h+='<ul>'+r.perdida.slice(0,MAX).map(p=>`<li><span class="sw" style="background:${CLAS_COLORS[p.clase]||'#888'}"></span>${p.anio} · ${CL[p.clase]||CLASES_DEF[p.clase]}</li>`).join('')+'</ul>';
       if(r.perdida.length>MAX) h+=`<p class="f-nota">y ${r.perdida.length-MAX} registros más.</p>`; }
-    h+=`<p class="f-nota">El mapa no capta toda la pérdida; su exactitud está en «Acerca de».</p>`;
+    h+=`<p class="f-nota">El mapa no capta toda la pérdida; su exactitud está en <a href="./datos.html#confianza" style="color:var(--accent2)">Datos</a>.</p>`;
   }
-  if(r.unidad) h+=`<button type="button" class="f-sat" id="fSat">🛰️ Ver la imagen de satélite actual</button><div class="f-sat-meta" id="fSatMeta"></div>`;
+  if(r.unidad) h+=`<button type="button" class="f-sat" id="fSat"></button><div class="f-sat-meta" id="fSatMeta"></div>`;
   h+=`<div class="f-aviso">${AVISO_FICHA}</div>`;
   el.innerHTML=h;
   const bs=document.getElementById('fSat');
   if(bs){ const enSat=()=>map.hasLayer(baseSat);
-    const pinta=()=>{bs.textContent=enSat()?'🗺️ Volver al mapa':'🛰️ Ver la imagen de satélite actual';};
+    const pinta=()=>{bs.innerHTML=enSat()?ICO.mapa+'Volver al mapa':ICO.imagen+'Ver la imagen de satélite actual';};
     pinta(); if(enSat()) metaImagen(r.lat,r.lng).then(m=>{const e=document.getElementById('fSatMeta'); if(e)e.textContent=textoMeta(m);});
     bs.onclick=async()=>{ const mm=document.getElementById('fSatMeta');
       if(enSat()){ map.removeLayer(baseSat); baseDark.addTo(map); mm.textContent=''; }
@@ -946,20 +1061,30 @@ function pintarFicha(r){
   const hint=document.getElementById('bHint'); if(hint) hint.style.display='none';
 }
 window.cerrarFicha=cerrarFicha;
-function cerrarFicha(){const el=document.getElementById('ficha'); el.hidden=true; document.body.classList.remove('ficha-abierta'); setTimeout(guardarURL,0);
+function cerrarFicha(){fichaTok++; const el=document.getElementById('ficha'); el.hidden=true; document.body.classList.remove('ficha-abierta'); setTimeout(guardarURL,0);
   if(fichaMarca){map.removeLayer(fichaMarca);fichaMarca=null;} if(fichaCirculo){map.removeLayer(fichaCirculo);fichaCirculo=null;}}
 function abrirFicha(lat,lng,centrar){
+  if(window.matchMedia('(max-width:820px)').matches&&window.cerrarPanel) window.cerrarPanel();
   if(fichaMarca)map.removeLayer(fichaMarca); if(fichaCirculo)map.removeLayer(fichaCirculo);
   fichaCirculo=L.circle([lat,lng],{radius:RADIO_M,color:'#ffffff',weight:1.5,dashArray:'5 4',fill:false,interactive:false}).addTo(map);
   fichaMarca=L.circleMarker([lat,lng],{radius:7,color:'#06231a',weight:2,fillColor:'#3fb27f',fillOpacity:1,interactive:false}).addTo(map);
   if(centrar) map.setView([lat,lng],Math.max(map.getZoom(),16));
+  const D=window.DATA||{};
+  if(!D.pix||!D.zon){ const el0=document.getElementById('ficha'), tok=++fichaTok;
+    el0.innerHTML='<div class="f-head"><b>Este lugar</b></div><p class="f-nota">Consultando…</p>'; el0.hidden=false; document.body.classList.add('ficha-abierta');
+    Promise.all([cargarDato('pix').catch(()=>null),cargarDato('zon').catch(()=>null)]).then(()=>{ if(tok===fichaTok) mostrarFicha(lat,lng); });
+    return; }
+  mostrarFicha(lat,lng);
+}
+let fichaTok=0;
+function mostrarFicha(lat,lng){
   pintarFicha(consultarLugar(lat,lng)); setTimeout(guardarURL,0);
   // Que el punto no quede debajo de la ficha: abajo en móvil, a la derecha en escritorio.
   const el=document.getElementById('ficha'), sz=map.getSize(), pt=map.latLngToContainerPoint([lat,lng]);
   if(window.matchMedia('(max-width:820px)').matches){
     const libre=sz.y-el.offsetHeight-70, objetivo=Math.max(150,120+(libre-120)/2);
-    map.panBy([pt.x-sz.x/2, pt.y-objetivo],{animate:true});
-  } else if(pt.x>sz.x-380){ map.panBy([pt.x-(sz.x-380)/2,0],{animate:true}); }
+    map.panBy([pt.x-sz.x/2, pt.y-objetivo],{animate:!REDUCIR});
+  } else if(pt.x>sz.x-380){ map.panBy([pt.x-(sz.x-380)/2,0],{animate:!REDUCIR}); }
 }
 
 // Coordenadas escritas o pegadas desde un enlace de mapas: «19.70, -101.19» o «…/@19.70,-101.19,15z»
@@ -972,25 +1097,35 @@ function iniciarBuscadorYFicha(){
   // Nominatim pide no buscar mientras se escribe: la búsqueda corre solo al enviar.
   form.addEventListener('submit',async ev=>{ev.preventDefault(); const t=inp.value.trim(); if(!t)return;
     const c=leerCoordenadas(t); if(c){res.hidden=true; abrirFicha(c[0],c[1],true); return;}
+    const nrm=s=>s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+    const hits=nrm(t).length>=3?Object.keys(anpById).filter(n=>nrm(n).includes(nrm(t))):[];
+    const pintaAnp=()=>hits.forEach(n=>{const b=document.createElement('button'); b.type='button'; b.textContent='Área natural protegida · '+n;
+      b.onclick=()=>{res.hidden=true; cerrarFicha(); map.fitBounds(anpById[n].getBounds(),{padding:[40,40]});}; res.appendChild(b);});
     res.hidden=false; res.innerHTML='<div class="msg">Buscando…</div>';
     try{ const u='https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&accept-language=es&countrycodes=mx&bounded=1&viewbox=-101.55,19.90,-100.95,19.40&q='+encodeURIComponent(t);
       const js=await (await fetch(u)).json();
-      if(!js.length){res.innerHTML='<div class="msg">Sin resultados en Morelia. Prueba con otra forma de escribirlo o toca el mapa.</div>';return;}
-      res.innerHTML=''; js.forEach(o=>{const b=document.createElement('button'); b.type='button';
+      if(!js.length&&!hits.length){res.innerHTML='<div class="msg">Sin resultados en Morelia. Prueba con otra forma de escribirlo o toca el mapa.</div>';return;}
+      res.innerHTML=''; pintaAnp(); js.forEach(o=>{const b=document.createElement('button'); b.type='button';
         b.textContent=o.display_name.split(',').slice(0,3).join(','); b.onclick=()=>{res.hidden=true; abrirFicha(+o.lat,+o.lon,true);}; res.appendChild(b);});
-    }catch(e){res.innerHTML='<div class="msg">No se pudo consultar el buscador. Puedes tocar el mapa o escribir coordenadas.</div>';}
+    }catch(e){ if(hits.length){res.innerHTML=''; pintaAnp();} else res.innerHTML='<div class="msg">No se pudo consultar el buscador. Puedes tocar el mapa o escribir coordenadas.</div>';}
   });
   inp.addEventListener('input',()=>{if(!inp.value.trim())res.hidden=true;});
   map.on('click',e=>{ if(aportando())return; res.hidden=true; abrirFicha(e.latlng.lat,e.latlng.lng,false); });
+  // Teclado (F16): con el mapa enfocado, las flechas lo mueven y Enter o espacio consultan el punto del centro, marcado con una mira.
+  const mc=map.getContainer(); mc.setAttribute('aria-label','Mapa. Usa las flechas para moverte, + y − para acercarte, y Enter para consultar el punto del centro.');
+  mc.addEventListener('keydown',e=>{ if(e.target!==mc||aportando())return;
+    if(e.key==='Enter'||e.key===' '){ e.preventDefault(); res.hidden=true; const c=map.getCenter(); abrirFicha(c.lat,c.lng,false); } });
   document.getElementById('bCambio').onclick=()=>{ const ma=document.getElementById('modeAcc'); if(ma)ma.click();
+    if(swOn) swSet(false); cerrarFicha(); if(!map.hasLayer(lossLayer)&&!map.hasLayer(clasLayer)) map.addLayer(lossLayer);
+    if(map.getZoom()>12) map.fitBounds(uniLayer.getBounds(),{animate:false,paddingTopLeft:[14,56],paddingBottomRight:[14,42]});
     slider.value=YMIN; updateTime(); if(!playing) document.getElementById('playBtn').click(); };
   document.getElementById('bCompartir').onclick=async ev=>{ const b=ev.currentTarget, url=location.href.split('#')[0]+estadoURL();
-    try{ await navigator.clipboard.writeText(url); b.textContent='✓ Enlace copiado'; }
+    try{ await navigator.clipboard.writeText(url); b.innerHTML=ICO.ok+'Enlace copiado'; }
     catch(e){ window.prompt('Copia este enlace:',url); }
-    setTimeout(()=>{b.textContent='🔗 Compartir';},2000); };
+    setTimeout(()=>{b.innerHTML=ICO.enlace+'Compartir';},2000); };
   map.on('moveend',guardarURL); slider.addEventListener('change',guardarURL);
   ['modeAcc','modeYr'].forEach(id=>document.getElementById(id).addEventListener('click',()=>setTimeout(guardarURL,0)));
-  map.on('overlayadd overlayremove',()=>setTimeout(guardarURL,0));
+  map.on('overlayadd overlayremove baselayerchange',()=>setTimeout(guardarURL,0));
   aplicarURL();
   // En escritorio, la barra de tipos de suelo y la ficha se colocan debajo del buscador,
   // cuyo alto cambia según cuántas filas ocupen sus botones.
@@ -998,13 +1133,22 @@ function iniciarBuscadorYFicha(){
     const bz=document.getElementById('buscador'), cb=document.getElementById('cerroBar');
     const abajo=bz.offsetTop+bz.offsetHeight+8; cb.style.top=abajo+'px';
     const tf=abajo+cb.offsetHeight+10; ['ficha','verif'].forEach(id=>{const e=document.getElementById(id);
-      if(!document.body.classList.contains('verificando')){ e.style.top=tf+'px'; e.style.maxHeight='calc(100% - '+(tf+110)+'px)'; }
+      if(!document.body.classList.contains('verificando')){ e.style.top=tf+'px'; e.style.maxHeight='calc(100% - '+(tf+140)+'px)'; /* termina encima de la línea de tiempo */ }
       else { e.style.top=''; e.style.maxHeight=''; } }); }
   acomodar(); window.addEventListener('resize',acomodar);
   new MutationObserver(acomodar).observe(document.getElementById('buscador'),{childList:true,subtree:true,attributes:true});
   new MutationObserver(acomodar).observe(document.body,{attributes:true,attributeFilter:['class']});
   const sec0=new URLSearchParams(location.search).get('seccion'); if(sec0) setTimeout(()=>window.ofmIrSeccion(sec0),200);
-  document.getElementById('bAcerca').onclick=()=>window.ofmIrSeccion('acerca');
+  // Mi ubicación (E5): el navegador la pide con permiso; se usa solo para mover el mapa y abrir la ficha.
+  document.getElementById('bUbic').onclick=()=>{ const msg=x=>{res.hidden=false; res.innerHTML='<div class="msg">'+x+'</div>';};
+    if(!navigator.geolocation){ msg('Este navegador no da la ubicación. Escribe una dirección o toca el mapa.'); return; }
+    msg('Buscando tu ubicación…');
+    navigator.geolocation.getCurrentPosition(p=>{ const la=p.coords.latitude, lo=p.coords.longitude;
+        if(!uniLayer.getBounds().contains([la,lo])){ msg('Tu ubicación queda fuera del municipio de Morelia, que es lo que cubre el observatorio.'); return; }
+        res.hidden=true; abrirFicha(la,lo,true); },
+      e=>msg(e.code===1?'No se dio permiso para usar la ubicación. Puedes escribir una dirección o tocar el mapa.':'No se pudo obtener tu ubicación. Puedes escribir una dirección o tocar el mapa.'),
+      {enableHighAccuracy:true,timeout:12000,maximumAge:60000}); };
+  document.getElementById('bAcerca').onclick=()=>{location.href='./acerca.html';};
 
 }
 
@@ -1025,21 +1169,15 @@ function pintarEstado(mf){
   if(validado) cuerpo='<p class="val-txt">Se revisaron uno por uno '+m.interpretados.toLocaleString('es-MX')+' lugares en imágenes de alta resolución para comprobar el mapa. '+
       (u10!=null&&p10!=null?'<b>De cada 10 lugares que el mapa marca como pérdida, la revisión confirma '+u10+'; y de cada 10 lugares donde hubo pérdida, el mapa capta '+p10+'.</b> ':'')+
       'Por eso las hectáreas se calculan con esa revisión y no contando el mapa: <a href="./datos.html" style="color:var(--accent2)">ver cuánto se perdió</a>.</p>'+
-      '<p class="val-nota">Validación cerrada el '+fecha+'. Las cifras técnicas están en «Metodología».</p>';
+      '<p class="val-nota">Validación cerrada el '+fecha+'. Las cifras técnicas están en «Datos».</p>';
   else if(est==='exactitud_medida'&&u10!=null&&p10!=null)
     cuerpo='<p class="val-txt">Se revisaron uno por uno '+m.interpretados.toLocaleString('es-MX')+' lugares en imágenes de alta resolución para comprobar el mapa. '+
       '<b>De cada 10 lugares que el mapa marca como pérdida, la revisión confirma '+u10+'; y de cada 10 lugares donde hubo pérdida, el mapa capta '+p10+'.</b> '+
-      'Por eso todavía no se publican hectáreas.</p><p class="val-nota">Resultado preliminar'+(fecha?' del '+fecha:'')+'; cambiará con la siguiente revisión. Las cifras técnicas están en «Metodología».</p>';
+      'Por eso todavía no se publican hectáreas.</p><p class="val-nota">Resultado preliminar'+(fecha?' del '+fecha:'')+'; cambiará con la siguiente revisión. Las cifras técnicas están en «Datos».</p>';
   else cuerpo='<p class="val-txt">Se están revisando '+m.sorteados.toLocaleString('es-MX')+' lugares en imágenes de alta resolución para comprobar el mapa: van '+m.interpretados.toLocaleString('es-MX')+'. Hasta terminar no se publican hectáreas.</p>';
   c.innerHTML='<div class="val-head"><span class="val-badge">'+(validado?'Validado':est==='exactitud_medida'?'Validación preliminar':'Sin validar')+'</span>'+
     '<span>'+(validado?'El mapa muestra <b>dónde</b> se perdió bosque; <b>cuánto</b>, en «Datos».':'El mapa muestra <b>dónde</b> se perdió bosque, todavía no <b>cuánto</b>.')+'</span></div>'+cuerpo;
 }
-// Detalle técnico de la muestra: va en «Metodología», debajo de la exactitud.
-function tablaMuestra(mf){const m=mf&&mf.muestra; if(!m)return '';
-  const filas=Object.entries(m.por_unidad||{}).map(([u,d])=>
-    `<tr><td><span class="sw" style="background:${UNI_COLORS[UNI_ID[u]]||'#888'}"></span>${u}</td><td>${d.interpretados}</td><td>${d.sorteados}</td></tr>`).join('');
-  return `<p style="margin:7px 0"><b>Muestra de referencia.</b> ${m.interpretados} de ${m.sorteados} puntos interpretados; el diseño contempla ${m.diseno}. ${m.nota||''}</p>`+
-    `<table class="val-tab"><thead><tr><th>Unidad de análisis</th><th>Interpretados</th><th>Sorteados</th></tr></thead><tbody>${filas}</tbody></table>`;}
 
 // ================= Time control =================
 let mode='acc';
@@ -1047,29 +1185,30 @@ const slider=document.getElementById('yearSlider');
 function updateTime(){
   const y=+slider.value;
   document.getElementById('yearLabel').textContent=y;
-  lossLayer.eachLayer(l=>{
-    const fy=l.feature.properties.year;
-    const show=(mode==='acc')?(fy<=y):(fy===y);
-    l.setStyle({fillOpacity:show?lossOpacity:0,opacity:show?1:0});
-  });
+  const ve=fy=>fy==null||((mode==='acc')?(fy<=y):(fy===y));
+  lossLayer.eachLayer(l=>{ const show=ve(l.feature.properties.year);
+    l.options.interactive=show; l.setStyle({fillOpacity:show?lossOpacity:0,opacity:show?1:0}); });
+  // La capa por tipo se filtra por el año de la mayoría de los píxeles de cada parche (D30).
+  if(clasLayer) clasLayer.eachLayer(l=>{ const show=ve(l.feature.properties.year);
+    l.options.interactive=show; l.setStyle({fillOpacity:show?clasOpacity:0,opacity:show?Math.min(1,clasOpacity+.1):0}); });
   // Sin superficie: mientras el mapa no esté validado la barra dice qué se ve, no cuánto.
   document.getElementById('tbModo').textContent=(mode==='acc'?'pérdida hasta '+y:'pérdida en '+y);
 }
-slider.addEventListener('input',()=>{ if(playing){clearInterval(playing);playing=null;document.getElementById('playBtn').textContent='▶';} updateTime(); });
+slider.addEventListener('input',()=>{ if(playing){clearInterval(playing);playing=null;botonPlay(false);} updateTime(); });
 document.getElementById('lossOpacity').addEventListener('input',e=>{lossOpacity=parseFloat(e.target.value);updateTime();});
-document.getElementById('clasOpacity').addEventListener('input',e=>{clasOpacity=parseFloat(e.target.value);if(clasLayer)clasLayer.setStyle({fillOpacity:clasOpacity,opacity:Math.min(1,clasOpacity+.1)});});
+document.getElementById('clasOpacity').addEventListener('input',e=>{clasOpacity=parseFloat(e.target.value);updateTime();});
 document.getElementById('zonOpacity').addEventListener('input',e=>{zonOpacity=parseFloat(e.target.value);if(zonLayer)zonLayer.setStyle({fillOpacity:zonOpacity});});
 document.getElementById('modeAcc').addEventListener('click',()=>{mode='acc';document.getElementById('modeAcc').classList.add('on');document.getElementById('modeYr').classList.remove('on');updateTime()});
 document.getElementById('modeYr').addEventListener('click',()=>{mode='yr';document.getElementById('modeYr').classList.add('on');document.getElementById('modeAcc').classList.remove('on');updateTime()});
 
 let playing=null;
 document.getElementById('playBtn').addEventListener('click',function(){
-  if(playing){clearInterval(playing);playing=null;this.textContent='▶';return}
-  this.textContent='⏸';
+  if(playing){clearInterval(playing);playing=null;botonPlay(false);return}
+  botonPlay(true);
   if(+slider.value>=YMAX)slider.value=YMIN;
   playing=setInterval(()=>{
     let y=+slider.value;
-    if(y>=YMAX){clearInterval(playing);playing=null;document.getElementById('playBtn').textContent='▶';return}
+    if(y>=YMAX){clearInterval(playing);playing=null;botonPlay(false);return}
     slider.value=y+1;updateTime();
   },650);
 });
@@ -1077,17 +1216,19 @@ document.getElementById('playBtn').addEventListener('click',function(){
 // ================= Swipe satelital 2003 vs 2025 =================
 const SAT_2003_URL='./data/sat_2003.jpg';
 const SAT_2025_URL='./data/sat_2025.jpg';
-const SAT_BOUNDS=[[19.51329,-101.39869],[19.79626,-101.04241]];
+const SAT_BOUNDS_DEF=[[19.51329,-101.39869],[19.79626,-101.04241]];   // imágenes de julio (v8); build_standalone la sustituye si hay comparador.json
+let SAT_BOUNDS=SAT_BOUNDS_DEF;
 map.createPane('sat'); map.getPane('sat').style.zIndex=250;
 // Capas de datos que conviene atenuar mientras se comparan las dos imágenes satelitales:
 // el propósito del comparador es ver el terreno, y con la huella de pérdida encima al 85%
 // de opacidad no se veía nada. Se atenúan, no se apagan, para no perder la referencia.
-const PANES_DATOS=['zonPane','overlayPane','clasPane'];
+const PANES_DATOS=['zonPane','uniPane','overlayPane','clasPane'];
 function atenuarDatos(on){
   PANES_DATOS.forEach(id=>{const pn=map.getPane(id); if(pn){pn.style.transition='opacity .18s ease'; pn.style.opacity=on?'0.28':'1';}});
 }
 const ov2003=L.imageOverlay(SAT_2003_URL,SAT_BOUNDS,{pane:'sat',interactive:false});
 const ov2025=L.imageOverlay(SAT_2025_URL,SAT_BOUNDS,{pane:'sat',interactive:false});
+const swMarco=L.rectangle(SAT_BOUNDS,{color:'#ffffff',weight:1.2,dashArray:'6 5',fill:false,interactive:false});
 const swDiv=document.getElementById('swipe-divider');
 const swBtn=document.getElementById('swipeBtn');
 const swLabL=document.getElementById('sat-label-l'), swLabR=document.getElementById('sat-label-r');
@@ -1109,17 +1250,26 @@ function swUpdate(){
 }
 function swVis(v){[ov2003,ov2025].forEach(o=>{const e=o.getElement();if(e)e.style.visibility=v;});}
 function swSet(on){
-  swOn=on; swBtn.classList.toggle('on',on);
+  swOn=on; swBtn.classList.toggle('on',on); document.body.classList.toggle('comparando',on);
   swDiv.style.display=on?'block':'none';
   swLabL.style.display=on?'block':'none';
   swLabR.style.display=on?'block':'none';
   atenuarDatos(on);
-  if(on){ ov2003.addTo(map); ov2025.addTo(map);
+  if(on){ cargarComparador(); ov2003.addTo(map); ov2025.addTo(map); swMarco.addTo(map);
+    // Las dos imágenes cubren solo este recuadro, no todo el municipio: se enseña y se lleva ahí el mapa.
+    if(!L.latLngBounds(SAT_BOUNDS).contains(map.getCenter())) map.fitBounds(SAT_BOUNDS,{animate:false});
     const mr=map.getContainer().getBoundingClientRect(); if(swX===null) swX=mr.width/2;
     setTimeout(swUpdate,40); }
-  else { map.removeLayer(ov2003); map.removeLayer(ov2025); }
+  else { map.removeLayer(ov2003); map.removeLayer(ov2025); map.removeLayer(swMarco); }
 }
 swBtn.addEventListener('click',()=>swSet(!swOn));
+// Si existen imágenes regeneradas (preparar_comparador.py), su recuadro y su fuente salen de data/comparador.json.
+// Se lee la primera vez que se abre el comparador, no al cargar el mapa.
+let _comp=null;
+function cargarComparador(){ if(!_comp) _comp=fetch('./data/comparador.json').then(r=>r.ok?r.json():null).catch(()=>null).then(j=>{ if(!j||!j.bounds) return;
+  SAT_BOUNDS=j.bounds; const b=L.latLngBounds(j.bounds); ov2003.setBounds(b); ov2025.setBounds(b); swMarco.setBounds(b);
+  if(j.fuentes) swBtn.title='Compara dos imágenes de satélite: '+j.fuentes['2003']+' y '+j.fuentes['2025']+'. Fuera del recuadro punteado no hay imagen.';
+  if(swOn){ if(!b.contains(map.getCenter())) map.fitBounds(b,{animate:false}); swUpdate(); } }); return _comp; }
 map.on('move viewreset resize',swUpdate);
 map.on('zoomstart',()=>{if(swOn)swVis('hidden');});
 map.on('zoomend',()=>{if(swOn){swVis('visible');swUpdate();}});
@@ -1135,18 +1285,11 @@ swDiv.addEventListener('touchstart',swStart,{passive:false});
 window.addEventListener('touchmove',swMove,{passive:false});
 window.addEventListener('touchend',swEnd);
 // El modal de bienvenida salió el 09-11-2026 (D10): el sitio abre en el mapa con el buscador.
-function _dl(n,c,t){const b=new Blob([c],{type:t});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=n;document.body.appendChild(a);a.click();a.remove();}
-document.querySelectorAll('.dlbtn[data-dl]').forEach(btn=>btn.addEventListener('click',()=>{const k=btn.dataset.dl,D=window.DATA||{};
-  const G='application/geo+json', v=(D.manifest&&D.manifest.version)||'corrida';
-  if(k==='loss')_dl('perdida_por_anio_'+v+'.geojson',JSON.stringify(D.loss||{}),G);
-  else if(k==='clas')_dl('perdida_por_clase_'+v+'.geojson',JSON.stringify(D.clas||{}),G);
-  else if(k==='unid')_dl('unidades_analisis.geojson',JSON.stringify(D.unid||{}),G);
-  else if(k==='zon')_dl('zonificacion_7_grupos.geojson',JSON.stringify(D.zon||{}),G);
-  else if(k==='manifest')_dl('manifest.json',JSON.stringify(D.manifest||{},null,2),'application/json');}));
+document.querySelectorAll('[data-ico]').forEach(e=>{e.outerHTML=ICO[e.dataset.ico]||'';});
 document.querySelectorAll('#sidebar .block > h2').forEach(h=>{h.classList.add('coll-h');h.addEventListener('click',()=>h.parentElement.classList.toggle('collapsed'));});
-(function(){const sh=document.getElementById('sheetHandle'),sb=document.getElementById('sidebar');
-  if(sh)sh.addEventListener('click',()=>sb.classList.toggle('sheet-open'));})();
-[['yearSlider','Año de la línea de tiempo'],['playBtn','Reproducir o pausar la animación'],['lossOpacity','Opacidad de la capa de pérdida'],['zonOpacity','Opacidad de la zonificación']].forEach(([id,l])=>{const e=document.getElementById(id);if(e)e.setAttribute('aria-label',l);});
+
+botonPlay(false);
+[['yearSlider','Año de la línea de tiempo'],['lossOpacity','Opacidad de la capa de pérdida'],['zonOpacity','Opacidad de la zonificación']].forEach(([id,l])=>{const e=document.getElementById(id);if(e)e.setAttribute('aria-label',l);});
 </script>
 <script>
 // ===== Aportes ciudadanos (Supabase) =====
@@ -1185,11 +1328,11 @@ document.querySelectorAll('#sidebar .block > h2').forEach(h=>{h.classList.add('c
   // -- Modo aportar --
   g('apBtnAportar').onclick=()=>{aportarMode=!aportarMode;
     g('apForm').style.display=aportarMode?'block':'none';
-    g('apBtnAportar').textContent=aportarMode?'✕ Cancelar aporte':'＋ Dejar un aporte';
+    g('apBtnAportar').textContent=aportarMode?'Cancelar aporte':'Dejar un aporte';
     if(!aportarMode)salirAportar();};
   function salirAportar(){aportarMode=false;g('apForm')&&(g('apForm').style.display='none');
     if(pickMarker){map.removeLayer(pickMarker);pickMarker=null;}pick=null;puntoActual=null;
-    if(g('apBtnAportar'))g('apBtnAportar').textContent='＋ Dejar un aporte';}
+    if(g('apBtnAportar'))g('apBtnAportar').textContent='Dejar un aporte';}
   map.on('click',e=>{
     if(!aportarMode||!user)return;
     pick=e.latlng; puntoActual=null;
@@ -1197,12 +1340,13 @@ document.querySelectorAll('#sidebar .block > h2').forEach(h=>{h.classList.add('c
     else pickMarker=L.marker(pick,{draggable:true}).addTo(map).on('dragend',ev=>{pick=ev.target.getLatLng();coord();});
     coord();g('apPick').textContent='Punto libre (sin anclar). Ajusta si hace falta y envía.';
   });
-  function coord(){g('apCoord').textContent='📍 '+pick.lat.toFixed(5)+', '+pick.lng.toFixed(5);}
-  // Clic en un parche de pérdida v8 → aporte ligado a ese punto
+  function coord(){g('apCoord').textContent='Punto: '+pick.lat.toFixed(5)+', '+pick.lng.toFixed(5);}
+  // Clic en un parche de pérdida → el aporte se ubica ahí y dice de qué tipo es el parche. Es un punto libre (D31):
+  // los parches cambian de identificador entre corridas, así que un aporte anclado quedaría huérfano.
   window.aportarEnPunto=function(props,latlng){
     if(!user){ setMsg(g('apMsg'),'Inicia sesión para aportar sobre este punto.',false); return; }
-    aportarMode=true; puntoActual=props._h||null;
-    g('apForm').style.display='block'; g('apBtnAportar').textContent='✕ Cancelar aporte';
+    aportarMode=true; puntoActual=null;
+    g('apForm').style.display='block'; g('apBtnAportar').textContent='Cancelar aporte';
     pick=latlng;
     if(pickMarker)pickMarker.setLatLng(pick);
     else pickMarker=L.marker(pick,{draggable:true}).addTo(map).on('dragend',ev=>{pick=ev.target.getLatLng();coord();});
@@ -1224,7 +1368,7 @@ document.querySelectorAll('#sidebar .block > h2').forEach(h=>{h.classList.add('c
       if(!up.error)await sb.from('aporte_fotos').insert({aporte_id:id,storage_path:path});}
     setMsg(g('apFormMsg'),'¡Gracias! Tu aporte quedó pendiente de revisión.',true);
     g('apDesc').value='';g('apFoto').value='';salirAportar();g('apForm').style.display='none'; cargarMisAportes();
-    g('apBtnAportar').textContent='＋ Dejar un aporte';g('apBtnEnviar').disabled=false;
+    g('apBtnAportar').textContent='Dejar un aporte';g('apBtnEnviar').disabled=false;
   };
 
   // -- Mis aportes: lista con su estado (traída de aportes.html, retirada el 10-11-2026) --
@@ -1233,15 +1377,15 @@ document.querySelectorAll('#sidebar .block > h2').forEach(h=>{h.classList.add('c
     const{data}=await sb.from('aportes').select('id,tipo,descripcion,estado,motivo_rechazo,created_at,geom').eq('user_id',user.id).order('created_at',{ascending:false});
     if(!data||!data.length){c.innerHTML='';return;}
     const esc=t=>String(t??'').replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
-    c.innerHTML='<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Mis aportes</div>'+
+    c.innerHTML='<div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Mis aportes</div>'+
       data.map(a=>{const e=ESTADO_AP[a.estado]||[a.estado,'var(--muted)','transparent'];
         return '<div class="ap-mio" data-ll="'+(a.geom?a.geom.coordinates[1]+','+a.geom.coordinates[0]:'')+'" style="background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:6px;font-size:12px;cursor:pointer">'+
           '<div style="display:flex;justify-content:space-between;gap:8px"><b style="text-transform:capitalize">'+esc(a.tipo).replace('_',' ')+'</b>'+
-          '<span style="font-size:10.5px;padding:2px 7px;border-radius:20px;font-weight:700;color:'+e[1]+';background:'+e[2]+'">'+e[0]+'</span></div>'+
+          '<span style="font-size:12px;padding:2px 7px;border-radius:20px;font-weight:700;color:'+e[1]+';background:'+e[2]+'">'+e[0]+'</span></div>'+
           '<div style="color:var(--muted);margin-top:2px">'+new Date(a.created_at).toLocaleDateString('es-MX')+(a.descripcion?' · '+esc(a.descripcion.slice(0,90)):'')+'</div>'+
           (a.estado==='rechazado'&&a.motivo_rechazo?'<div style="color:var(--muted);margin-top:2px">Motivo: '+esc(a.motivo_rechazo)+'</div>':'')+'</div>';}).join('');
     c.querySelectorAll('.ap-mio').forEach(d=>d.onclick=()=>{const ll=d.dataset.ll; if(!ll)return; const[la,lo]=ll.split(',').map(Number);
-      map.setView([la,lo],17); if(window.matchMedia('(max-width:820px)').matches) document.getElementById('sidebar').classList.remove('sheet-open');});
+      map.setView([la,lo],17); if(window.matchMedia('(max-width:820px)').matches) window.cerrarPanel();});
   }
 
   // -- Cargar aportes validados a la capa del mapa --
@@ -1252,29 +1396,20 @@ document.querySelectorAll('#sidebar .block > h2').forEach(h=>{h.classList.add('c
     (data||[]).forEach(a=>{if(!a.geom)return;const c=a.geom.coordinates;
       L.circleMarker([c[1],c[0]],{pane:'partPane',radius:7,color:'#fff',weight:1.5,fillColor:APORTE_COLOR,fillOpacity:.9})
         .bindPopup('<b>'+a.tipo+'</b><br>'+((a.descripcion||'').slice(0,180))).addTo(window.aportesLayer);});
+    const hay=window.aportesLayer.getLayers().length>0, la=document.getElementById('legAporte'); if(la)la.hidden=!hay;
+    if(hay&&window.__capasCtl&&!window.__aportesEnCtl){window.__capasCtl.addOverlay(window.aportesLayer,'Aportes ciudadanos');window.__aportesEnCtl=true;}
+    const qa=document.getElementById('qApo'); if(qa)qa.hidden=!hay; if(window.syncCapas)window.syncCapas();
   };
 
   // ===== Registro de territorios =====
   let tLayer=null, tGeo=null, tStats=null, drawing=false;
-  function pip(pt,ring){ let x=pt[0],y=pt[1],inside=false;
-    for(let i=0,j=ring.length-1;i<ring.length;j=i++){
-      const xi=ring[i][0],yi=ring[i][1],xj=ring[j][0],yj=ring[j][1];
-      if(((yi>y)!=(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi)) inside=!inside; }
-    return inside; }
-  // Cuenta por clase sin asumir cuántas hay: la clase 3 (pérdida reciente) aparece en la v9
-  // y debe sumarse aparte, no repartirse entre deforestación y degradación.
-  function statsDe(ring){ let tot=0,n=0; const porClase={};
-    (window.v8Patches||[]).forEach(p=>{ if(pip(p.c,ring)){ tot+=p.area; n++;
-      porClase[p.clase]=(porClase[p.clase]||0)+p.area; } });
-    return {tot:+tot.toFixed(2),porClase,n,
-            defo:+(porClase[2]||0).toFixed(2), deg:+(porClase[1]||0).toFixed(2)}; }
   // Sin cifras hasta validar (28-09-2026). El territorio se dibuja y se guarda igual; la
   // estadística se activará cuando existan áreas ajustadas por error.
   function mostrarStats(s){ g('tStats').style.display='block';
-    g('tStats').innerHTML='<b>Pérdida en este territorio</b><br><span style="color:var(--muted)">El mapa aún no está validado, así que no se calcula superficie. El territorio se guarda y la cifra aparecerá aquí cuando la validación cierre.</span>'; }
+    g('tStats').innerHTML='<b>Pérdida en este territorio</b><br><span style="color:var(--muted)">Todavía no se calcula: las superficies del sitio se estiman con la muestra de referencia, no contando el mapa. El territorio se guarda igual.</span>'; }
   function resetTerr(){ drawing=false; if(map.pm)map.pm.disableDraw();
     if(tLayer){map.removeLayer(tLayer);tLayer=null;} tGeo=null;tStats=null;
-    if(g('tDibujar'))g('tDibujar').textContent='✏️ Dibujar territorio';
+    if(g('tDibujar'))g('tDibujar').textContent='Dibujar territorio';
     ['tHint','tForm','tStats'].forEach(id=>{const el=g(id); if(el)el.style.display='none';});
     if(g('tMsg'))g('tMsg').textContent=''; }
   function salirTerritorio(){ resetTerr(); if(g('tLista'))g('tLista').innerHTML=''; }
@@ -1282,12 +1417,12 @@ document.querySelectorAll('#sidebar .block > h2').forEach(h=>{h.classList.add('c
   g('tDibujar').onclick=()=>{ if(!user||!map.pm)return;
     if(drawing){ resetTerr(); return; }                 // cancelar dibujo en curso
     if(tLayer){map.removeLayer(tLayer);tLayer=null;tGeo=null;tStats=null;}  // reemplazar anterior
-    drawing=true; g('tDibujar').textContent='✕ Cancelar'; g('tHint').style.display='block';
+    drawing=true; g('tDibujar').textContent='Cancelar el dibujo'; g('tHint').style.display='block';
     g('tForm').style.display='none'; g('tStats').style.display='none';
     map.pm.enableDraw('Polygon',{pathOptions:{pane:'partPane',color:'#3fb27f',fillColor:'#3fb27f',fillOpacity:0.12},
       templineStyle:{color:'#3fb27f'},hintlineStyle:{color:'#3fb27f',dashArray:[5,5]},snappable:false}); };
   map.on('pm:create',e=>{ if(map.pm)map.pm.disableDraw(); drawing=false;
-    g('tDibujar').textContent='✏️ Dibujar territorio'; g('tHint').style.display='none';
+    g('tDibujar').textContent='Dibujar territorio'; g('tHint').style.display='none';
     if(tLayer)map.removeLayer(tLayer); tLayer=e.layer;
     tGeo=tLayer.toGeoJSON(); tStats={pendiente:true, motivo:'superficies sin publicar'};
     mostrarStats(tStats); g('tForm').style.display='block'; });
@@ -1305,12 +1440,12 @@ document.querySelectorAll('#sidebar .block > h2').forEach(h=>{h.classList.add('c
     if(tLayer){map.removeLayer(tLayer);tLayer=null;} tGeo=null;tStats=null;
     g('tForm').style.display='none';
     g('tStats').style.display='block'; g('tStats').innerHTML='<span style="color:var(--accent)">¡Territorio guardado!</span>';
-    g('tDibujar').textContent='✏️ Dibujar territorio';
+    g('tDibujar').textContent='Dibujar territorio';
     cargarTerritorios(); };
   window.cargarTerritorios=async function(){ if(!user){g('tLista').innerHTML='';return;}
     const {data}=await sb.from('territorios').select('id,nombre,publico,stats').eq('user_id',user.id).order('created_at',{ascending:false});
     if(!data||!data.length){ g('tLista').innerHTML='<div style="font-size:12px;color:var(--muted)">Aún no has guardado territorios.</div>'; return; }
-    g('tLista').innerHTML='<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Mis territorios</div>'+
+    g('tLista').innerHTML='<div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Mis territorios</div>'+
       data.map(t=>{const s=t.stats||{}; return '<div class="aporte" data-id="'+t.id+'" style="cursor:pointer"><div class="top"><b>'+t.nombre+'</b>'+(t.publico?'<span class="tag validado">público</span>':'')+'</div>'
         +'<div style="color:var(--muted)">'+(s.tot?s.tot.toFixed(1)+' ha · '+(s.n||0)+' parches':'sin cifras')+'</div></div>';}).join('');
     g('tLista').querySelectorAll('[data-id]').forEach(el=>el.onclick=()=>verTerritorio(el.dataset.id)); };
@@ -1326,13 +1461,6 @@ document.querySelectorAll('#sidebar .block > h2').forEach(h=>{h.classList.add('c
     else if(perfil&&perfil.motivo&&perfil.acepta_aviso_at){sol.style.display='none';est.textContent='Tu solicitud para verificar está en revisión.';btn.style.display='none';}
     else{sol.style.display='block';est.textContent='';btn.style.display='none';}
   }
-  g('vEnviar').onclick=async()=>{const m=g('vMotivo').value.trim();
-    if(m.length<10){setMsg(g('vMsg'),'Cuéntanos en una o dos frases por qué quieres participar.',false);return;}
-    if(!g('vAcepto').checked){setMsg(g('vMsg'),'Hace falta aceptar las condiciones.',false);return;}
-    const ahora=new Date().toISOString();
-    const{error}=await sb.from('profiles').update({motivo:m,acepta_aviso_at:ahora}).eq('id',user.id);
-    if(error){setMsg(g('vMsg'),error.message,false);return;}
-    perfil=Object.assign({},perfil||{},{motivo:m,acepta_aviso_at:ahora}); pintarParticipacion();};
   g('vBtnEntrar').onclick=()=>{vModo?salirVerificar():entrarVerificar();};
   // Desde «Participación»: mapa.html?modo=verificar entra directo, si la cuenta está aprobada.
   // Si no se puede entrar, se dice por qué: antes el mapa se quedaba igual, sin explicación.
@@ -1343,7 +1471,7 @@ document.querySelectorAll('#sidebar .block > h2').forEach(h=>{h.classList.add('c
     if(!user||!perfil||!perfil.aprobado){ if(vAvisado)return; vAvisado=true;
       if(window.ofmIrSeccion) window.ofmIrSeccion('participar');
       if(!user&&window.ofmAuth) window.ofmAuth.abrirAcceso();
-      return; } if(!VOBJ()){setTimeout(autoVerificar,500);return;} entrarVerificar(); }
+      return; } if(!lossLayer){setTimeout(autoVerificar,400);return;} entrarVerificar(); }
 
   function cuadro(lat,lng){const dy=15/M_LAT,dx=15/M_LNG;return [[lat-dy,lng-dx],[lat+dy,lng+dx]];}
   // ===== Contador público de participación (P1) =====
@@ -1395,7 +1523,8 @@ document.querySelectorAll('#sidebar .block > h2').forEach(h=>{h.classList.add('c
   function verZoom(){if(!vCuadros)return; const z=map.getZoom();
     if(z>=15){map.addLayer(vCuadros);map.removeLayer(vPuntos);}else{map.addLayer(vPuntos);map.removeLayer(vCuadros);}}
   async function entrarVerificar(){
-    const O=VOBJ(); if(!O){setMsg(g('vMsg'),'No se pudo leer la capa de cuadros.',false);return;}
+    let O=VOBJ(); if(!O){ avisoCarga(true); try{ O=await cargarDato('obj'); }catch(e){} avisoCarga(false); }
+    if(!O){setMsg(g('vMsg'),'No se pudo leer la capa de cuadros.',false);return;}
     vModo=true; window.__verificando=true; document.body.classList.add('verificando'); if(window.cerrarFicha) cerrarFicha();
     vPrevio={sat:map.hasLayer(baseSat),capas:[lossLayer,clasLayer,uniLayer,zonLayer,anpLayer].filter(l=>l&&map.hasLayer(l))};
     vPrevio.capas.forEach(l=>map.removeLayer(l)); if(map.hasLayer(baseDark))map.removeLayer(baseDark); baseSat.addTo(map);
@@ -1408,7 +1537,7 @@ document.querySelectorAll('#sidebar .block > h2').forEach(h=>{h.classList.add('c
       [r,p].forEach(x=>{x._vi=i; x.on('click',e=>{L.DomEvent.stopPropagation(e);abrirVerif(i,false);});});
       vCuadros.addLayer(r); vPuntos.addLayer(p);});
     map.on('zoomend',verZoom); verZoom();
-    g('vBtnEntrar').textContent='✕ Salir de verificar';
+    g('vBtnEntrar').textContent='Salir de verificar';
     document.getElementById('sidebar').classList.remove('sheet-open');
     if(!tutHecho()&&!Object.keys(vHechas).length) iniciarTutorial(0); else siguiente();
   }
@@ -1418,7 +1547,7 @@ document.querySelectorAll('#sidebar .block > h2').forEach(h=>{h.classList.add('c
     if(vSel!==null&&vSel.marca)map.removeLayer(vSel.marca); vSel=null;
     const el=g('verif'); el.hidden=true; document.body.classList.remove('ficha-abierta');
     if(vPrevio){ if(!vPrevio.sat){map.removeLayer(baseSat);baseDark.addTo(map);} vPrevio.capas.forEach(l=>l.addTo(map)); }
-    if(g('vBtnEntrar'))g('vBtnEntrar').textContent='🔎 Verificar el estado actual';
+    if(g('vBtnEntrar'))g('vBtnEntrar').textContent='Verificar el estado actual';
   }
   function siguiente(){const O=VOBJ(); const pend=[]; O.id.forEach((id,i)=>{if(!vHechas[id])pend.push(i);});
     if(!pend.length){pintarVerif(null);return;} abrirVerif(pend[Math.floor(Math.random()*pend.length)],true);}

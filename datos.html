@@ -4,6 +4,23 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Datos · Observatorio Forestal de Morelia</title>
+<meta name="description" content="Cuánto bosque y matorral se perdió en Morelia entre 2006 y 2024, por tipo, periodo, tipo de suelo y distancia, con su margen de error y los datos para descargar." />
+<link rel="canonical" href="https://hezavalasolis-code.github.io/observatorio-morelia/datos.html" />
+<meta property="og:type" content="website" />
+<meta property="og:locale" content="es_MX" />
+<meta property="og:site_name" content="Observatorio Forestal de Morelia" />
+<meta property="og:title" content="Datos · Observatorio Forestal de Morelia" />
+<meta property="og:description" content="Cuánto bosque y matorral se perdió en Morelia entre 2006 y 2024, por tipo, periodo, tipo de suelo y distancia, con su margen de error y los datos para descargar." />
+<meta property="og:url" content="https://hezavalasolis-code.github.io/observatorio-morelia/datos.html" />
+<meta property="og:image" content="https://hezavalasolis-code.github.io/observatorio-morelia/img/vista-previa.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="Mapa del municipio de Morelia con la pérdida de bosque y matorral detectada entre 2006 y 2024" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="theme-color" content="#0f1720" />
+<link rel="icon" href="./img/icono.svg" type="image/svg+xml" />
+<link rel="icon" href="./img/icono-32.png" sizes="32x32" type="image/png" />
+<link rel="apple-touch-icon" href="./img/icono-180.png" />
 <link rel="stylesheet" href="./comun.css" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
 <script src="./sb-config.js"></script>
@@ -11,7 +28,7 @@
 <style>
   .grafica{width:100%;overflow:visible;display:block}
   .grafica text{fill:var(--ink);font-size:13px;font-family:inherit}
-  .grafica .eje{fill:var(--muted);font-size:11.5px}
+  .grafica .eje{fill:var(--muted);font-size:12px}
   .grafica .rejilla{stroke:var(--line);stroke-width:1}
   .grafica .bigote{stroke:var(--ink);stroke-width:1.6}
   .grafica rect.barra:hover,.grafica rect.barra:focus{opacity:.85;outline:none}
@@ -34,6 +51,7 @@
   <section class="seccion">
     <h1>Datos</h1>
     <p class="lede" id="resumen">Cargando…</p>
+    <div class="cifras" id="sintesis" aria-live="polite"></div>
     <nav class="indice" aria-label="En esta página">
       <a href="#tipo">Por tipo</a><a href="#cuando">Cuándo</a><a href="#donde">Dónde</a><a href="#confianza">Qué tan confiable</a><a href="#participacion">Participación</a><a href="#descargas">Descargas</a><a href="#metodo">Método</a>
     </nav>
@@ -44,6 +62,7 @@
     <p class="sub">Superficie perdida entre 2006 y 2024 en el municipio, con su margen de error (intervalo de 95 %). Cuando el margen es mayor que la cifra, no se publica la cifra: se dice que todavía no se puede acotar.</p>
     <div class="panel"><svg class="grafica" id="gTipo" role="img" aria-labelledby="gTipoT"><title id="gTipoT">Pérdida por tipo, en hectáreas, con intervalo de 95 %</title></svg></div>
     <div class="tabla-wrap"><table class="tabla" id="tTipo"></table></div>
+    <button type="button" class="csv" data-csv="tipo">Descargar esta tabla (CSV)</button>
     <p class="nota" id="notaRegla08"></p>
   </section>
 
@@ -53,6 +72,7 @@
     <p class="sub" id="notaFechado">Cada cambio se fecha con la primera imagen de alta resolución que lo muestra, y hay años sin imágenes (2008, 2010, 2018 y 2022). Por eso la comparación se hace entre periodos y no año por año. Un desmonte de 2021-2024 todavía no muestra en qué se convirtió y se cuenta como degradación.</p>
     <div class="panel"><svg class="grafica" id="gCuando" role="img" aria-labelledby="gCuandoT"><title id="gCuandoT">Pérdida promedio por año en cada periodo, con intervalo de 95 %</title></svg></div>
     <div class="tabla-wrap"><table class="tabla" id="tCuando"></table></div>
+    <button type="button" class="csv" data-csv="cuando">Descargar esta tabla (CSV)</button>
   </section>
 
   <section class="seccion" id="donde">
@@ -60,6 +80,7 @@
     <p class="sub">Qué parte del bosque y matorral que había en cada tipo de suelo se perdió entre 2006 y 2024.</p>
     <div class="panel"><svg class="grafica" id="gDonde" role="img" aria-labelledby="gDondeT"><title id="gDondeT">Porcentaje del bosque y matorral previo que se perdió, por tipo de suelo</title></svg></div>
     <div class="tabla-wrap"><table class="tabla" id="tDonde"></table></div>
+    <button type="button" class="csv" data-csv="donde">Descargar esta tabla (CSV)</button>
     <p class="nota">«No se puede acotar»: el margen de error es mayor que la cifra, así que no se publica. Ocurre donde la revisión encontró pocos lugares con ese tipo de pérdida.</p>
   </section>
 
@@ -70,16 +91,19 @@
     <p class="sub">Distancia al borde de la ciudad, sin contar las localidades.</p>
     <div class="panel"><svg class="grafica" id="gCiudad" role="img" aria-labelledby="gCiudadT"><title id="gCiudadT">Pérdida en hectáreas por franja de distancia a la ciudad de Morelia, con intervalo de 95 %</title></svg></div>
     <div class="tabla-wrap"><table class="tabla" id="tCiudad"></table></div>
+    <button type="button" class="csv" data-csv="ciudad">Descargar esta tabla (CSV)</button>
     <h3 style="margin-top:22px">Del suelo urbano más cercano</h3>
     <p class="sub">El suelo urbano del PMDU es la ciudad y cerca de cien localidades: esta medida dice qué tan cerca de cualquier asentamiento ocurrió la pérdida.</p>
     <div class="panel"><svg class="grafica" id="gDist" role="img" aria-labelledby="gDistT"><title id="gDistT">Pérdida en hectáreas por franja de distancia al suelo urbano, con intervalo de 95 %</title></svg></div>
     <div class="tabla-wrap"><table class="tabla" id="tDist"></table></div>
+    <button type="button" class="csv" data-csv="distancia">Descargar esta tabla (CSV)</button>
   </section>
 
   <section class="seccion" id="caminos">
     <h2>Junto a qué se perdió: caminos</h2>
     <p class="sub">Qué parte del área tiene un camino que toca el cuadro revisado de 30 m, en el bosque y matorral que se perdió y en el que se conserva. Describe dónde ocurre la pérdida, no qué la causa.</p>
     <div class="tabla-wrap"><table class="tabla" id="tCaminos"></table></div>
+    <button type="button" class="csv" data-csv="caminos">Descargar esta tabla (CSV)</button>
     <p class="nota" id="caminosSec"></p>
   </section>
 
@@ -113,7 +137,9 @@
       <a href="./data/estadisticas.json" download>Estadísticas completas (JSON)</a>
       <a href="./data/manifest.json" download>Manifiesto de la corrida (JSON)</a>
       <a href="./data/perdida_clasificada.geojson" download>Pérdida por tipo, mapa (GeoJSON)</a>
+      <a href="./data/perdida_por_anio.geojson" download>Pérdida por año, mapa (GeoJSON)</a>
       <a href="./data/unidades.geojson" download>Tipos de suelo (GeoJSON)</a>
+      <a href="./data/zonificacion.geojson" download>Usos previstos, siete grupos (GeoJSON)</a>
     </div>
   </section>
 
@@ -123,7 +149,10 @@
     <p class="sub"><b>Validación.</b> Se sortearon lugares por tipo de suelo y por clase del mapa y se interpretaron a ciegas en imágenes de alta resolución. Con esa referencia se mide la exactitud del mapa y se estiman las superficies con el estimador de Stehman (2014), que da cada cifra con su intervalo de confianza. Contar los píxeles del mapa daría la superficie mapeada, que arrastra los errores del mapa; por eso no se publica.</p>
     <p class="sub"><b>Qué cubierta se ve.</b> Los compuestos son de temporada seca: el bosque caducifolio sin hoja queda fuera, tanto de lo que se pierde como de lo que había.</p>
     <p class="sub"><b>Tipos de suelo.</b> Cartografía del Programa Municipal de Desarrollo Urbano (PMDU) de Morelia 2022-2041 (IMPLAN): áreas naturales protegidas y zonificación primaria.</p>
-    <div class="aviso"><b>Ejercicio de investigación científica, no documento legal.</b> Los límites provienen del PMDU de Morelia 2022-2041, simplificados para el mapa. La pérdida detectada describe un cambio en la vegetación, no quién lo hizo ni si fue legal.</div>
+    <p class="sub"><b>Usos previstos.</b> Las veinte claves de la zonificación secundaria del PMDU se agrupan en siete grupos, que son atributo de lectura y no estrato de muestreo. Las capas del mapa están simplificadas para dibujarse; no sirven para medir.</p>
+    <p class="sub" id="versionParam"></p>
+    <p class="sub"><b>Fuentes.</b> Landsat 5, 7, 8 y 9, Colección 2, reflectancia superficial (USGS); algoritmo LandTrendr (Kennedy et&nbsp;al., 2018); estimador de áreas de Stehman (2014); cartografía de áreas naturales protegidas y zonificación del PMDU de Morelia (IMPLAN). Autor: M.C.S. Héctor Eduardo Zavala Solís. Posgrado en Geografía, UNAM, Centro de Investigaciones en Geografía Ambiental (CIGA).</p>
+    <div class="aviso" data-ofm-aviso></div>
   </section>
 </main>
 <footer class="pie contenedor">Cómo citar: Zavala Solís, H. E. (2026). <i>Observatorio Forestal de Morelia</i>. Posgrado en Geografía, CIGA-UNAM. · <span id="corrida"></span></footer>
@@ -133,7 +162,7 @@ const CLAS={degradacion:['Degradación','#ccffcc'],cultivada:['Conversión culti
 const UNI={'Áreas protegidas':'#1ed760','No urbanizable':'#ffd400','Urbanizable':'#ff7a00','Urbano':'#d63cf0'};
 const NOMBRE={perdida:'Pérdida (cualquier tipo)',estable:'Estable',degradacion:'Degradación',construida:'Conversión construida',cultivada:'Conversión cultivada',perdida_reciente:'Pérdida reciente'};
 const miles=n=>Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,' ');
-const pct=v=>(100*v).toFixed(1)+' %';
+const pct=v=>(Math.round(1000*v+1e-6)/10).toFixed(1)+' %';
 const NOACOT='<span class="noacot">no se puede acotar</span>';
 const celda=(o,suf)=>o&&o.acotada?miles(o.ha)+' <span style="color:var(--muted)">± '+miles(o.ic95)+'</span>'+(suf||''):(o&&o.ha===0&&o.ic95===0?'0':NOACOT);
 const tip=document.getElementById('tip');
@@ -170,10 +199,18 @@ function descargar(nombre,filas){const t=filas.map(f=>f.map(c=>/[",\n]/.test(Str
 document.querySelectorAll('[data-csv]').forEach(b=>b.onclick=()=>{const c=CSV[b.dataset.csv]; if(c) descargar('observatorio_'+b.dataset.csv+'.csv',c);});
 
 function pintar(){ if(!E||!M) return;
+  { const vp=document.getElementById('versionParam'), P=M.parametros;
+    if(vp&&P){ const s=P.serie_landsat||[], r=P.periodo_reportado||[];
+      vp.innerHTML='<b>Versión y parámetros.</b> Corrida <b>'+M.version+'</b> (manifiesto generado el '+M.generado+'); umbral de magnitud <b>'+(P.MAG_MIN/1000).toFixed(2)+'</b> de caída de NBR. Serie de imágenes '+s.join('–')+'; periodo reportado '+r.join('–')+'. '+((M.avisos&&M.avisos.umbral)||''); } }
   const T=E.total, rot=E.rotulo;
   document.getElementById('resumen').innerHTML=(T.perdida.acotada?'Entre '+E.periodo_reportado[0]+' y '+E.periodo_reportado[1]+' se perdieron <b>'+miles(T.perdida.ha)+' ha</b> de bosque y matorral en el municipio de Morelia (± '+miles(T.perdida.ic95)+' ha). ':'')+
     'Todas las cifras son superficies estimadas con la revisión de '+E.puntos_evaluables+' lugares, con su margen de error; no son hectáreas contadas en el mapa.';
   document.getElementById('corrida').textContent='Cifras: '+rot+'.';
+  // Síntesis: total y tipos, con la misma regla que las tablas (lo que no se acota no lleva cifra, D20)
+  { const s=document.getElementById('sintesis'); if(s){
+      const card=(o,txt,col)=>'<div class="cifra"><div class="n">'+(o&&o.acotada?miles(o.ha)+' ha':'—')+'</div><div class="ic">'+(o&&o.acotada?'± '+miles(o.ic95)+' ha':'no se puede acotar')+'</div><div class="t">'+(col?'<span class="sw" style="background:'+col+'"></span>':'')+txt+'</div></div>';
+      s.innerHTML=card(T.perdida,'de bosque y matorral perdidas en total')+card(T.degradacion,CLAS.degradacion[0],CLAS.degradacion[1])+
+        card(T.cultivada,CLAS.cultivada[0],CLAS.cultivada[1])+card(T.construida,CLAS.construida[0],CLAS.construida[1]); } }
   // Por tipo
   const ft=['degradacion','cultivada','construida'].map(k=>({etq:CLAS[k][0],v:T[k].ha,ic:T[k].ic95,acotada:T[k].acotada,color:CLAS[k][1],
     tip:'<b>'+CLAS[k][0]+'</b><br>'+miles(T[k].ha)+' ha ± '+miles(T[k].ic95)+'<br><span style="color:var(--muted)">'+T[k].n_puntos+' lugares revisados con este tipo</span>'}));

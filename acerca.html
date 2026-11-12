@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Acerca de · Observatorio Forestal de Morelia</title>
+<meta name="description" content="Quién hace el Observatorio Forestal de Morelia, para qué, qué se puede afirmar con sus datos y qué no, y cómo citarlo." />
+<link rel="canonical" href="https://hezavalasolis-code.github.io/observatorio-morelia/acerca.html" />
+<meta property="og:type" content="website" />
+<meta property="og:locale" content="es_MX" />
+<meta property="og:site_name" content="Observatorio Forestal de Morelia" />
+<meta property="og:title" content="Acerca de · Observatorio Forestal de Morelia" />
+<meta property="og:description" content="Quién hace el Observatorio Forestal de Morelia, para qué, qué se puede afirmar con sus datos y qué no, y cómo citarlo." />
+<meta property="og:url" content="https://hezavalasolis-code.github.io/observatorio-morelia/acerca.html" />
+<meta property="og:image" content="https://hezavalasolis-code.github.io/observatorio-morelia/img/vista-previa.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="Mapa del municipio de Morelia con la pérdida de bosque y matorral detectada entre 2006 y 2024" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="theme-color" content="#0f1720" />
+<link rel="icon" href="./img/icono.svg" type="image/svg+xml" />
+<link rel="icon" href="./img/icono-32.png" sizes="32x32" type="image/png" />
+<link rel="apple-touch-icon" href="./img/icono-180.png" />
+<link rel="stylesheet" href="./comun.css" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
+<script src="./sb-config.js"></script>
+<script src="./nav.js"></script>
+</head>
+<body>
+<div data-ofm-barra></div>
+<main class="contenedor">
+  <section class="seccion">
+    <h1>Acerca del observatorio</h1>
+    <p class="lede">El Observatorio Forestal de Morelia es un ejercicio de investigación científica. Mide dónde y cuánto bosque y matorral se ha perdido en el municipio desde 2006, con imágenes de satélite revisadas lugar por lugar, y pone el resultado al alcance de cualquier persona.</p>
+    <div class="aviso" data-ofm-aviso></div>
+  </section>
+
+  <section class="seccion" id="quien">
+    <h2>Quién lo hace</h2>
+    <p class="sub">Forma parte de la investigación doctoral de M.C.S. Héctor Eduardo Zavala Solís en el Posgrado en Geografía de la UNAM, en el Centro de Investigaciones en Geografía Ambiental (CIGA). El sitio, los datos y la participación los mantiene el autor. Contacto: <a href="mailto:hezavalasolis@pmip.unam.mx">hezavalasolis@pmip.unam.mx</a>.</p>
+  </section>
+
+  <section class="seccion" id="afirmar">
+    <h2>Qué se puede afirmar con estos datos y qué no</h2>
+    <div class="tarjetas">
+      <div class="tarjeta"><h3>Sí se puede afirmar</h3>
+        <p>Dónde detecta pérdida de bosque y matorral el método y en qué año. En qué tipo de suelo del Programa Municipal de Desarrollo Urbano (PMDU) 2022-2041 ocurrió. Cuánta superficie se perdió, con su margen de error, tal como aparece en <a href="./datos.html">Datos</a>.</p></div>
+      <div class="tarjeta"><h3>No se puede afirmar</h3>
+        <p>Quién hizo un cambio, ni si fue legal o ilegal. Los límites de un predio: las capas están simplificadas para dibujarse y no sirven para deslindar. Una cifra que el observatorio no publica, como las hectáreas contadas en el mapa.</p></div>
+    </div>
+  </section>
+
+  <section class="seccion" id="decisiones">
+    <h2>Cómo se decide qué se muestra</h2>
+    <p class="sub"><b>Las superficies se estiman, no se cuentan.</b> Contar los cuadros del mapa daría una cifra que arrastra sus errores. Las hectáreas que se publican se calculan con la revisión de <span data-m="n">cientos de</span> lugares y llevan su margen de error. Cuando el margen es mayor que la cifra, no se publica la cifra: se dice que todavía no se puede acotar.</p>
+    <p class="sub"><b>El mapa dice dónde, no cuánto.</b> El mapa dibuja el patrón de la pérdida. <span data-m="u10">El mapa no capta toda la pérdida ni acierta en todo lo que marca.</span> Por eso las cifras salen de la revisión y no del dibujo.</p>
+    <p class="sub"><b>La ficha de un lugar dice «se detectó», no «hubo».</b> Al consultar un punto se informa la pérdida detectada a menos de 250 m, con su año y su tipo, sin superficie y sin atribuirla a nadie.</p>
+    <p class="sub"><b>De la participación solo se publican totales.</b> Nunca el nombre de quien participa ni sus respuestas una por una. El detalle está en el <a href="./privacidad.html">aviso de privacidad</a>.</p>
+  </section>
+
+  <section class="seccion" id="citar">
+    <h2>Cómo citar y licencia</h2>
+    <p class="sub">Zavala Solís, H. E. (2026). <i>Observatorio Forestal de Morelia</i>. Posgrado en Geografía, CIGA-UNAM. https://hezavalasolis-code.github.io/observatorio-morelia/</p>
+    <p class="sub">Los datos y textos del sitio se publican con licencia Creative Commons Atribución-NoComercial-SinDerivadas 4.0 Internacional (CC BY-NC-ND 4.0). Cada fuente de datos conserva su propia licencia. Las fuentes, el método y la versión de la corrida están en <a href="./datos.html#metodo">Datos</a>.</p>
+  </section>
+</main>
+<script>
+// Las cifras se leen del manifiesto de la corrida, nunca se escriben a mano (D19).
+fetch('./data/manifest.json').then(r=>r.json()).then(m=>{ const v=m.validacion||{}, p=((v.por_clase||{}).perdida||{}).usuario, n=m.muestra&&m.muestra.interpretados;
+  const q=k=>document.querySelector('[data-m="'+k+'"]');
+  if(n&&q('n')) q('n').textContent=n.toLocaleString('es-MX');
+  if(p&&p.estimado!=null&&q('u10')) q('u10').textContent='De cada 10 lugares que marca como pérdida, la revisión confirma '+Math.round(10*p.estimado)+'.';
+}).catch(()=>{});
+</script>
+<footer class="pie contenedor">Observatorio Forestal de Morelia · Posgrado en Geografía, CIGA-UNAM · <a href="./privacidad.html">Aviso de privacidad</a></footer>
+</body>
+</html>

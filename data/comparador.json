@@ -1,0 +1,19 @@
+{
+ "_leeme": "Generado por preparar_comparador.py. Recuadro [[sur, oeste], [norte, este]] de las dos imágenes del comparador, exportadas en EPSG:3857 por exportar_comparador.js.",
+ "bounds": [
+  [
+   19.419855,
+   -101.530199
+  ],
+  [
+   19.890131,
+   -101.019776
+  ]
+ ],
+ "origen_bordes": "georreferencia del GeoTIFF",
+ "fuentes": {
+  "2003": "Landsat 5 y 7, mediana de enero a abril de 2003",
+  "2025": "Landsat 8 y 9, mediana de enero a abril de 2025"
+ },
+ "generado": "2026-11-12"
+}

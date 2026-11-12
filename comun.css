@@ -37,3 +37,13 @@ table.tabla td.num,table.tabla th.num{text-align:right;white-space:nowrap}
 .sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:baseline}
 footer.pie{padding:22px 0 40px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted);line-height:1.6}
 @media(max-width:600px){.btn{flex:1;justify-content:center}}
+/* Accesibilidad (F16 · 12-11-2026): foco visible con teclado y sin animaciones para quien las desactiva */
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}}
+/* Descarga junto a cada tabla (Datos) e imagen del mapa en la portada · 12-11-2026 */
+.csv{display:inline-block;background:none;border:1px solid var(--line);color:var(--muted);border-radius:7px;padding:7px 11px;font-size:12.5px;cursor:pointer;margin-top:8px;font-family:inherit}
+.csv:hover{color:var(--ink);border-color:var(--accent)}
+.portada-mapa{display:block;margin-top:24px;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.portada-mapa img{display:block;width:100%;height:auto}
+.portada-mapa:hover{border-color:var(--accent)}
+
