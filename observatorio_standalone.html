@@ -47,6 +47,8 @@
   // Cliente compartido: se crea al cargar el script (va en <head>, después de supabase-js
   // y sb-config.js), para que los scripts de cada página lo encuentren listo.
   const oyentes=[]; let sesion=null, perfil=null, listo=false;
+  // Llegada desde el correo «Olvidé mi contraseña»: se anota antes de que el cliente lea la dirección.
+  window.ofmRecuperacion=/type=recovery/.test(location.hash);
   const sb=(window.supabase&&window.SB_CONFIG)?window.supabase.createClient(SB_CONFIG.url,SB_CONFIG.key):null;
   async function cargarPerfil(){ perfil=null; if(!sb||!sesion)return;
     const {data}=await sb.from('profiles').select('role,aprobado,motivo,acepta_aviso_at,display_name,rechazado_at,motivo_rechazo').eq('id',sesion.user.id).maybeSingle();
@@ -161,31 +163,58 @@
   function boton(){const b=el('button',{class:'ofm-burger',type:'button','aria-label':'Abrir el menú','aria-controls':'ofmMenu','aria-expanded':'false','data-ofm-abre':'1'},'☰');
     b.addEventListener('click',abrir); return b;}
 
-  // ── Acceso: enlace mágico (por defecto) o contraseña ───────────────────────────
+  // ── Acceso: correo y contraseña (por defecto) o enlace por correo (D37 · 16-11-2026) ──
+  // La contraseña va primero porque el envío de correos de Supabase está limitado (2 por hora
+  // y solo al equipo) mientras no haya un servidor de correo propio; el enlace queda como opción.
+  const CONTACTO='hezavalasolis@pmip.unam.mx';
+  function traducir(m){ m=String(m||'');
+    if(/invalid login credentials/i.test(m)) return 'Correo o contraseña incorrectos. Si no recuerdas la contraseña, usa «Olvidé mi contraseña».';
+    if(/already registered|already been registered/i.test(m)) return 'Ya existe una cuenta con ese correo: entra con tu contraseña o usa «Olvidé mi contraseña».';
+    if(/rate limit|too many|security purposes/i.test(m)) return 'Se alcanzó el límite de correos por ahora. Intenta más tarde o escribe a '+CONTACTO+'.';
+    if(/not authorized/i.test(m)) return 'Por ahora el sitio no puede enviar correos a esa dirección. Entra o crea tu cuenta con contraseña, o escribe a '+CONTACTO+'.';
+    if(/email not confirmed/i.test(m)) return 'Falta confirmar tu correo. Si no te llegó el mensaje, escribe a '+CONTACTO+'.';
+    if(/password/i.test(m)&&/(6|8|characters|short)/i.test(m)) return 'La contraseña debe tener al menos 8 caracteres.';
+    return m; }
   function construirAcceso(){
     modal=el('div',{class:'ofm-modal',role:'dialog','aria-modal':'true','aria-labelledby':'ofmAccTit'});
     modal.innerHTML='<div class="caja"><button class="cerrar" type="button" aria-label="Cerrar">×</button>'+
-      '<h2 id="ofmAccTit">Entrar</h2><p>Escribe tu correo y te enviamos un enlace para entrar, sin contraseña. Si es tu primera vez, se crea tu cuenta.</p>'+
+      '<h2 id="ofmAccTit">Entrar</h2><p data-intro>Entra con tu correo y tu contraseña. Si es tu primera vez, crea tu cuenta.</p>'+
       '<label for="ofmAccMail">Correo</label><input id="ofmAccMail" type="email" autocomplete="email" />'+
-      '<div data-pass hidden><label for="ofmAccPass">Contraseña</label><input id="ofmAccPass" type="password" autocomplete="current-password" /></div>'+
-      '<div class="fila"><button type="button" class="ofm-entrar" data-magia>Enviarme el enlace</button><button type="button" class="ofm-entrar" data-con-pass hidden>Entrar</button></div>'+
-      '<p style="margin:10px 0 0;font-size:12px"><a href="#" data-alterna>Prefiero usar contraseña</a> · <a href="./privacidad.html">Aviso de privacidad</a></p>'+
+      '<div data-pass><label for="ofmAccPass">Contraseña</label><input id="ofmAccPass" type="password" autocomplete="current-password" minlength="8" /></div>'+
+      '<div class="fila"><button type="button" class="ofm-entrar" data-con-pass>Entrar</button><button type="button" class="ofm-entrar sec" data-crear>Crear cuenta</button>'+
+      '<button type="button" class="ofm-entrar" data-magia hidden>Enviarme el enlace</button></div>'+
+      '<p style="margin:10px 0 0;font-size:12px"><a href="#" data-olvido>Olvidé mi contraseña</a> · <a href="#" data-alterna>Prefiero recibir un enlace por correo</a> · <a href="./privacidad.html">Aviso de privacidad</a></p>'+
       '<div class="msg" role="status"></div></div>';
     document.body.appendChild(modal);
     const q=s=>modal.querySelector(s), msg=(t,ok)=>{const m=q('.msg'); m.textContent=t; m.style.color=ok?'#3fb27f':'#ff8a95';};
+    const correo=()=>q('#ofmAccMail').value.trim(), clave=()=>q('#ofmAccPass').value;
     q('.cerrar').onclick=cerrarAcceso; modal.addEventListener('click',e=>{if(e.target===modal)cerrarAcceso();});
-    q('[data-alterna]').onclick=e=>{e.preventDefault(); const p=q('[data-pass]'); const conPass=p.hidden; p.hidden=!conPass;
-      q('[data-con-pass]').hidden=!conPass; q('[data-magia]').hidden=conPass;
-      e.target.textContent=conPass?'Prefiero recibir un enlace':'Prefiero usar contraseña';};
+    q('[data-alterna]').onclick=e=>{e.preventDefault(); const p=q('[data-pass]'); const aEnlace=!p.hidden; p.hidden=aEnlace;
+      q('[data-con-pass]').hidden=aEnlace; q('[data-crear]').hidden=aEnlace; q('[data-olvido]').hidden=aEnlace; q('[data-magia]').hidden=!aEnlace;
+      q('[data-intro]').textContent=aEnlace?'Escribe tu correo y te enviamos un enlace para entrar, sin contraseña.':'Entra con tu correo y tu contraseña. Si es tu primera vez, crea tu cuenta.';
+      e.target.textContent=aEnlace?'Prefiero usar contraseña':'Prefiero recibir un enlace por correo'; msg('',true);};
     q('[data-magia]').onclick=async()=>{ if(!sb){msg('El acceso no está disponible en esta copia.',false);return;}
-      const m=q('#ofmAccMail').value.trim(); if(!m){msg('Escribe tu correo.',false);return;}
-      const {error}=await sb.auth.signInWithOtp({email:m,options:{emailRedirectTo:location.href.split('#')[0]}});
-      msg(error?error.message:'Listo: revisa tu correo y abre el enlace (puede tardar un par de minutos o caer en no deseado).',!error);};
+      if(!correo()){msg('Escribe tu correo.',false);return;}
+      const {error}=await sb.auth.signInWithOtp({email:correo(),options:{emailRedirectTo:location.href.split('#')[0]}});
+      msg(error?traducir(error.message):'Listo: revisa tu correo y abre el enlace (puede tardar un par de minutos o caer en no deseado).',!error);};
     q('[data-con-pass]').onclick=async()=>{ if(!sb)return;
-      const {error}=await sb.auth.signInWithPassword({email:q('#ofmAccMail').value.trim(),password:q('#ofmAccPass').value});
-      if(error)msg(error.message,false); else cerrarAcceso();};
+      if(!correo()||!clave()){msg('Escribe tu correo y tu contraseña.',false);return;}
+      const {error}=await sb.auth.signInWithPassword({email:correo(),password:clave()});
+      if(error)msg(traducir(error.message),false); else cerrarAcceso();};
+    q('[data-crear]').onclick=async()=>{ if(!sb)return;
+      if(!correo()){msg('Escribe tu correo.',false);return;}
+      if(clave().length<8){msg('Elige una contraseña de al menos 8 caracteres.',false);return;}
+      const {data,error}=await sb.auth.signUp({email:correo(),password:clave(),options:{emailRedirectTo:location.href.split('#')[0]}});
+      if(error){msg(traducir(error.message),false);return;}
+      if(data&&data.session){cerrarAcceso();return;}
+      msg('Cuenta creada. Te enviamos un correo para confirmarla; abre el enlace y después entra con tu contraseña.',true);};
+    q('[data-olvido]').onclick=async e=>{e.preventDefault(); if(!sb)return;
+      if(!correo()){msg('Escribe tu correo y vuelve a tocar «Olvidé mi contraseña».',false);return;}
+      const destino=location.origin+location.pathname.replace(/[^/]*$/,'')+'participacion.html';
+      const {error}=await sb.auth.resetPasswordForEmail(correo(),{redirectTo:destino});
+      msg(error?traducir(error.message):'Si hay una cuenta con ese correo, te llegará un enlace para poner una contraseña nueva. Si no llega en unos minutos, escribe a '+CONTACTO+'.',!error);};
   }
-  function abrirAcceso(){ cerrar(); modal.classList.add('abierto'); setTimeout(()=>modal.querySelector('#ofmAccMail').focus(),30); }
+  function abrirAcceso(){ cerrar(); modal.classList.add('abierto'); setTimeout(()=>modal.querySelector('#ofmAccMail').focus(),30); modal.querySelector('.msg').textContent=''; }
   function cerrarAcceso(){ modal.classList.remove('abierto'); }
 
   // Pendientes de moderación (M10 · 12-11-2026): un número junto a «Moderación» y un punto en el ☰.

@@ -37,6 +37,12 @@
   .tabs button{background:var(--panel);border:1px solid var(--line);color:var(--ink);border-radius:20px;padding:7px 14px;font-size:13.5px;cursor:pointer;font-family:inherit}
   .tabs button[aria-selected="true"]{border-color:var(--accent);background:rgba(63,178,127,.12)}
   .tabla-wrap{overflow-x:auto}
+  fieldset{border:1px solid var(--line);border-radius:10px;padding:10px 14px 4px;margin:0 0 12px}
+  legend{font-size:13.5px;font-weight:600;padding:0 6px;color:var(--ink)}
+  fieldset .check{margin:6px 0}
+  input.campo{width:100%;background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:9px 11px;font-size:14px;font-family:inherit;margin:2px 0 8px}
+  .cuenta{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;max-width:560px}
+  .cuenta label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:3px}
 </style>
 </head>
 <body>
@@ -49,7 +55,7 @@
       <div class="tarjetas">
         <div class="tarjeta"><h3>Verificar el estado actual</h3><p>Miras un cuadro de 30 m sobre la imagen de satélite y eliges qué hay hoy. Cada respuesta se compara con las de otras personas y con lugares de referencia.</p></div>
         <div class="tarjeta"><h3>Dejar aportes</h3><p>Reporta lo que observas en un lugar (tala, incendio, construcción, cambio agrícola) con una descripción y, si quieres, una foto. Se publica después de revisarlo.</p></div>
-        <div class="tarjeta"><h3>Trazar tu territorio</h3><p>Dibuja tu ejido, comunidad o microcuenca y guárdalo para consultarlo después.</p></div>
+        <div class="tarjeta"><h3>Trazar tu territorio</h3><p>Dibuja tu bosque, colonia, ejido o microcuenca y guárdalo para consultarlo, editarlo o pedir que sea visible.</p></div>
       </div>
       <p style="margin-top:18px"><button class="btn" type="button" id="bEntrar">Entrar para participar</button></p>
       <p class="nota">Al entrar aceptas el <a href="./privacidad.html">aviso de privacidad</a>. Solo se publican totales, nunca tu nombre ni tus respuestas una por una.</p>
@@ -72,6 +78,15 @@
       <div data-panel="ver"></div>
       <div data-panel="apo" hidden></div>
       <div data-panel="ter" hidden></div>
+    </section>
+    <section class="seccion" id="cuenta">
+      <h2>Tu cuenta</h2>
+      <p class="sub">Con una contraseña entras sin esperar un correo. Si entraste con un enlace y nunca pusiste contraseña, créala aquí.</p>
+      <div class="cuenta">
+        <div><label for="cClave">Contraseña nueva</label><input class="campo" id="cClave" type="password" autocomplete="new-password" minlength="8"></div>
+        <div><label for="cClave2">Repítela</label><input class="campo" id="cClave2" type="password" autocomplete="new-password" minlength="8"></div>
+      </div>
+      <button class="btn" type="button" id="cGuardar">Guardar contraseña</button><div class="msg" id="cMsg" role="status"></div>
     </section>
     <section class="seccion">
       <h2>Tus datos</h2>
@@ -97,17 +112,36 @@ function visible(x){ if(!x.publico) return 'No';
   if(x.revision==='aprobado') return '<span class="estado e-validado">Sí</span>';
   if(x.revision==='rechazado') return '<span class="estado e-rechazado">No aprobado</span>'+(x.motivo_rechazo?'<br><span class="vacio">Motivo: '+esc(x.motivo_rechazo)+'</span>':'');
   return '<span class="estado e-pendiente">En revisión</span>'; }
+// Solicitud con opciones (D37 · 16-11-2026). Las claves son las que acepta la base (migración 10).
+const REL=[['vive_trabaja_cerca','Vivo o trabajo cerca de una zona con bosque'],['ejido_comunidad_colonia','Formo parte de un ejido, una comunidad o una colonia de la zona'],
+  ['estudia_ensena','Estudio o doy clases'],['investiga','Hago investigación'],['gobierno','Trabajo en gobierno'],['organizacion_civil','Participo en una organización civil o un colectivo'],['otro','Otro']];
+const PRO=[['aprender_ensenar','Aprender o enseñar sobre el bosque y la ciudad'],['contribuir_investigacion','Contribuir a una investigación'],
+  ['seguir_mi_zona','Seguir lo que pasa con el bosque de mi zona'],['informar_comunidad','Tener información para mi comunidad u organización'],['otro','Otro']];
+function grupo(id,leyenda,ops){ return '<fieldset id="'+id+'"><legend>'+leyenda+' <span style="font-weight:400;color:var(--muted)">(puedes marcar varias)</span></legend>'+
+  ops.map(o=>'<label class="check"><input type="checkbox" value="'+o[0]+'"><span>'+o[1]+'</span></label>').join('')+
+  '<input class="campo" data-otro placeholder="¿Cuál?" hidden></fieldset>'; }
+function leerGrupo(id){ const f=$('#'+id), v=[...f.querySelectorAll('input[type=checkbox]:checked')].map(x=>x.value), o=f.querySelector('[data-otro]').value.trim();
+  return {v, otro:v.includes('otro')?o:''}; }
 function cifra(n,t){return '<div class="cifra"><div class="n">'+n+'</div><div class="t">'+t+'</div></div>';}
 
 document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.setAttribute('aria-selected',x===b));
   document.querySelectorAll('[data-panel]').forEach(p=>p.hidden=p.dataset.panel!==b.dataset.tab);});
 $('#bEntrar').onclick=()=>A&&A.abrirAcceso();
 $('#bSalir').onclick=()=>A&&A.salir();
+$('#cGuardar').onclick=async()=>{ const m=(x,ok)=>{$('#cMsg').textContent=x;$('#cMsg').style.color=ok?'var(--accent)':'#ff8a95';};
+  const a=$('#cClave').value, b=$('#cClave2').value;
+  if(a.length<8) return m('La contraseña debe tener al menos 8 caracteres.',false);
+  if(a!==b) return m('Las dos contraseñas no coinciden.',false);
+  $('#cGuardar').disabled=true; const {error}=await sb.auth.updateUser({password:a}); $('#cGuardar').disabled=false;
+  if(error) return m(/different from the old/i.test(error.message)?'Es la misma contraseña que ya tenías.':error.message,false);
+  $('#cClave').value=''; $('#cClave2').value=''; m('Contraseña guardada. La próxima vez entra con tu correo y esta contraseña.',true); };
 
 async function pintar(sesion,perfil){
   $('#anon').hidden=!!sesion; $('#conSesion').hidden=!sesion; if(!sesion||!sb) return;
   const uid=sesion.user.id;
   $('#saludo').textContent='Tu participación · '+(sesion.user.email||'');
+  if(window.ofmRecuperacion){ window.ofmRecuperacion=false; $('#cMsg').textContent='Escribe tu contraseña nueva y guárdala.'; $('#cMsg').style.color='var(--accent2)';
+    setTimeout(()=>{$('#cuenta').scrollIntoView({behavior:'smooth'}); $('#cClave').focus();},300); }
   const [v,a,t,ac]=await Promise.all([
     sb.from('verificaciones').select('objetivo_id,respuesta,segura,img_fecha,img_fuente,created_at,updated_at,geom').eq('user_id',uid).order('updated_at',{ascending:false}),
     sb.from('aportes').select('tipo,descripcion,estado,motivo_rechazo,created_at,geom').eq('user_id',uid).order('created_at',{ascending:false}),
@@ -127,16 +161,25 @@ async function pintar(sesion,perfil){
   else if(perfil&&perfil.rechazado_at){ s.innerHTML='<h3>Solicitud no aprobada</h3><p class="sub" style="margin:0">Tu solicitud para verificar no se aprobó ('+fecha(perfil.rechazado_at)+').'+(perfil.motivo_rechazo?' Motivo: '+esc(perfil.motivo_rechazo)+'.':'')+' Puedes seguir dejando aportes y trazando tu territorio en el <a href="./mapa.html">mapa</a>. Si crees que hay un error, escribe a <a href="mailto:hezavalasolis@pmip.unam.mx">hezavalasolis@pmip.unam.mx</a>.</p>'; }
   else if(perfil&&perfil.motivo&&perfil.acepta_aviso_at){ s.innerHTML='<h3>Solicitud en revisión</h3><p class="sub" style="margin:0">Enviaste tu solicitud el '+fecha(perfil.acepta_aviso_at)+'. Mientras se aprueba, puedes dejar aportes y trazar tu territorio en el <a href="./mapa.html">mapa</a>.</p>'; }
   else { s.innerHTML='<h3>Solicitar participar en la verificación</h3>'+
-      '<p class="sub" style="margin:0 0 10px"><b>Qué pasa con tus respuestas.</b> Cada cuadro toma unos segundos: miras la imagen y eliges qué hay hoy. Tus respuestas se comparan con las de otras personas y con lugares de referencia; ninguna corrige el mapa por sí sola. Solo se publican totales.</p>'+
-      '<textarea id="sMotivo" rows="3" placeholder="¿Por qué quieres participar? (una o dos frases)"></textarea>'+
+      '<p class="sub" style="margin:0 0 12px"><b>Qué pasa con tus respuestas.</b> Cada cuadro toma unos segundos: miras la imagen y eliges qué hay hoy. Tus respuestas se comparan con las de otras personas y con lugares de referencia; ninguna corrige el mapa por sí sola. Solo se publican totales.</p>'+
+      grupo('sRel','¿Cómo te relacionas con el bosque o el territorio de Morelia?',REL)+
+      grupo('sPro','¿Para qué quieres participar?',PRO)+
+      '<textarea id="sMotivo" rows="2" placeholder="¿Algo más que quieras contar? (opcional)"></textarea>'+
       '<label class="check"><input type="checkbox" id="sAcepto"><span>Entiendo que es un ejercicio de investigación científica, no un documento legal: registro lo que se ve en la imagen, no quién lo hizo ni si fue legal. Acepto el <a href="./privacidad.html">aviso de privacidad</a>.</span></label>'+
       '<button class="btn" type="button" id="sEnviar">Enviar solicitud</button><div class="msg" id="sMsg"></div>';
-    $('#sEnviar').onclick=async()=>{const m=$('#sMotivo').value.trim(), msg=(x,ok)=>{$('#sMsg').textContent=x;$('#sMsg').style.color=ok?'var(--accent)':'#ff8a95';};
-      if(m.length<10) return msg('Cuéntanos en una o dos frases por qué quieres participar.',false);
+    s.querySelectorAll('fieldset').forEach(f=>{ const o=f.querySelector('input[value=otro]'), t=f.querySelector('[data-otro]'); o.onchange=()=>{t.hidden=!o.checked; if(o.checked)t.focus();}; });
+    $('#sEnviar').onclick=async()=>{ const msg=(x,ok)=>{$('#sMsg').textContent=x;$('#sMsg').style.color=ok?'var(--accent)':'#ff8a95';};
+      const rel=leerGrupo('sRel'), pro=leerGrupo('sPro'), extra=$('#sMotivo').value.trim();
+      if(!rel.v.length) return msg('Marca al menos una opción en «¿Cómo te relacionas…?».',false);
+      if(!pro.v.length) return msg('Marca al menos una opción en «¿Para qué quieres participar?».',false);
+      if((rel.v.includes('otro')&&!rel.otro)||(pro.v.includes('otro')&&!pro.otro)) return msg('Escribe cuál es la opción «Otro».',false);
       if(!$('#sAcepto').checked) return msg('Hace falta aceptar las condiciones.',false);
-      const {error}=await sb.from('profiles').update({motivo:m,acepta_aviso_at:new Date().toISOString()}).eq('id',uid);
+      const etiq=(ops,g)=>g.v.map(k=>k==='otro'?'otro: '+g.otro:ops.find(o=>o[0]===k)[1]).join('; ');
+      const motivo='Relación: '+etiq(REL,rel)+'. Para qué: '+etiq(PRO,pro)+'.'+(extra?' Comentario: '+extra:'');
+      const ahora=new Date().toISOString();
+      const {error}=await sb.from('profiles').update({relacion:rel.v,relacion_otro:rel.otro||null,proposito:pro.v,proposito_otro:pro.otro||null,motivo,acepta_aviso_at:ahora}).eq('id',uid);
       if(error) return msg(error.message,false);
-      pintar(sesion,Object.assign({},perfil||{},{motivo:m,acepta_aviso_at:new Date().toISOString()}));}; }
+      pintar(sesion,Object.assign({},perfil||{},{motivo,acepta_aviso_at:ahora}));}; }
   // Historial
   $('[data-panel="ver"]').innerHTML=V.length?'<div class="tabla-wrap"><table class="tabla"><tr><th>Fecha</th><th>Tu respuesta</th><th>Imagen que viste</th><th></th></tr>'+
     V.map(x=>'<tr><td>'+fecha(x.updated_at||x.created_at)+'</td><td>'+esc(RESP[x.respuesta]||x.respuesta)+(x.segura?'':' <span class="vacio">(con dudas)</span>')+'</td><td>'+(x.img_fecha?fecha(x.img_fecha+'T12:00')+' · '+esc(x.img_fuente||''):'—')+'</td><td>'+(enMapa(x.geom)?'<a href="'+enMapa(x.geom)+'">ver en el mapa</a>':'')+'</td></tr>').join('')+'</table></div>'

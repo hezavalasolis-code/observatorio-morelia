@@ -517,13 +517,14 @@
 
     <div class="block" id="territorioBlock" style="display:none">
       <h2>Mi territorio</h2>
-      <div style="font-size:12px;color:var(--muted);line-height:1.45">Dibuja tu zona (ejido, comunidad, microcuenca) y guárdala para volver a ella. Todavía no se calcula la pérdida dentro de un territorio trazado: las superficies del sitio se estiman con la muestra de referencia, no contando el mapa.</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.45">Dibuja tu zona (un bosque, tu colonia, un ejido, una microcuenca) y guárdala para volver a ella, editarla o pedir que sea visible. Todavía no se calcula la pérdida dentro de un territorio trazado: las superficies del sitio se estiman con la muestra de referencia, no contando el mapa.</div>
       <button class="dlbtn" id="tDibujar" style="width:100%;margin-top:8px;background:var(--accent);color:#06231a;border-color:var(--accent)">Dibujar territorio</button>
       <div id="tHint" style="display:none;font-size:12px;color:var(--muted);margin-top:6px">Clic para poner vértices · doble clic para cerrar el polígono.</div>
+      <div id="tAvisoRev" style="display:none;font-size:12px;color:#f0c060;margin-top:6px">Al guardar los cambios, vuelve a revisión antes de mostrarse a otras personas.</div>
       <div id="tStats" style="display:none;margin-top:9px;font-size:12px;line-height:1.55"></div>
       <div id="tForm" style="display:none;margin-top:8px">
-        <input id="tNombre" placeholder="Nombre (p. ej. Tumbisca)" style="width:100%;background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:8px 10px;font-size:13px;margin-bottom:6px" />
-        <input id="tComunidad" placeholder="Comunidad (opcional)" style="width:100%;background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:8px 10px;font-size:13px;margin-bottom:6px" />
+        <input id="tNombre" placeholder="Nombre (p. ej. Bosque Lázaro Cárdenas)" style="width:100%;background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:8px 10px;font-size:13px;margin-bottom:6px" />
+        <input id="tComunidad" placeholder="Colonia o asentamiento (opcional)" aria-label="Colonia o asentamiento (opcional)" style="width:100%;background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:8px 10px;font-size:13px;margin-bottom:6px" />
         <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;margin-bottom:8px"><input type="checkbox" id="tPublico" style="width:auto"> Pedir que sea visible para otras personas (se revisa antes de mostrarse)</label>
         <div style="display:flex;gap:6px">
           <button class="dlbtn" id="tGuardar" style="flex:1;background:var(--accent);color:#06231a;border-color:var(--accent)">Guardar</button>
@@ -1402,22 +1403,24 @@ botonPlay(false);
   };
 
   // ===== Registro de territorios =====
-  let tLayer=null, tGeo=null, tStats=null, drawing=false;
+  let tLayer=null, tGeo=null, tStats=null, drawing=false, tEditando=null, tMovido=false;
   // Sin cifras hasta validar (28-09-2026). El territorio se dibuja y se guarda igual; la
   // estadística se activará cuando existan áreas ajustadas por error.
   function mostrarStats(s){ g('tStats').style.display='block';
     g('tStats').innerHTML='<b>Pérdida en este territorio</b><br><span style="color:var(--muted)">Todavía no se calcula: las superficies del sitio se estiman con la muestra de referencia, no contando el mapa. El territorio se guarda igual.</span>'; }
   function resetTerr(){ drawing=false; if(map.pm)map.pm.disableDraw();
-    if(tLayer){map.removeLayer(tLayer);tLayer=null;} tGeo=null;tStats=null;
+    if(tLayer){ if(tLayer.pm&&tLayer.pm.disable)tLayer.pm.disable(); map.removeLayer(tLayer);tLayer=null;} tGeo=null;tStats=null;
+    tEditando=null; tMovido=false; if(g('tGuardar'))g('tGuardar').textContent='Guardar';
+    if(g('tNombre')){g('tNombre').value='';g('tComunidad').value='';g('tPublico').checked=false;}
     if(g('tDibujar'))g('tDibujar').textContent='Dibujar territorio';
-    ['tHint','tForm','tStats'].forEach(id=>{const el=g(id); if(el)el.style.display='none';});
+    ['tHint','tForm','tStats','tAvisoRev'].forEach(id=>{const el=g(id); if(el)el.style.display='none';});
     if(g('tMsg'))g('tMsg').textContent=''; }
   function salirTerritorio(){ resetTerr(); if(g('tLista'))g('tLista').innerHTML=''; }
 
   g('tDibujar').onclick=()=>{ if(!user||!map.pm)return;
     if(drawing){ resetTerr(); return; }                 // cancelar dibujo en curso
-    if(tLayer){map.removeLayer(tLayer);tLayer=null;tGeo=null;tStats=null;}  // reemplazar anterior
-    drawing=true; g('tDibujar').textContent='Cancelar el dibujo'; g('tHint').style.display='block';
+    resetTerr();                                         // reemplaza lo que hubiera (vista o edición)
+    drawing=true; g('tDibujar').textContent='Cancelar el dibujo'; g('tHint').textContent='Clic para poner vértices · doble clic para cerrar el polígono.'; g('tHint').style.display='block';
     g('tForm').style.display='none'; g('tStats').style.display='none';
     map.pm.enableDraw('Polygon',{pathOptions:{pane:'partPane',color:'#3fb27f',fillColor:'#3fb27f',fillOpacity:0.12},
       templineStyle:{color:'#3fb27f'},hintlineStyle:{color:'#3fb27f',dashArray:[5,5]},snappable:false}); };
@@ -1428,6 +1431,7 @@ botonPlay(false);
     mostrarStats(tStats); g('tForm').style.display='block'; });
   g('tCancelar').onclick=()=>resetTerr();
   g('tGuardar').onclick=async()=>{
+    if(tEditando) return guardarEdicion();
     if(!tGeo){ setMsg(g('tMsg'),'Primero dibuja un territorio.',false); return; }
     if(!g('tNombre').value.trim()){ setMsg(g('tMsg'),'Ponle un nombre.',false); return; }
     g('tGuardar').disabled=true;
@@ -1447,12 +1451,52 @@ botonPlay(false);
       txt=r==='aprobado'?'público':r==='rechazado'?'no aprobado':'en revisión';
     return '<span style="font-size:12px;padding:2px 7px;border-radius:20px;font-weight:700;color:'+e[1]+';background:'+e[2]+'">'+txt+'</span>'; }
   window.cargarTerritorios=async function(){ if(!user){g('tLista').innerHTML='';return;}
-    const {data}=await sb.from('territorios').select('id,nombre,publico,revision,stats').eq('user_id',user.id).order('created_at',{ascending:false});
+    const {data}=await sb.from('territorios').select('id,nombre,comunidad,publico,revision,motivo_rechazo').eq('user_id',user.id).order('created_at',{ascending:false});
     if(!data||!data.length){ g('tLista').innerHTML='<div style="font-size:12px;color:var(--muted)">Aún no has guardado territorios.</div>'; return; }
+    const esc=t=>String(t??'').replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+    const bt='background:none;border:none;color:var(--accent2);cursor:pointer;font-size:12.5px;padding:4px 0;font-family:inherit';
     g('tLista').innerHTML='<div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Mis territorios</div>'+
-      data.map(t=>{const s=t.stats||{}; return '<div class="aporte" data-id="'+t.id+'" style="cursor:pointer"><div class="top"><b>'+t.nombre+'</b>'+(t.publico?tEtiqueta(t.revision):'')+'</div>'
-        +'<div style="color:var(--muted)">'+(s.tot?s.tot.toFixed(1)+' ha · '+(s.n||0)+' parches':'sin cifras')+'</div></div>';}).join('');
-    g('tLista').querySelectorAll('[data-id]').forEach(el=>el.onclick=()=>verTerritorio(el.dataset.id)); };
+      data.map(t=>'<div style="background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:6px;font-size:12px">'+
+        '<div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline"><b>'+esc(t.nombre)+'</b>'+(t.publico?tEtiqueta(t.revision):'<span style="color:var(--muted)">privado</span>')+'</div>'+
+        (t.comunidad?'<div style="color:var(--muted);margin-top:2px">'+esc(t.comunidad)+'</div>':'')+
+        (t.revision==='rechazado'&&t.motivo_rechazo?'<div style="color:var(--muted);margin-top:2px">Motivo: '+esc(t.motivo_rechazo)+'</div>':'')+
+        '<div style="display:flex;gap:14px;margin-top:4px"><button type="button" style="'+bt+'" data-ver="'+t.id+'">Ver</button>'+
+        '<button type="button" style="'+bt+'" data-edt="'+t.id+'">Editar</button>'+
+        '<button type="button" style="'+bt+';color:#ff8a95" data-del="'+t.id+'" data-nom="'+esc(t.nombre)+'">Eliminar</button></div></div>').join('');
+    g('tLista').querySelectorAll('[data-ver]').forEach(b=>b.onclick=()=>{ resetTerr(); verTerritorio(b.dataset.ver); });
+    g('tLista').querySelectorAll('[data-edt]').forEach(b=>b.onclick=()=>editarTerritorio(b.dataset.edt));
+    g('tLista').querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>eliminarTerritorio(b.dataset.del,b.dataset.nom)); };
+  // Editar y eliminar (D37 · 16-11-2026). Editar mueve los vértices sobre el mapa y cambia
+  // nombre, colonia y visibilidad; si el territorio pide ser público, vuelve a revisión.
+  async function editarTerritorio(id){
+    const {data,error}=await sb.from('territorios').select('id,nombre,comunidad,publico,revision,geom').eq('id',id).maybeSingle();
+    if(error||!data||!data.geom){ setMsg(g('tMsg'),'No se pudo abrir el territorio.',false); return; }
+    resetTerr(); tEditando=id;
+    tLayer=L.geoJSON(data.geom,{pane:'partPane',style:{color:'#3fb27f',weight:2,fillColor:'#3fb27f',fillOpacity:0.12}}).getLayers()[0].addTo(map);
+    map.fitBounds(tLayer.getBounds(),{padding:[30,30]});
+    if(tLayer.pm){ tLayer.pm.enable({snappable:false,allowSelfIntersection:false}); tLayer.on('pm:edit',()=>{tMovido=true;}); }
+    g('tNombre').value=data.nombre||''; g('tComunidad').value=data.comunidad||''; g('tPublico').checked=!!data.publico;
+    g('tGuardar').textContent='Guardar cambios'; g('tForm').style.display='block';
+    g('tHint').style.display='block'; g('tHint').textContent='Arrastra los vértices para cambiar el trazo.';
+    g('tAvisoRev').style.display=data.publico?'block':'none';
+    if(window.matchMedia('(max-width:820px)').matches&&window.cerrarPanel) window.cerrarPanel(); }
+  g('tPublico').addEventListener('change',()=>{ if(tEditando) g('tAvisoRev').style.display=g('tPublico').checked?'block':'none'; });
+  async function guardarEdicion(){
+    if(!g('tNombre').value.trim()){ setMsg(g('tMsg'),'Ponle un nombre.',false); return; }
+    g('tGuardar').disabled=true;
+    const {error}=await sb.rpc('editar_territorio',{p_id:tEditando,p_nombre:g('tNombre').value.trim(),
+      p_comunidad:g('tComunidad').value.trim(),p_publico:g('tPublico').checked,
+      p_geojson:tMovido?JSON.stringify(tLayer.toGeoJSON().geometry):null});
+    g('tGuardar').disabled=false;
+    if(error){ setMsg(g('tMsg'),error.message,false); return; }
+    resetTerr(); g('tStats').style.display='block'; g('tStats').innerHTML='<span style="color:var(--accent)">Cambios guardados.</span>';
+    cargarTerritorios(); }
+  async function eliminarTerritorio(id,nombre){
+    if(!confirm('¿Eliminar el territorio «'+nombre+'»? No se puede deshacer.')) return;
+    const {error}=await sb.from('territorios').delete().eq('id',id);
+    if(error){ setMsg(g('tMsg'),'No se pudo eliminar: '+error.message,false); return; }
+    if(tEditando===id) resetTerr(); else if(tLayer&&!tEditando){ map.removeLayer(tLayer); tLayer=null; }
+    cargarTerritorios(); }
   // ===== Verificar el estado actual (D15) =====
   const OPCIONES=[['arboles_matorral','Árboles o matorral'],['construccion','Construcción'],['cultivo_huerta','Cultivo o huerta'],
     ['pasto_suelo','Pasto o suelo desnudo'],['agua','Agua'],['no_se_distingue','No se distingue']];
