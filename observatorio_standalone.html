@@ -51,7 +51,7 @@
   window.ofmRecuperacion=/type=recovery/.test(location.hash);
   const sb=(window.supabase&&window.SB_CONFIG)?window.supabase.createClient(SB_CONFIG.url,SB_CONFIG.key):null;
   async function cargarPerfil(){ perfil=null; if(!sb||!sesion)return;
-    const {data}=await sb.from('profiles').select('role,aprobado,motivo,acepta_aviso_at,display_name,rechazado_at,motivo_rechazo').eq('id',sesion.user.id).maybeSingle();
+    const {data}=await sb.from('profiles').select('role,aprobado,aprobado_por,motivo,acepta_aviso_at,display_name,rechazado_at,motivo_rechazo').eq('id',sesion.user.id).maybeSingle();
     perfil=data||null; }
   async function avisar(){ await cargarPerfil(); listo=true; oyentes.forEach(f=>{try{f(sesion,perfil);}catch(e){}}); pintarSesion(); }
   if(sb){ sb.auth.getSession().then(({data})=>{sesion=data.session; avisar();});

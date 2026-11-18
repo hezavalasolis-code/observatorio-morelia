@@ -113,19 +113,26 @@ async function iniciar(sesion,perfil){
   let t=null; try{t=localStorage.getItem('ofm_mod_tab');}catch(e){}
   if(!t||(!esAdmin&&(t==='sol'||t==='cue'))) t=esAdmin?'sol':'apo';
   abrirTab(t);
-  contar(); cargarAportes(); cargarTerritorios(); if(esAdmin){ cargarSolicitudes(); cargarCuentas(); }
+  recargarTodo();
 }
+// Todo el panel al día (17-11-2026): tras cada acción, al volver a la pestaña y cada dos minutos.
+// No se recarga sola si quien modera está escribiendo un motivo, para no borrarlo.
+function recargarTodo(aviso){ if(!yo) return; contar(); cargarAportes(); cargarTerritorios();
+  if(esAdmin){ const enCue=!P('cue').hidden; cargarSolicitudes(enCue?null:aviso); cargarCuentas(enCue?aviso:null); } }
+function escribiendo(){ return [...document.querySelectorAll('#panel input,#panel textarea')].some(x=>x===document.activeElement||(x.type!=='checkbox'&&x.value.trim())); }
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden&&!escribiendo()) recargarTodo(); });
+setInterval(()=>{ if(!document.hidden&&!escribiendo()) recargarTodo(); },120000);
 const quien=uid=>esAdmin?esc(nombres[uid]||correos[uid]||'participante'):'una persona participante';
 
 // ── Solicitudes para verificar (admin) ───────────────────────────────────────────
 async function cargarSolicitudes(aviso){
-  const {data,error}=await sb.from('profiles').select('id,display_name,organizacion,motivo,acepta_aviso_at,aprobado,rechazado_at,motivo_rechazo,created_at')
+  const {data,error}=await sb.from('profiles').select('id,display_name,organizacion,motivo,acepta_aviso_at,aprobado,aprobado_por,rechazado_at,motivo_rechazo,created_at')
     .not('motivo','is',null).order('acepta_aviso_at',{ascending:true});
   const c=P('sol'); if(error){ c.innerHTML='<div class="msg err">'+esc(error.message)+'</div>'; return; }
   const pend=(data||[]).filter(p=>!p.aprobado&&!p.rechazado_at&&p.acepta_aviso_at), rech=(data||[]).filter(p=>p.rechazado_at);
   c.innerHTML=(pend.length?'':'<p class="vacio">No hay solicitudes pendientes.</p>')+pend.map(p=>
     '<div class="card"><div class="top"><b>'+esc(p.display_name||correos[p.id]||'Sin nombre')+'</b><span class="meta">'+fecha(p.acepta_aviso_at)+'</span></div>'+
-    '<div class="meta">'+(correos[p.id]?esc(correos[p.id])+' · ':'')+(p.organizacion?esc(p.organizacion)+' · ':'')+'aceptó las condiciones</div>'+
+    '<div class="meta">'+(correos[p.id]?esc(correos[p.id])+' · ':'')+(p.organizacion?esc(p.organizacion)+' · ':'')+'aceptó las condiciones'+(p.aprobado_por?' · <b>tenía permiso y se le retiró</b>':'')+'</div>'+
     '<div class="desc">'+esc(p.motivo)+'</div>'+
     '<div class="acts"><button class="bt" data-apr="'+p.id+'">Aprobar</button><input placeholder="Motivo si no se aprueba (lo verá la persona)" data-mot="'+p.id+'"><button class="bt rej" data-rec="'+p.id+'">No aprobar</button>'+
     (correos[p.id]?'<a class="bt sec" href="'+mailto(p.id,'libre')+'">Escribirle</a>':'')+'</div></div>').join('')+
@@ -141,38 +148,40 @@ async function cargarSolicitudes(aviso){
 async function decidir(uid,cambio,clave,motivo){
   const {error}=await sb.from('profiles').update(cambio).eq('id',uid);
   if(error){ alert('No se pudo: '+error.message); return; }
-  cargarSolicitudes({uid,clave,motivo}); cargarCuentas(); contar();
+  recargarTodo({uid,clave,motivo});
 }
 
 // ── Cuentas y roles (admin) ─────────────────────────────────────────────────────
-async function cargarCuentas(){
+async function cargarCuentas(aviso){
   const [pf,ac,vs]=await Promise.all([
-    sb.from('profiles').select('id,display_name,role,aprobado,rechazado_at,motivo,created_at').order('created_at',{ascending:true}),
+    sb.from('profiles').select('id,display_name,role,aprobado,aprobado_por,rechazado_at,motivo,created_at').order('created_at',{ascending:true}),
     sb.from('v_acuerdo_controles').select('user_id,controles_respondidos,acuerdo'),
     sb.from('verificaciones').select('user_id')]);
   const c=P('cue'); if(pf.error){ c.innerHTML='<div class="msg err">'+esc(pf.error.message)+'</div>'; return; }
   const nVer={}; (vs.data||[]).forEach(v=>nVer[v.user_id]=(nVer[v.user_id]||0)+1);
   const acu={}; (ac.data||[]).forEach(a=>acu[a.user_id]=a);
-  const estado=p=>p.aprobado?'Aprobada':p.rechazado_at?'No aprobada':p.motivo?'En revisión':'Sin solicitud';
+  const estado=p=>p.aprobado?'Activo':p.rechazado_at?'No aprobada':p.aprobado_por&&p.motivo?'En pausa':p.motivo?'En revisión':'Sin solicitud';
   c.innerHTML='<p class="sub">El rol de moderación permite revisar aportes y territorios; no da acceso a correos, perfiles ni verificaciones de otras personas. Solo administración aprueba solicitudes.</p>'+
-    '<div class="tabla-wrap" style="overflow-x:auto"><table class="tabla"><tr><th>Persona</th><th>Rol</th><th>Verificar</th><th class="num">Cuadros</th><th class="num">Controles</th><th class="num">Acuerdo</th><th></th></tr>'+
+    '<div class="tabla-wrap" style="overflow-x:auto"><table class="tabla"><tr><th>Persona</th><th>Rol</th><th>Permiso para verificar</th><th class="num">Cuadros</th><th class="num">Controles</th><th class="num">Acuerdo</th><th></th></tr>'+
     (pf.data||[]).map(p=>{ const a=acu[p.id], fijo=p.id===yo||p.role==='admin';
       return '<tr><td>'+esc(p.display_name||'Sin nombre')+(correos[p.id]?'<br><span class="meta">'+esc(correos[p.id])+'</span>':'')+'</td>'+
         '<td>'+(fijo?'<span class="rol">'+(p.role==='admin'?'administración':esc(p.role))+'</span>':
           '<select data-rol="'+p.id+'" aria-label="Rol"><option value="contributor"'+(p.role==='contributor'?' selected':'')+'>participante</option><option value="moderator"'+(p.role==='moderator'?' selected':'')+'>moderación</option></select>')+'</td>'+
         '<td>'+estado(p)+'</td><td class="num">'+(nVer[p.id]||0)+'</td><td class="num">'+(a?a.controles_respondidos:0)+'</td><td class="num">'+(a&&a.acuerdo!=null?(100*a.acuerdo).toFixed(0)+' %':'—')+'</td>'+
-        '<td style="text-align:right;white-space:nowrap">'+(p.aprobado&&p.id!==yo?'<button class="bt sec" data-ret="'+p.id+'">Retirar aprobación</button> ':'')+
+        '<td style="text-align:right;white-space:nowrap">'+(p.id===yo||p.role==='admin'?'':p.aprobado?'<button class="bt sec" data-ret="'+p.id+'">Retirar permiso</button> ':'<button class="bt" data-apc="'+p.id+'">Aprobar</button> ')+
           (correos[p.id]&&p.id!==yo?'<a class="bt sec" href="'+mailto(p.id,'libre')+'">Escribirle</a>':'')+'</td></tr>'; }).join('')+
     '</table></div><p class="nota">Acuerdo: proporción de puntos de control en que la respuesta coincide con la referencia, sin contar «no se distingue».</p>';
   c.querySelectorAll('[data-rol]').forEach(s=>s.onchange=async()=>{
     const nuevo=s.value, txt=nuevo==='moderator'?'¿Dar el rol de moderación? Podrá revisar aportes y territorios.':'¿Quitar el rol de moderación?';
     if(!confirm(txt)){ cargarCuentas(); return; }
     const {error}=await sb.from('profiles').update({role:nuevo}).eq('id',s.dataset.rol);
-    if(error) alert('No se pudo: '+error.message); cargarCuentas(); });
+    if(error) alert('No se pudo: '+error.message); recargarTodo(); });
   c.querySelectorAll('[data-ret]').forEach(b=>b.onclick=async()=>{
-    if(!confirm('¿Retirar la aprobación? Sus respuestas se conservan.')) return;
+    if(!confirm('¿Retirar el permiso para verificar? Sus respuestas se conservan y puedes volver a aprobarlo cuando quieras.')) return;
     const {error}=await sb.from('profiles').update({aprobado:false}).eq('id',b.dataset.ret);
-    if(error) alert('No se pudo: '+error.message); cargarCuentas(); cargarSolicitudes(); });
+    if(error) alert('No se pudo: '+error.message); recargarTodo(); });
+  if(aviso) avisoCorreo(c,aviso.uid,aviso.clave,aviso.motivo);
+  c.querySelectorAll('[data-apc]').forEach(b=>b.onclick=()=>{ if(confirm('¿Aprobar el permiso para verificar?')) decidir(b.dataset.apc,{aprobado:true},'aprobada'); });
 }
 
 // ── Aportes (moderación) ─────────────────────────────────────────────────────────
@@ -199,7 +208,7 @@ async function cargarAportes(){
 }
 async function moderarAporte(id,estado,motivo){
   const {error}=await sb.rpc('moderar_aporte',{p_aporte_id:id,p_estado:estado,p_motivo:motivo});
-  if(error){ alert('No se pudo: '+error.message); return; } cargarAportes(); contar();
+  if(error){ alert('No se pudo: '+error.message); return; } recargarTodo();
 }
 
 // ── Territorios que piden ser públicos (moderación) ──────────────────────────────
@@ -217,7 +226,7 @@ async function cargarTerritorios(){
 }
 async function revisarTerritorio(id,revision,motivo){
   const {error}=await sb.from('territorios').update({revision,motivo_rechazo:motivo}).eq('id',id);
-  if(error){ alert('No se pudo: '+error.message); return; } cargarTerritorios(); contar();
+  if(error){ alert('No se pudo: '+error.message); return; } recargarTodo();
 }
 
 if(A&&sb) A.onSesion(iniciar); else { $('#anon').hidden=false; $('#bEntrar').disabled=true; }

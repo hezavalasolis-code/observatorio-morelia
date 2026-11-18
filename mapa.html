@@ -1318,7 +1318,7 @@ botonPlay(false);
     g('territorioBlock').style.display=user?'block':'none';
     if(!user){salirAportar(); salirTerritorio(); perfil=null; salirVerificar(); pintarParticipacion(); if(g('apMios'))g('apMios').innerHTML=''; autoVerificar(); verPedido(); return;}
     g('apUser').textContent=user.email;
-    const{data:p}=await sb.from('profiles').select('role,aprobado,motivo,acepta_aviso_at,rechazado_at,motivo_rechazo').eq('id',user.id).maybeSingle();
+    const{data:p}=await sb.from('profiles').select('role,aprobado,aprobado_por,motivo,acepta_aviso_at,rechazado_at,motivo_rechazo').eq('id',user.id).maybeSingle();
     perfil=p||null; pintarParticipacion(); cargarMisAportes(); autoVerificar();
     esMod=p&&(p.role==='moderator'||p.role==='admin');
     g('apMod').textContent=esMod?'· admin':'';
@@ -1507,6 +1507,7 @@ botonPlay(false);
     if(!user){sol.style.display='none';est.textContent='';btn.style.display='none';return;}
     if(perfil&&perfil.aprobado){sol.style.display='none';est.textContent='Registro aprobado: puedes verificar el estado actual del mapa.';btn.style.display='block';}
     else if(perfil&&perfil.rechazado_at){sol.style.display='none';est.textContent='Tu solicitud para verificar no se aprobó'+(perfil.motivo_rechazo?' ('+perfil.motivo_rechazo+')':'')+'. Puedes seguir dejando aportes y trazando tu territorio.';btn.style.display='none';}
+    else if(perfil&&perfil.aprobado_por&&perfil.motivo){sol.style.display='none';est.textContent='Tu permiso para verificar está en pausa; tus respuestas se conservan.';btn.style.display='none';}
     else if(perfil&&perfil.motivo&&perfil.acepta_aviso_at){sol.style.display='none';est.textContent='Tu solicitud para verificar está en revisión.';btn.style.display='none';}
     else{sol.style.display='block';est.textContent='';btn.style.display='none';}
   }
