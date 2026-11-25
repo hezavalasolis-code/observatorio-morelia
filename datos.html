@@ -52,12 +52,14 @@
     <h1>Datos</h1>
     <p class="lede" id="resumen">Cargando…</p>
     <div class="cifras" id="sintesis" aria-live="polite"></div>
+    <p class="ver-datos">Estas cifras responden a las preguntas de la investigación. Si es tu primera visita, <a href="./recorrido.html">empieza por las cuatro preguntas</a>.</p>
     <nav class="indice" aria-label="En esta página">
-      <a href="#tipo">Por tipo</a><a href="#cuando">Cuándo</a><a href="#donde">Dónde</a><a href="#confianza">Qué tan confiable</a><a href="#participacion">Participación</a><a href="#descargas">Descargas</a><a href="#metodo">Método</a>
+      <a href="#tipo">Por tipo</a><a href="#cuando">Cuándo</a><a href="#donde">Dónde</a><a href="#distancia">Distancia</a><a href="#caminos">Caminos</a><a href="#confianza">Qué tan confiable</a><a href="#participacion">Participación</a><a href="#descargas">Descargas</a><a href="#metodo">Método</a>
     </nav>
   </section>
 
   <section class="seccion" id="tipo">
+    <p class="preg-tag"><a href="./recorrido.html#p2">Pregunta 2 · Qué formas toma la pérdida →</a></p>
     <h2>Cuánto bosque se perdió, por tipo de pérdida</h2>
     <p class="sub">Superficie perdida entre 2006 y 2024 en el municipio, con su margen de error (intervalo de 95 %). Cuando el margen es mayor que la cifra, no se publica la cifra: se dice que todavía no se puede acotar.</p>
     <div class="panel"><svg class="grafica" id="gTipo" role="img" aria-labelledby="gTipoT"><title id="gTipoT">Pérdida por tipo, en hectáreas, con intervalo de 95 %</title></svg></div>
@@ -67,6 +69,7 @@
   </section>
 
   <section class="seccion" id="cuando">
+    <p class="preg-tag"><a href="./recorrido.html#p2">Pregunta 2 · Qué formas toma la pérdida →</a></p>
     <h2>Cuándo se perdió</h2>
     <p class="sub">Hectáreas perdidas por año, en promedio, en cada periodo de cinco años (el último tiene cuatro).</p>
     <p class="sub" id="notaFechado">Cada cambio se fecha con la primera imagen de alta resolución que lo muestra, y hay años sin imágenes (2008, 2010, 2018 y 2022). Por eso la comparación se hace entre periodos y no año por año. Un desmonte de 2021-2024 todavía no muestra en qué se convirtió y se cuenta como degradación.</p>
@@ -76,6 +79,7 @@
   </section>
 
   <section class="seccion" id="donde">
+    <p class="preg-tag"><a href="./recorrido.html#p3">Pregunta 3 · ¿Cambio donde no debe? →</a></p>
     <h2>Dónde se perdió: por tipo de suelo del PMDU</h2>
     <p class="sub">Qué parte del bosque y matorral que había en cada tipo de suelo se perdió entre 2006 y 2024.</p>
     <div class="panel"><svg class="grafica" id="gDonde" role="img" aria-labelledby="gDondeT"><title id="gDondeT">Porcentaje del bosque y matorral previo que se perdió, por tipo de suelo</title></svg></div>
@@ -85,6 +89,7 @@
   </section>
 
   <section class="seccion" id="distancia">
+    <p class="preg-tag"><a href="./recorrido.html#p1">Pregunta 1 · Ciudad y bosque →</a></p>
     <h2>A qué distancia se perdió</h2>
     <p class="sub">La distancia se mide de dos maneras. Las franjas no tienen el mismo ancho: para comparar entre ellas, usa el porcentaje de cada tabla. El detalle por tipo de pérdida va en las descargas.</p>
     <h3>De la ciudad de Morelia</h3>
@@ -100,6 +105,7 @@
   </section>
 
   <section class="seccion" id="caminos">
+    <p class="preg-tag"><a href="./recorrido.html#p2">Pregunta 2 · Qué formas toma la pérdida →</a></p>
     <h2>Junto a qué se perdió: caminos</h2>
     <p class="sub">Qué parte del área tiene un camino que toca el cuadro revisado de 30 m, en el bosque y matorral que se perdió y en el que se conserva. Describe dónde ocurre la pérdida, no qué la causa.</p>
     <div class="tabla-wrap"><table class="tabla" id="tCaminos"></table></div>
@@ -108,6 +114,7 @@
   </section>
 
   <section class="seccion" id="confianza">
+    <p class="preg-tag"><a href="./recorrido.html#p4">Pregunta 4 · Medir con error declarado →</a></p>
     <h2>Qué tan confiable es el mapa</h2>
     <p class="sub" id="confTexto"></p>
     <div class="dos">
@@ -119,6 +126,7 @@
   </section>
 
   <section class="seccion" id="participacion">
+    <p class="preg-tag"><a href="./recorrido.html#p4">Pregunta 4 · Verificar entre muchos →</a></p>
     <h2>Participación ciudadana</h2>
     <p class="sub" id="partTexto">Cargando…</p>
     <a class="btn sec" href="./participacion.html">Ir a participación</a>
@@ -144,6 +152,7 @@
   </section>
 
   <section class="seccion" id="metodo">
+    <p class="preg-tag"><a href="./recorrido.html#p1">Pregunta 1 · Unidades y método →</a></p>
     <h2>Método</h2>
     <p class="sub"><b>Detección.</b> LandTrendr segmenta, píxel por píxel, la serie anual del índice NBR de Landsat 5, 7, 8 y 9 (compuestos de temporada seca, 2002 a 2025) y marca dónde y cuándo cae la cubierta leñosa. Cada evento se clasifica en degradación, conversión construida o conversión cultivada según su magnitud y el estado de la cubierta cinco años después.</p>
     <p class="sub"><b>Validación.</b> Se sortearon lugares por tipo de suelo y por clase del mapa y se interpretaron a ciegas en imágenes de alta resolución. Con esa referencia se mide la exactitud del mapa y se estiman las superficies con el estimador de Stehman (2014), que da cada cifra con su intervalo de confianza. Contar los píxeles del mapa daría la superficie mapeada, que arrastra los errores del mapa; por eso no se publica.</p>
@@ -155,7 +164,10 @@
     <div class="aviso" data-ofm-aviso></div>
   </section>
 </main>
-<footer class="pie contenedor">Cómo citar: Zavala Solís, H. E. (2026). <i>Observatorio Forestal de Morelia</i>. Posgrado en Geografía, CIGA-UNAM. · <span id="corrida"></span></footer>
+<footer class="pie contenedor">
+  Investigación doctoral de Héctor Eduardo Zavala Solís · Posgrado en Geografía, CIGA-UNAM<br>
+  Cómo citar: Zavala Solís, H. E. (2026). <i>Observatorio Forestal de Morelia</i>. Posgrado en Geografía, CIGA-UNAM. · Licencia CC BY-NC-ND 4.0 · <a href="./privacidad.html">Aviso de privacidad</a> · <span id="corrida"></span>
+</footer>
 <div class="tip" id="tip"></div>
 <script>
 const CLAS={degradacion:['Degradación','#ccffcc'],cultivada:['Conversión cultivada','#ffd000'],construida:['Conversión construida','#9b30ff']};

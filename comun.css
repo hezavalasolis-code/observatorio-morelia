@@ -47,3 +47,10 @@ footer.pie{padding:22px 0 40px;border-top:1px solid var(--line);font-size:12.5px
 .portada-mapa img{display:block;width:100%;height:auto}
 .portada-mapa:hover{border-color:var(--accent)}
 
+
+/* Enlace entre Datos e Investigación (D39): cada sección dice a qué pregunta responde. */
+.preg-tag{display:inline-block;margin:0 0 6px;font-size:12px;letter-spacing:.05em;text-transform:uppercase}
+.preg-tag a{color:var(--accent2);text-decoration:none;border-bottom:1px dotted currentColor}
+.preg-tag a:hover{border-bottom-style:solid}
+.ver-datos{font-size:13px;color:var(--muted);margin:8px 0 0}
+.ver-datos a{color:var(--accent2)}

@@ -76,7 +76,7 @@
       </div>
       <figure class="figura"><img src="./img/recorrido-area.png" width="1100" height="1045" loading="lazy" alt="Mapa del municipio de Morelia con las cuatro unidades del Programa Municipal de Desarrollo Urbano: áreas protegidas, no urbanizable, urbanizable y urbano; rotulados Cerro del Quinceo, Cerro del Águila y Pico Azul-La Escalera">
         <figcaption>Las cuatro unidades del Programa Municipal de Desarrollo Urbano 2022-2041 son las mismas para medir, estimar y publicar.</figcaption></figure>
-      <div class="btns" style="margin-top:14px"><a class="btn" href="./mapa.html">Ver las unidades en el mapa</a><a class="btn sec" href="./datos.html#metodo">Cómo se mide</a></div>
+      <div class="btns" style="margin-top:14px"><a class="btn" href="./mapa.html">Ver las unidades en el mapa</a><a class="btn sec" href="./datos.html#metodo">Cómo se mide</a><a class="btn sec" href="./datos.html#distancia">A qué distancia de la ciudad</a></div>
     </div></div>
   </section>
 
@@ -90,7 +90,9 @@
         <div class="tarjeta"><h3>Huerta por brechas</h3><p>Aguacate en hileras, casi siempre con bordo u olla de agua. Se llega por caminos que se abren antes del desmonte, y la huerta nueva se pega a la anterior.</p></div>
         <div class="tarjeta"><h3>Lotificación</h3><p>Manzanas o lotes trazados sobre vialidad formal, en suelo urbano y urbanizable. A veces el lote trazado queda vacío años antes del desmonte.</p></div>
       </div>
+      <div class="cifras" id="cifrasP2" aria-live="polite"></div>
       <p class="sub">Una regularidad: la pérdida llega por donde ya se puede llegar. La mayor parte del área perdida tiene un camino junto o dentro, mucho más que el bosque que se conserva.</p>
+      <div class="cifras" id="cifrasCam" aria-live="polite" style="max-width:520px"></div>
       <div class="btns"><a class="btn" href="./mapa.html#11/19.66000/-101.19000/2024/ac/clase">Ver la pérdida por tipo</a><a class="btn sec" href="./datos.html#tipo">Cuánto de cada tipo</a><a class="btn sec" href="./datos.html#caminos">Caminos</a></div>
     </div></div>
   </section>
@@ -100,7 +102,8 @@
       <p class="preg">¿Ocurre cambio donde no debe?</p>
       <h2>Sí, bajo decreto</h2>
       <p class="sub">Hay pérdida en las áreas naturales protegidas y en el suelo que el programa municipal no destina a la urbanización. En las áreas protegidas, casi toda ocurrió con su decreto ya vigente. En el suelo no urbanizable la comparación es con el programa de 2023, aplicado hacia atrás: el régimen de cada año es lo que sigue en la investigación, junto con cómo trata la administración ese cambio.</p>
-      <p class="sub">El observatorio registra cambios de cubierta y de uso del suelo. No califica su legalidad ni identifica responsables.</p>
+      <div class="cifras" id="cifrasP3" aria-live="polite"></div>
+      <p class="sub">El observatorio registra cambios de cubierta y de uso del suelo. No califica su legalidad ni identifica responsables (<a href="./acerca.html#afirmar">qué se puede afirmar con estos datos</a>).</p>
       <div class="btns"><a class="btn" href="./mapa.html#12/19.60000/-101.13000/2024/ac/clase/cs">Ver un área protegida sobre la imagen</a><a class="btn sec" href="./datos.html#donde">Pérdida por tipo de suelo</a></div>
     </div></div>
   </section>
@@ -111,7 +114,7 @@
       <h2>Medir con error declarado y verificar entre muchos</h2>
       <p class="sub">El primer módulo, «Verificar», muestra lugares del mapa sobre la imagen de satélite más reciente y te pide decir qué hay hoy, después de un tutorial. Comparar esas respuestas con la revisión experta dice qué parte de la pérdida ve quien no es especialista, y con cuánta anticipación puede hacerse pública.</p>
       <div class="nota"><b>Para participar.</b> Crea tu cuenta y solicita participar; las solicitudes se aprueban en un plazo de 24 horas. Si llegas desde un curso, un coloquio u otro espacio académico, lo que hagas se registra aparte y no se mezcla con la evaluación del observatorio entre quienes habitan la franja. Solo se publican totales, nunca respuestas individuales (<a href="./privacidad.html">aviso de privacidad</a>).</div>
-      <div class="btns" style="margin-top:14px"><a class="btn" href="./participacion.html">Solicitar participar</a><a class="btn sec" href="./mapa.html?modo=verificar">Ir a Verificar</a></div>
+      <div class="btns" style="margin-top:14px"><a class="btn" href="./participacion.html">Solicitar participar</a><a class="btn sec" href="./mapa.html?modo=verificar">Ir a Verificar</a><a class="btn sec" href="./datos.html#confianza">Qué tan confiable es el mapa</a></div>
     </div></div>
   </section>
 </main>
@@ -119,5 +122,31 @@
   Investigación doctoral de Héctor Eduardo Zavala Solís · Posgrado en Geografía, CIGA-UNAM<br>
   Cómo citar: Zavala Solís, H. E. (2026). <i>Observatorio Forestal de Morelia</i>. Posgrado en Geografía, CIGA-UNAM. · Licencia CC BY-NC-ND 4.0 · <a href="./privacidad.html">Aviso de privacidad</a>
 </footer>
+<script>
+// Cifras en vivo (D39): mismas fuentes y misma regla que Inicio y Datos. Salen de
+// data/estadisticas.json; lo que no se puede acotar no se publica como cifra (D2, D20).
+const miles=n=>Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,' ');
+const pct=x=>Math.round(100*x);
+function cifra(n,ic,t){return '<div class="cifra"><div class="n">'+n+'</div>'+(ic?'<div class="ic">'+ic+'</div>':'')+'<div class="t">'+t+'</div></div>';}
+function ha(o,t){return o&&o.acotada ? cifra(miles(o.ha)+' ha','± '+miles(o.ic95)+' ha (intervalo de 95 %)',t)
+                                      : cifra('—','',t+' Todavía no se puede acotar: el margen de error es mayor que la cifra.');}
+fetch('./data/estadisticas.json').then(r=>r.json()).then(e=>{
+  const T=e.total, A=e.periodo_reportado, per=' entre '+A[0]+' y '+A[1]+'.';
+  document.getElementById('cifrasP2').innerHTML=
+    ha(T.degradacion,'de degradación'+per+' El bosque se abre pero no desaparece.')+
+    ha(T.cultivada,'de conversión cultivada'+per+' Sobre todo huerta.')+
+    ha(T.construida,'de conversión construida'+per+' Es la urbanización.');
+  const C=e.caminos||[], cp=C.find(x=>x.grupo==='pérdida'&&x.indicador==='con camino junto o dentro'),
+        cc=C.find(x=>x.grupo!=='pérdida'&&x.indicador==='con camino junto o dentro');
+  document.getElementById('cifrasCam').innerHTML=(cp&&cc&&cp.acotada&&cc.acotada)?
+    cifra(pct(cp.proporcion)+' %','± '+pct(cp.ic95)+' puntos','del área perdida tiene un camino junto o dentro; en el bosque que se conserva, el '+pct(cc.proporcion)+' ± '+pct(cc.ic95)+' %.'):'';
+  const U=n=>(e.por_unidad||[]).find(u=>u.unidad===n);
+  const dv=(e.anp_decreto||[]).find(x=>x.anp==='todas'&&x.momento==='con decreto vigente');
+  let h=ha(U('Áreas protegidas')&&U('Áreas protegidas').perdida,'de pérdida en las áreas naturales protegidas'+per);
+  if(dv&&dv.acotada&&dv.ic95_fraccion<dv.fraccion) h+=cifra(pct(dv.fraccion)+' %','± '+pct(dv.ic95_fraccion)+' puntos','de esa pérdida ocurrió con el decreto de protección ya vigente.');
+  h+=ha(U('No urbanizable')&&U('No urbanizable').perdida,'de pérdida en suelo que el programa municipal de 2023 no destina a la urbanización'+per);
+  document.getElementById('cifrasP3').innerHTML=h;
+}).catch(()=>{});
+</script>
 </body>
 </html>
