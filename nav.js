@@ -29,6 +29,7 @@
 
   const ITEMS=[
     {t:'Inicio',        d:'Qué es el observatorio y qué encontrarás', href:'./index.html'},
+    {t:'Investigación', d:'Las cuatro preguntas que sostienen el observatorio', href:'./recorrido.html'},
     {t:'Mapa',          d:'Consultar un lugar y ver la pérdida de bosque', href:'./mapa.html'},
     {t:'Datos',         d:'Cuánto bosque se perdió, cuándo y dónde', href:'./datos.html'},
     {t:'Participación', d:'Tu historial: verificaciones, aportes y territorios', href:'./participacion.html'},
