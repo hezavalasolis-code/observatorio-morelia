@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Recorrido en cuatro preguntas · Observatorio Forestal de Morelia</title>
+<meta name="description" content="La investigación detrás del observatorio, en cuatro preguntas: cómo se relaciona la ciudad con la pérdida de bosque, qué formas toma, si ocurre donde no debe y qué puede aportar la participación." />
+<link rel="canonical" href="https://hezavalasolis-code.github.io/observatorio-morelia/recorrido.html" />
+<meta property="og:type" content="website" />
+<meta property="og:locale" content="es_MX" />
+<meta property="og:site_name" content="Observatorio Forestal de Morelia" />
+<meta property="og:title" content="Recorrido en cuatro preguntas · Observatorio Forestal de Morelia" />
+<meta property="og:description" content="La investigación detrás del observatorio, en cuatro preguntas, con enlaces al mapa, a los datos y a la participación." />
+<meta property="og:url" content="https://hezavalasolis-code.github.io/observatorio-morelia/recorrido.html" />
+<meta property="og:image" content="https://hezavalasolis-code.github.io/observatorio-morelia/img/vista-previa.png" />
+<meta name="theme-color" content="#0f1720" />
+<link rel="icon" href="./img/icono.svg" type="image/svg+xml" />
+<link rel="icon" href="./img/icono-32.png" sizes="32x32" type="image/png" />
+<link rel="apple-touch-icon" href="./img/icono-180.png" />
+<link rel="stylesheet" href="./comun.css" />
+<style>
+/* Recorrido del coloquio (25-11-2026): la secuencia de la presentación como secuencia de uso. */
+.indice{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 0;padding:0;list-style:none}
+.indice a{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:13px;color:var(--ink);text-decoration:none}
+.indice a:hover{border-color:var(--accent)}
+.paso{display:grid;grid-template-columns:52px 1fr;gap:14px;align-items:start}
+.paso .num{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--panel2);border:1px solid var(--line);font-weight:700;font-size:18px;color:var(--accent)}
+.paso .preg{font-size:13px;color:var(--accent2);text-transform:uppercase;letter-spacing:.06em;margin:0 0 4px}
+.paso p{line-height:1.6}
+.modelo{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;align-items:stretch;margin:12px 0 6px}
+.modelo .caja{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.45}
+.modelo .caja b{display:block;font-size:13.5px;margin-bottom:2px}
+.modelo .viv{border-left:3px solid var(--accent)} .modelo .ali{border-left:3px solid var(--accent2)}
+.modelo .reg{grid-column:2 / 5;border-style:dashed;text-align:center}
+.modelo .ori{grid-row:1 / 3;display:flex;flex-direction:column;justify-content:center;background:var(--panel2)}
+.figura{margin:12px 0 0;background:#f7f6f1;border:1px solid var(--line);border-radius:12px;overflow:hidden;max-width:620px}
+.figura img{display:block;width:100%;height:auto}
+.figura figcaption{background:var(--panel);color:var(--muted);font-size:12.5px;padding:8px 12px}
+.trio{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:12px 0}
+.coloquio{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--accent2);border-radius:0 12px 12px 0;padding:14px 16px;font-size:13.5px;line-height:1.55;color:var(--muted)}
+.coloquio b{color:var(--ink)}
+@media(max-width:720px){.modelo{grid-template-columns:1fr 1fr}.modelo .ori{grid-row:auto;grid-column:1 / 3}.modelo .reg{grid-column:1 / 3}.paso{grid-template-columns:1fr}.paso .num{display:none}}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
+<script src="./sb-config.js"></script>
+<script src="./nav.js"></script>
+</head>
+<body>
+<div data-ofm-barra></div>
+<main class="contenedor">
+  <section class="seccion">
+    <h1>La investigación en cuatro preguntas</h1>
+    <p class="lede">Un recorrido por la investigación que sostiene el observatorio. Cada paso termina en la parte del sitio donde puedes verlo por tu cuenta: el mapa, los datos o la participación.</p>
+    <ul class="indice" aria-label="Pasos del recorrido">
+      <li><a href="#p1">1 · Ciudad y bosque</a></li>
+      <li><a href="#p2">2 · Qué formas toma la pérdida</a></li>
+      <li><a href="#p3">3 · ¿Cambio donde no debe?</a></li>
+      <li><a href="#p4">4 · Participar</a></li>
+    </ul>
+  </section>
+
+  <section class="seccion" id="p1">
+    <div class="paso"><div class="num">1</div><div>
+      <p class="preg">¿Cómo se relaciona el crecimiento de las ciudades con la pérdida de bosque?</p>
+      <h2>Por lo que demandan sus habitantes: vivienda y alimento</h2>
+      <p class="sub">Es un modelo de trabajo a partir de la literatura, no un resultado. La ciudad crece sobre su propio borde para dar vivienda. Y el bosque se pierde también por la demanda de alimento de otras ciudades y mercados: en el sur de Morelia, la huerta de aguacate. Entre la demanda y la pérdida está la regulación del suelo.</p>
+      <div class="modelo" role="img" aria-label="Modelo de dos vías: los habitantes demandan vivienda, que lleva a la expansión urbana y a la pérdida por urbanización, y alimento, que lleva a la agroindustria y a la pérdida por huerta; la regulación del suelo media entre ambas">
+        <div class="caja ori"><b>Habitantes de las ciudades</b>demandan bienes esenciales</div>
+        <div class="caja viv"><b>Vivienda</b>necesidad propia de la ciudad</div>
+        <div class="caja viv"><b>Expansión urbana</b>en el borde de la ciudad</div>
+        <div class="caja viv"><b>Pérdida por urbanización</b>en la franja periurbana</div>
+        <div class="caja ali"><b>Alimento</b>demanda de otras ciudades y mercados</div>
+        <div class="caja ali"><b>Agroindustria</b>huerta de aguacate en el sur boscoso</div>
+        <div class="caja ali"><b>Pérdida por huerta</b>incluso en áreas protegidas</div>
+        <div class="caja reg"><b>Regulación del suelo</b>decretos, programa municipal y actos de cabildo: pueden anteceder al cambio, regularizarlo o no intervenir</div>
+      </div>
+      <figure class="figura"><img src="./img/recorrido-area.png" width="1100" height="1045" loading="lazy" alt="Mapa del municipio de Morelia con las cuatro unidades del Programa Municipal de Desarrollo Urbano: áreas protegidas, no urbanizable, urbanizable y urbano; rotulados Cerro del Quinceo, Cerro del Águila y Pico Azul-La Escalera">
+        <figcaption>Las cuatro unidades del Programa Municipal de Desarrollo Urbano 2022-2041 son las mismas para medir, estimar y publicar.</figcaption></figure>
+      <div class="btns" style="margin-top:14px"><a class="btn" href="./mapa.html">Ver las unidades en el mapa</a><a class="btn sec" href="./datos.html#metodo">Cómo se mide</a></div>
+    </div></div>
+  </section>
+
+  <section class="seccion" id="p2">
+    <div class="paso"><div class="num">2</div><div>
+      <p class="preg">¿Cómo se diferencian los patrones de cambio de la cubierta forestal?</p>
+      <h2>Sobre todo degradación; la conversión es huerta y urbanización</h2>
+      <p class="sub">El mapa dice dónde; la revisión de cientos de lugares, cuánto. En la mayor parte de la pérdida el bosque se abre pero no desaparece: es degradación. Cuando sí cambia, se vuelve huerta en el bosque o urbanización en el borde.</p>
+      <div class="trio">
+        <div class="tarjeta"><h3>Aclareo del bosque</h3><p>El dosel se abre en parches, a menudo con incendio. Es el patrón mayor y crece en el periodo. Casi nunca tiene un uso vecino: es un proceso interno del bosque.</p></div>
+        <div class="tarjeta"><h3>Huerta por brechas</h3><p>Aguacate en hileras, casi siempre con bordo u olla de agua. Se llega por caminos que se abren antes del desmonte, y la huerta nueva se pega a la anterior.</p></div>
+        <div class="tarjeta"><h3>Lotificación</h3><p>Manzanas o lotes trazados sobre vialidad formal, en suelo urbano y urbanizable. A veces el lote trazado queda vacío años antes del desmonte.</p></div>
+      </div>
+      <p class="sub">Una regularidad: la pérdida llega por donde ya se puede llegar. La mayor parte del área perdida tiene un camino junto o dentro, mucho más que el bosque que se conserva.</p>
+      <div class="btns"><a class="btn" href="./mapa.html#11/19.66000/-101.19000/2024/ac/clase">Ver la pérdida por tipo</a><a class="btn sec" href="./datos.html#tipo">Cuánto de cada tipo</a><a class="btn sec" href="./datos.html#caminos">Caminos</a></div>
+    </div></div>
+  </section>
+
+  <section class="seccion" id="p3">
+    <div class="paso"><div class="num">3</div><div>
+      <p class="preg">¿Ocurre cambio donde no debe?</p>
+      <h2>Sí, bajo decreto</h2>
+      <p class="sub">Hay pérdida en las áreas naturales protegidas y en el suelo que el programa municipal no destina a la urbanización. En las áreas protegidas, casi toda ocurrió con su decreto ya vigente. En el suelo no urbanizable la comparación es con el programa de 2023, aplicado hacia atrás: el régimen de cada año es lo que sigue en la investigación, junto con cómo trata la administración ese cambio.</p>
+      <p class="sub">El observatorio registra cambios de cubierta y de uso del suelo. No califica su legalidad ni identifica responsables.</p>
+      <div class="btns"><a class="btn" href="./mapa.html#12/19.60000/-101.13000/2024/ac/clase/cs">Ver un área protegida sobre la imagen</a><a class="btn sec" href="./datos.html#donde">Pérdida por tipo de suelo</a></div>
+    </div></div>
+  </section>
+
+  <section class="seccion" id="p4">
+    <div class="paso"><div class="num">4</div><div>
+      <p class="preg">¿Qué puede aportar un observatorio ciudadano a la gobernanza forestal?</p>
+      <h2>Medir con error declarado y verificar entre muchos</h2>
+      <p class="sub">El primer módulo, «Verificar», muestra lugares del mapa sobre la imagen de satélite más reciente y te pide decir qué hay hoy, después de un tutorial. Comparar esas respuestas con la revisión experta dice qué parte de la pérdida ve quien no es especialista, y con cuánta anticipación puede hacerse pública.</p>
+      <div class="coloquio"><b>Si vienes del coloquio.</b> Crea tu cuenta y solicita participar hoy; las solicitudes se aprueban en un plazo de 24 horas. Lo que hagas cuenta como piloto con público académico: se registra aparte y no se mezcla con la evaluación del observatorio entre quienes habitan la franja. Solo se publican totales, nunca respuestas individuales (<a href="./privacidad.html">aviso de privacidad</a>).</div>
+      <div class="btns" style="margin-top:14px"><a class="btn" href="./participacion.html">Solicitar participar</a><a class="btn sec" href="./mapa.html?modo=verificar">Ir a Verificar</a></div>
+    </div></div>
+  </section>
+</main>
+<footer class="pie contenedor">
+  Investigación doctoral de Héctor Eduardo Zavala Solís · Posgrado en Geografía, CIGA-UNAM · Recorrido preparado para el XXI Coloquio de Estudiantes de Doctorado (27-11-2026)<br>
+  Cómo citar: Zavala Solís, H. E. (2026). <i>Observatorio Forestal de Morelia</i>. Posgrado en Geografía, CIGA-UNAM. · Licencia CC BY-NC-ND 4.0 · <a href="./privacidad.html">Aviso de privacidad</a>
+</footer>
+</body>
+</html>
