@@ -74,6 +74,23 @@
 .refs{font-size:13px;line-height:1.55;color:var(--muted);padding-left:0;list-style:none}
 .refs li{margin:0 0 8px;padding-left:22px;text-indent:-22px}
 .refs li:target{color:var(--ink);background:var(--panel2);border-radius:6px}
+/* Unidades y universo de instrumentos (D42, 26-11-2026). */
+.unid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.unid .u{background:var(--panel2);border:1px solid var(--line);border-top:4px solid var(--c);border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.45}
+.unid .u b{display:block;font-size:14px}
+.unid .u .ha{color:var(--accent);font-weight:700;font-variant-numeric:tabular-nums}
+.unid .u i{color:var(--muted)}
+.niv{border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.niv .fila-n{display:grid;grid-template-columns:130px 1fr;gap:12px;align-items:start}
+.niv .fila-n>div:first-child b{display:block;font-size:15px}
+.niv .fila-n>div:first-child small{color:var(--muted);font-size:12px}
+.niv .chips{display:flex;flex-wrap:wrap;gap:6px}
+.niv .chip{font-size:12.5px;padding:3px 10px;border-radius:999px;background:var(--bg);border:1px solid var(--line);color:var(--ink)}
+.niv .chip.pub{background:transparent;border:1px dashed var(--accent2);color:var(--accent2)}
+.niv.n1{background:rgba(255,255,255,.02)}.niv.n2{background:rgba(63,178,127,.05)}.niv.n3{background:rgba(63,178,127,.10)}
+.niv .nucleo{background:var(--bg);border:1px solid var(--accent);border-radius:10px;padding:10px 14px;font-size:13.5px}
+.niv .nucleo b{color:var(--accent2)}
+@media(max-width:720px){.unid{grid-template-columns:1fr 1fr}.niv .fila-n{grid-template-columns:1fr}}
 @media(max-width:720px){.flujo{grid-template-columns:1fr}.flujo .f{transform:rotate(90deg)}.arbol{grid-template-columns:1fr 1fr}.arbol .raiz,.arbol .deg,.arbol .con{grid-column:1 / 3}.barras{grid-template-columns:1fr}.barras .sep{grid-column:1}.sec-f{grid-template-columns:1fr;gap:4px}}
 @media(max-width:720px){.modelo{grid-template-columns:1fr 1fr}.modelo .ori{grid-row:auto;grid-column:1 / 3}.modelo .reg{grid-column:1 / 3}.paso{grid-template-columns:1fr}.paso .num{display:none}}
 </style>
@@ -83,7 +100,8 @@
 </head>
 <body>
 <div data-ofm-barra></div>
-<main class="contenedor">
+<div class="contenedor" data-ofm-puerta></div>
+<main class="contenedor" data-ofm-restringido>
   <section class="seccion">
     <h1>La investigación en cuatro preguntas</h1>
     <p class="lede">Un recorrido por la investigación que sostiene el observatorio. Cada paso termina en la parte del sitio donde puedes verlo por tu cuenta: el mapa, los datos o la participación.</p>
@@ -115,6 +133,16 @@
       <p class="nota" style="margin-top:10px">Las dos vías no pesan igual en la pérdida forestal: la vivienda la produce solo donde el borde toca bosque, mientras que la huerta convierte bosque. Que la ciudad desplace al cultivo y este se vaya al bosque es una hipótesis que la investigación todavía no sustenta. Una tercera vía queda fuera del alcance de la investigación, y se declara: las ciudades dependen de lugares distantes, y buena parte del impacto de su expansión ocurre fuera del área que se vuelve urbana (<a class="cita" href="#ref-seto2012">Seto et al., 2012</a>; <a class="cita" href="#ref-allen2003">Allen, 2003</a>).</p>
       <figure class="figura"><img src="./img/recorrido-area.png" width="1100" height="1045" loading="lazy" alt="Mapa del municipio de Morelia con las cuatro unidades del Programa Municipal de Desarrollo Urbano: áreas protegidas, no urbanizable, urbanizable y urbano; rotulados Cerro del Quinceo, Cerro del Águila y Pico Azul-La Escalera">
         <figcaption>Las cuatro unidades del Programa Municipal de Desarrollo Urbano 2022-2041 (<a class="cita" href="#ref-pmdu2023">zonificación primaria, ap. 7.4.2</a>) son las mismas para medir, estimar y publicar.</figcaption></figure>
+      <div class="diag" role="group" aria-label="Las cuatro unidades de análisis">
+        <h3>Las cuatro unidades del instrumento municipal</h3>
+        <div class="unid">
+          <div class="u" style="--c:#1ed760"><b>Áreas protegidas</b><span class="ha">18 878 ha · 15.8 %</span><br>Las 8 áreas naturales protegidas de objeto forestal o hídrico, decretadas desde 2005; casi toda en protección y restauración.<br><i>bosque protegido</i></div>
+          <div class="u" style="--c:#ffd400"><b>No urbanizable</b><span class="ha">77 952 ha · 65.3 %</span><br>Suelo que el programa no destina a la ciudad, fuera de las áreas protegidas: 46 % protección y restauración, 53 % aprovechamiento rural.<br><i>bosque periurbano</i></div>
+          <div class="u" style="--c:#ff7a00"><b>Urbanizable</b><span class="ha">4 529 ha · 3.8 %</span><br>Reserva para el crecimiento de la ciudad: 79 % urbano en expansión.<br><i>bosque periurbano</i></div>
+          <div class="u" style="--c:#d63cf0"><b>Urbano</b><span class="ha">17 957 ha · 15.0 %</span><br>El área urbana del programa: urbano en expansión, soporte urbano, consolidado y localidades rurales.<br><i>bosque urbano</i></div>
+        </div>
+        <p class="pie-d">Donde un área protegida se encima con otra unidad, cuenta como área protegida; juntas cubren las 119 316 ha. Cada unidad se cruza con las seis clases del mapa en 24 estratos, con 30 puntos sorteados por estrato: 706 en total, porque un estrato solo tenía 16 píxeles. Los porcentajes de contenido son de la zonificación secundaria (<a class="cita" href="#ref-pmdu2023">PMDU 2022-2041</a>). Elaboración propia.</p>
+      </div>
       <div class="diag" role="group" aria-label="Diagrama del método: el mapa dice dónde, la muestra dice cuánto">
         <h3>Cómo se mide: el mapa dice dónde; la muestra, cuánto</h3>
         <div class="flujo">
@@ -181,6 +209,14 @@
         <h3>Lo que sigue: tres secuencias posibles entre el acto y la pérdida</h3>
         <div class="sec-g" role="img" aria-label="Tres secuencias: el acto antecede a la pérdida; la pérdida ocurre y un acto posterior la regulariza; la pérdida ocurre sin acto"><div class="sec-f"><div><b>1 · Antecede</b><small>el acto abre el paso</small></div><svg viewBox="0 0 460 24" aria-hidden="true"><line x1="0" y1="12" x2="460" y2="12" stroke="#2b3d4f" stroke-width="2"/><rect x="111" y="3" width="18" height="18" fill="#f0a020"/><circle cx="320" cy="12" r="9" fill="#ccffcc"/></svg></div><div class="sec-f"><div><b>2 · Regulariza</b><small>un acto posterior la vuelve conforme</small></div><svg viewBox="0 0 460 24" aria-hidden="true"><line x1="0" y1="12" x2="460" y2="12" stroke="#2b3d4f" stroke-width="2"/><circle cx="140" cy="12" r="9" fill="#ccffcc"/><rect x="351" y="3" width="18" height="18" fill="#f0a020"/></svg></div><div class="sec-f"><div><b>3 · No interviene</b><small>la pérdida ocurre sin acto</small></div><svg viewBox="0 0 460 24" aria-hidden="true"><line x1="0" y1="12" x2="460" y2="12" stroke="#2b3d4f" stroke-width="2"/><circle cx="240" cy="12" r="9" fill="#ccffcc"/></svg></div><div class="sec-f"><div></div><svg viewBox="0 0 460 14" aria-hidden="true"><defs><marker id="fl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#9fb2c4"/></marker></defs><line x1="0" y1="7" x2="452" y2="7" stroke="#9fb2c4" stroke-width="1" marker-end="url(#fl)"/></svg></div></div>
         <p class="pie-d"><span style="color:var(--accent2)">■</span> acto administrativo · <span style="color:#ccffcc">●</span> pérdida · tiempo →. Medir si el cambio de cubierta es conforme con los planes municipales es un método ya probado (<a class="cita" href="#ref-abrantes2016">Abrantes et al., 2016</a>); aquí cada instrumento se fecha para no confundir la anomalía con la regularización. El Código de Desarrollo Urbano de Michoacán declara de utilidad pública la regularización de asentamientos irregulares y encarga a los ayuntamientos promoverla (<a class="cita" href="#ref-codigo2007">arts. 3, fr. VI, y 14, fr. VII</a>); en la Ciudad de México se ha descrito como una solución problemática para el suelo de conservación (<a class="cita" href="#ref-tellman2021">Tellman et al., 2021</a>). Son indicios, no hallazgos: casi toda esa evidencia habla de asentamientos, no de bosque.</p>
+      </div>
+      <div class="diag" role="group" aria-label="Universo de instrumentos de gestión por nivel de gobierno">
+        <h3>Tres niveles de gobierno sobre el mismo suelo</h3>
+        <div class="niv n1"><div class="fila-n"><div><b>Federal</b><small>e internacional</small></div><div class="chips"><span class="chip">Constitución, arts. 27 y 115</span><span class="chip">Ley General de Asentamientos Humanos</span><span class="chip">Programa Nacional de Ordenamiento</span><span class="chip">LGEEPA</span><span class="chip">Ley General de Desarrollo Forestal Sustentable</span><span class="chip">Ley Agraria</span><span class="chip">Convención Ramsar</span><span class="chip pub">Diario Oficial de la Federación</span><span class="chip pub">Registro Agrario Nacional</span></div></div>
+          <div class="niv n2"><div class="fila-n"><div><b>Estatal</b><small>Congreso y Ejecutivo</small></div><div class="chips"><span class="chip">Código de Desarrollo Urbano y sus reformas</span><span class="chip">Ley Ambiental y de Protección del Patrimonio Natural</span><span class="chip">Programa Estatal de Ordenamiento 2025–2040</span><span class="chip">Decretos de áreas protegidas</span><span class="chip">Programas de manejo y estudios justificativos</span><span class="chip">Áreas voluntarias para la conservación</span><span class="chip">Decretos de expropiación</span><span class="chip pub">Periódico Oficial</span><span class="chip pub">CELEM</span><span class="chip pub">SIIAM</span></div></div>
+          <div class="niv n3"><div class="fila-n"><div><b>Municipal</b><small>Ayuntamiento e IMPLAN</small></div><div class="chips"><span class="chip">PMDU 2022–2041 y sus anexos técnicos</span><span class="chip">Modificaciones parciales al PMDU</span><span class="chip">Reglamento de Instrumentación</span><span class="chip">Ordenamiento Ecológico Local</span><span class="chip">Programa de Riesgos y Ordenamiento Territorial</span><span class="chip">Programas de 2004, 2010 y parciales de 2012</span><span class="chip">Reglamento Ambiental y Sustentabilidad</span><span class="chip">Bando de Gobierno</span><span class="chip">Opiniones técnicas del IMPLAN</span><span class="chip">Acuerdos de cabildo</span><span class="chip">Licencias de uso del suelo y autorizaciones</span><span class="chip pub">Gacetas municipales de cabildo</span><span class="chip pub">Geoportal del IMPLAN</span></div></div>
+          <div class="nucleo"><b>El suelo de las cuatro unidades</b> · áreas protegidas · no urbanizable · urbanizable · urbano</div></div></div></div>
+        <p class="pie-d">Instrumentos que inciden en el suelo de las cuatro unidades, por nivel de gobierno; con borde punteado, dónde se publican o se consultan. El segundo capítulo fecha estos actos y los contrasta con la pérdida. Elaboración propia a partir del <a class="cita" href="#ref-pmdu2023">PMDU 2022-2041</a>, el <a class="cita" href="#ref-codigo2007">Código de Desarrollo Urbano</a> y los decretos de las áreas protegidas.</p>
       </div>
       <p class="sub">El observatorio registra cambios de cubierta y de uso del suelo. No califica su legalidad ni identifica responsables (<a href="./acerca.html#afirmar">qué se puede afirmar con estos datos</a>).</p>
       <div class="btns"><a class="btn" href="./mapa.html#12/19.60000/-101.13000/2024/ac/clase/cs">Ver un área protegida sobre la imagen</a><a class="btn sec" href="./datos.html#donde">Pérdida por tipo de suelo</a></div>

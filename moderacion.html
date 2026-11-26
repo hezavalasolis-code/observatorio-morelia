@@ -154,20 +154,22 @@ async function decidir(uid,cambio,clave,motivo){
 // ── Cuentas y roles (admin) ─────────────────────────────────────────────────────
 async function cargarCuentas(aviso){
   const [pf,ac,vs]=await Promise.all([
-    sb.from('profiles').select('id,display_name,role,aprobado,aprobado_por,rechazado_at,motivo,created_at').order('created_at',{ascending:true}),
+    sb.from('profiles').select('id,display_name,role,aprobado,aprobado_por,rechazado_at,motivo,created_at,acceso_resultados').order('created_at',{ascending:true})
+      .then(r=>r.error?sb.from('profiles').select('id,display_name,role,aprobado,aprobado_por,rechazado_at,motivo,created_at').order('created_at',{ascending:true}):r),
     sb.from('v_acuerdo_controles').select('user_id,controles_respondidos,acuerdo'),
     sb.from('verificaciones').select('user_id')]);
   const c=P('cue'); if(pf.error){ c.innerHTML='<div class="msg err">'+esc(pf.error.message)+'</div>'; return; }
   const nVer={}; (vs.data||[]).forEach(v=>nVer[v.user_id]=(nVer[v.user_id]||0)+1);
   const acu={}; (ac.data||[]).forEach(a=>acu[a.user_id]=a);
+  const conRes=(pf.data||[]).some(p=>'acceso_resultados' in p);
   const estado=p=>p.aprobado?'Activo':p.rechazado_at?'No aprobada':p.aprobado_por&&p.motivo?'En pausa':p.motivo?'En revisión':'Sin solicitud';
   c.innerHTML='<p class="sub">El rol de moderación permite revisar aportes y territorios; no da acceso a correos, perfiles ni verificaciones de otras personas. Solo administración aprueba solicitudes.</p>'+
-    '<div class="tabla-wrap" style="overflow-x:auto"><table class="tabla"><tr><th>Persona</th><th>Rol</th><th>Permiso para verificar</th><th class="num">Cuadros</th><th class="num">Controles</th><th class="num">Acuerdo</th><th></th></tr>'+
+    '<div class="tabla-wrap" style="overflow-x:auto"><table class="tabla"><tr><th>Persona</th><th>Rol</th><th>Permiso para verificar</th>'+(conRes?'<th>Investigación y datos</th>':'')+'<th class="num">Cuadros</th><th class="num">Controles</th><th class="num">Acuerdo</th><th></th></tr>'+
     (pf.data||[]).map(p=>{ const a=acu[p.id], fijo=p.id===yo||p.role==='admin';
       return '<tr><td>'+esc(p.display_name||'Sin nombre')+(correos[p.id]?'<br><span class="meta">'+esc(correos[p.id])+'</span>':'')+'</td>'+
         '<td>'+(fijo?'<span class="rol">'+(p.role==='admin'?'administración':esc(p.role))+'</span>':
           '<select data-rol="'+p.id+'" aria-label="Rol"><option value="contributor"'+(p.role==='contributor'?' selected':'')+'>participante</option><option value="moderator"'+(p.role==='moderator'?' selected':'')+'>moderación</option></select>')+'</td>'+
-        '<td>'+estado(p)+'</td><td class="num">'+(nVer[p.id]||0)+'</td><td class="num">'+(a?a.controles_respondidos:0)+'</td><td class="num">'+(a&&a.acuerdo!=null?(100*a.acuerdo).toFixed(0)+' %':'—')+'</td>'+
+        '<td>'+estado(p)+'</td>'+(conRes?'<td>'+(p.role==='admin'||p.role==='moderator'?'<span class="meta">por su rol</span>':'<label style="white-space:nowrap"><input type="checkbox" data-res="'+p.id+'"'+(p.acceso_resultados?' checked':'')+'> con acceso</label>')+'</td>':'')+'<td class="num">'+(nVer[p.id]||0)+'</td><td class="num">'+(a?a.controles_respondidos:0)+'</td><td class="num">'+(a&&a.acuerdo!=null?(100*a.acuerdo).toFixed(0)+' %':'—')+'</td>'+
         '<td style="text-align:right;white-space:nowrap">'+(p.id===yo||p.role==='admin'?'':p.aprobado?'<button class="bt sec" data-ret="'+p.id+'">Retirar permiso</button> ':'<button class="bt" data-apc="'+p.id+'">Aprobar</button> ')+
           (correos[p.id]&&p.id!==yo?'<a class="bt sec" href="'+mailto(p.id,'libre')+'">Escribirle</a>':'')+'</td></tr>'; }).join('')+
     '</table></div><p class="nota">Acuerdo: proporción de puntos de control en que la respuesta coincide con la referencia, sin contar «no se distingue».</p>';
@@ -176,6 +178,10 @@ async function cargarCuentas(aviso){
     if(!confirm(txt)){ cargarCuentas(); return; }
     const {error}=await sb.from('profiles').update({role:nuevo}).eq('id',s.dataset.rol);
     if(error) alert('No se pudo: '+error.message); recargarTodo(); });
+  c.querySelectorAll('[data-res]').forEach(x=>x.onchange=async()=>{
+    const si=x.checked; if(!confirm(si?'¿Dar acceso a Investigación y Datos?':'¿Quitar el acceso a Investigación y Datos?')){ x.checked=!si; return; }
+    const {error}=await sb.from('profiles').update({acceso_resultados:si}).eq('id',x.dataset.res);
+    if(error){ alert('No se pudo: '+error.message); x.checked=!si; } });
   c.querySelectorAll('[data-ret]').forEach(b=>b.onclick=async()=>{
     if(!confirm('¿Retirar el permiso para verificar? Sus respuestas se conservan y puedes volver a aprobarlo cuando quieras.')) return;
     const {error}=await sb.from('profiles').update({aprobado:false}).eq('id',b.dataset.ret);

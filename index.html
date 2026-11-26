@@ -40,30 +40,30 @@
   <section class="seccion">
     <h1>Observatorio Forestal de Morelia</h1>
     <p class="lede">Dónde y cuánto bosque se ha perdido en el municipio de Morelia desde 2006, medido con imágenes de satélite, revisado lugar por lugar y puesto al alcance de cualquier persona.</p>
-    <div class="cifras" id="cifras" aria-live="polite"><div class="cifra"><div class="t">Cargando cifras…</div></div></div>
+    <div class="cifras" id="cifras" aria-live="polite" data-ofm-res><div class="cifra"><div class="t">Cargando cifras…</div></div></div>
     <div class="btns">
       <a class="btn" href="./mapa.html">Explorar el mapa</a>
-      <a class="btn sec" href="./recorrido.html">Conocer la investigación</a>
+      <a class="btn sec" href="./recorrido.html" data-ofm-res>Conocer la investigación</a><a class="btn sec" href="./participacion.html" data-ofm-nores>Participar</a>
     </div>
     <a class="portada-mapa" href="./mapa.html" aria-label="Abrir el mapa"><img src="./img/portada.jpg" width="1200" height="640" loading="lazy" alt="Mapa del municipio de Morelia con los tipos de suelo del PMDU y la pérdida de bosque y matorral detectada entre 2006 y 2024, en tonos de rojo según el año"></a>
   </section>
 
   <section class="seccion">
     <h2>Qué puedes hacer</h2>
-    <p class="sub">Cuatro maneras de usar el observatorio, según lo que buscas.</p>
+    <p class="sub">Maneras de usar el observatorio, según lo que buscas.</p>
     <div class="tarjetas">
-      <a class="tarjeta" href="./recorrido.html"><h3>Entender la investigación</h3>
+      <a class="tarjeta" href="./recorrido.html" data-ofm-res><h3>Entender la investigación</h3>
         <p>Las cuatro preguntas que sostienen el observatorio: cómo se relaciona la ciudad con la pérdida de bosque, qué formas toma, si ocurre donde no debe y qué aporta medirla desde fuera del Estado.</p><span class="ir">Ir a la investigación →</span></a>
       <a class="tarjeta" href="./mapa.html"><h3>Consultar un lugar</h3>
         <p>Busca una dirección o toca el mapa para saber en qué tipo de suelo del PMDU cae, si está en un área natural protegida y si se detectó pérdida de bosque cerca.</p><span class="ir">Ir al mapa →</span></a>
-      <a class="tarjeta" href="./datos.html"><h3>Ver cuánto y cuándo</h3>
+      <a class="tarjeta" href="./datos.html" data-ofm-res><h3>Ver cuánto y cuándo</h3>
         <p>Tablas y gráficas de la pérdida de bosque por tipo, por periodo y por tipo de suelo, con su margen de error y la descarga de los datos.</p><span class="ir">Ir a los datos →</span></a>
       <a class="tarjeta" href="./participacion.html"><h3>Participar</h3>
         <p>Con tu registro aprobado, ayuda a revisar el mapa sobre la imagen de satélite, deja aportes y traza tu territorio. Tu historial queda en un solo lugar.</p><span class="ir">Ir a participación →</span></a>
     </div>
   </section>
 
-  <section class="seccion">
+  <section class="seccion" data-ofm-res>
     <h2>Cómo se hizo</h2>
     <p class="sub" id="como">Con imágenes de satélite de 2002 a 2025 y la revisión de cientos de lugares sorteados, cada superficie se publica con su margen de error. El método completo está en <a href="./datos.html#metodo">Datos › Método</a>.</p>
     <div class="aviso" data-ofm-aviso></div>

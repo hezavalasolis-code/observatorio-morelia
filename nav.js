@@ -11,6 +11,16 @@
   // <div data-ofm-aviso></div>; el mapa lo lee de window.OFM_AVISO para la ficha y el panel.
   const AVISO='<b>Ejercicio de investigación científica, no documento legal.</b> Los límites provienen del Programa Municipal de Desarrollo Urbano (PMDU) de Morelia 2022-2041, simplificados para el mapa. La pérdida detectada describe un cambio en la vegetación, no quién lo hizo ni si fue legal.';
   window.OFM_AVISO=AVISO;
+  // Acceso a resultados (D42 · 26-11-2026). Durante la validación, Investigación y Datos se muestran
+  // solo a administración, moderación y a quien tenga acceso_resultados; el mapa y la participación
+  // siguen abiertos. Es una restricción de presentación: los archivos de data/ siguen siendo públicos.
+  // Marcas: [data-ofm-res] solo con acceso; [data-ofm-nores] solo sin acceso; [data-ofm-restringido]
+  // el contenido de una sección restringida; [data-ofm-puerta] lo que ve quien no tiene acceso.
+  (function(){ const st=document.createElement('style'); st.textContent=
+    'html:not(.ofm-res) [data-ofm-res]{display:none!important}html.ofm-res [data-ofm-nores]{display:none!important}'+
+    'html:not(.ofm-listo) [data-ofm-restringido],html:not(.ofm-listo) [data-ofm-puerta]{display:none!important}'+
+    'html.ofm-listo:not(.ofm-res) [data-ofm-restringido],html.ofm-res [data-ofm-puerta]{display:none!important}';
+    (document.head||document.documentElement).appendChild(st); })();
   // Cliente compartido: se crea al cargar el script (va en <head>, después de supabase-js
   // y sb-config.js), para que los scripts de cada página lo encuentren listo.
   const oyentes=[]; let sesion=null, perfil=null, listo=false;
@@ -18,9 +28,24 @@
   window.ofmRecuperacion=/type=recovery/.test(location.hash);
   const sb=(window.supabase&&window.SB_CONFIG)?window.supabase.createClient(SB_CONFIG.url,SB_CONFIG.key):null;
   async function cargarPerfil(){ perfil=null; if(!sb||!sesion)return;
-    const {data}=await sb.from('profiles').select('role,aprobado,aprobado_por,motivo,acepta_aviso_at,display_name,rechazado_at,motivo_rechazo').eq('id',sesion.user.id).maybeSingle();
-    perfil=data||null; }
-  async function avisar(){ await cargarPerfil(); listo=true; oyentes.forEach(f=>{try{f(sesion,perfil);}catch(e){}}); pintarSesion(); }
+    const cols='role,aprobado,aprobado_por,motivo,acepta_aviso_at,display_name,rechazado_at,motivo_rechazo';
+    let r=await sb.from('profiles').select(cols+',acceso_resultados').eq('id',sesion.user.id).maybeSingle();
+    if(r.error) r=await sb.from('profiles').select(cols).eq('id',sesion.user.id).maybeSingle();  // antes de la migración 11
+    perfil=r.data||null; }
+  const veRes=()=>!!(perfil&&(perfil.role==='admin'||perfil.role==='moderator'||perfil.acceso_resultados===true));
+  function pintarAcceso(){ const h=document.documentElement, antes=h.classList.contains('ofm-res');
+    h.classList.toggle('ofm-res',veRes()); h.classList.add('ofm-listo');
+    document.querySelectorAll('[data-ofm-puerta]').forEach(p=>{ if(!p.dataset.hecha){ p.innerHTML=PUERTA; p.dataset.hecha='1';
+      p.querySelectorAll('[data-ofm-entrar-puerta]').forEach(b=>b.onclick=()=>abrirAcceso()); } 
+      p.querySelectorAll('[data-ofm-sin-sesion]').forEach(x=>x.hidden=!!sesion); p.querySelectorAll('[data-ofm-con-sesion]').forEach(x=>x.hidden=!sesion); });
+    if(!antes&&veRes()) setTimeout(()=>dispatchEvent(new Event('resize')),0); }  // las gráficas se miden al mostrarse
+  const PUERTA='<section class="seccion" style="max-width:760px"><h1>Sección en etapa de validación</h1>'+
+    '<p class="lede">Mientras se validan los resultados, Investigación y Datos están abiertos solo para quienes colaboran en la investigación. El mapa y la participación están abiertos para todas las personas.</p>'+
+    '<div class="btns"><a class="btn" href="./mapa.html">Explorar el mapa</a><a class="btn sec" href="./participacion.html">Participar</a>'+
+    '<button class="btn sec" type="button" data-ofm-entrar-puerta data-ofm-sin-sesion>Entrar</button></div>'+
+    '<p class="sub" style="margin-top:16px" data-ofm-con-sesion hidden>Tu cuenta todavía no tiene acceso a esta sección. Lo otorga el responsable del observatorio.</p></section>';
+  async function avisar(){ await cargarPerfil(); listo=true; oyentes.forEach(f=>{try{f(sesion,perfil);}catch(e){}}); pintarSesion(); pintarAcceso(); }
+  if(!sb){ const sinBase=()=>pintarAcceso(); if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',sinBase); else sinBase(); }
   if(sb){ sb.auth.getSession().then(({data})=>{sesion=data.session; avisar();});
           sb.auth.onAuthStateChange((_e,s)=>{ const cambio=(s&&s.user&&s.user.id)!==(sesion&&sesion.user&&sesion.user.id); sesion=s; if(cambio||!listo) avisar(); }); }
   window.ofmAuth={sb, get sesion(){return sesion;}, get perfil(){return perfil;},
@@ -29,9 +54,9 @@
 
   const ITEMS=[
     {t:'Inicio',        d:'Qué es el observatorio y qué encontrarás', href:'./index.html'},
-    {t:'Investigación', d:'Las cuatro preguntas que sostienen el observatorio', href:'./recorrido.html'},
+    {t:'Investigación', d:'Las cuatro preguntas que sostienen el observatorio', href:'./recorrido.html', res:true},
     {t:'Mapa',          d:'Consultar un lugar y ver la pérdida de bosque', href:'./mapa.html'},
-    {t:'Datos',         d:'Cuánto bosque se perdió, cuándo y dónde', href:'./datos.html'},
+    {t:'Datos',         d:'Cuánto bosque se perdió, cuándo y dónde', href:'./datos.html', res:true},
     {t:'Participación', d:'Tu historial: verificaciones, aportes y territorios', href:'./participacion.html'},
     {t:'Acerca de',     d:'Quién lo hace, qué se puede afirmar y cómo citar', href:'./acerca.html'},
     {t:'Aviso de privacidad', d:'Qué datos se guardan y para qué', href:'./privacidad.html'},
@@ -98,6 +123,7 @@
     const nav=caj.querySelector('nav');
     ITEMS.forEach(it=>{const a=el('a',{href:it.href},'<span>'+it.t+'</span><small>'+it.d+'</small>');
       if(it.admin){a.className='ofm-admin';a.hidden=true;a.dataset.admin='1';}
+      if(it.res) a.setAttribute('data-ofm-res','');
       if(esActual(it))a.setAttribute('aria-current','page');
       nav.appendChild(a);});
     document.body.appendChild(velo); document.body.appendChild(caj);
@@ -113,7 +139,7 @@
       c.className='ofm-barra'; c.appendChild(boton());
       c.appendChild(el('a',{class:'ofm-titulo',href:'./index.html'},'Observatorio Forestal de Morelia'));
       const secs=el('nav',{class:'ofm-secs','aria-label':'Secciones'});
-      ITEMS.slice(1,5).forEach(it=>{const a=el('a',{href:it.href},it.t); if(esActual(it))a.setAttribute('aria-current','page'); secs.appendChild(a);});
+      ITEMS.slice(1,5).forEach(it=>{const a=el('a',{href:it.href},it.t); if(it.res)a.setAttribute('data-ofm-res',''); if(esActual(it))a.setAttribute('aria-current','page'); secs.appendChild(a);});
       c.appendChild(secs);
       c.appendChild(el('span',{class:'ofm-entrar-sitio','data-ofm-entrar':'1',style:'margin-left:auto'}));});
     // En el mapa, el ☰ va dentro del buscador
@@ -124,7 +150,7 @@
   }
   let previo=null;
   function abrir(){previo=document.activeElement; caj.classList.add('abierto'); velo.classList.add('abierto'); caj.setAttribute('aria-hidden','false');
-    document.querySelectorAll('[data-ofm-abre]').forEach(b=>b.setAttribute('aria-expanded','true')); caj.querySelector('nav a:not([hidden])').focus();}
+    document.querySelectorAll('[data-ofm-abre]').forEach(b=>b.setAttribute('aria-expanded','true')); [...caj.querySelectorAll('nav a:not([hidden])')].find(a=>a.offsetParent!==null).focus();}
   function cerrar(){if(!caj)return; caj.classList.remove('abierto'); velo.classList.remove('abierto'); caj.setAttribute('aria-hidden','true');
     document.querySelectorAll('[data-ofm-abre]').forEach(b=>b.setAttribute('aria-expanded','false')); if(previo&&previo.focus)previo.focus();}
   window.ofmMenu={abrir,cerrar};
