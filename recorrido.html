@@ -39,6 +39,42 @@
 .trio{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:12px 0}
 .nota{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--accent2);border-radius:0 12px 12px 0;padding:14px 16px;font-size:13.5px;line-height:1.55;color:var(--muted)}
 .nota b{color:var(--ink)}
+/* Citas y diagramas (D40). Toda cita apunta a Referencias; las barras salen de estadisticas.json. */
+.cita{color:var(--accent2);text-decoration:none;border-bottom:1px dotted currentColor;white-space:nowrap}
+.cita:hover{border-bottom-style:solid}
+.diag{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:14px 0}
+.diag>h3{margin:0 0 10px;font-size:14px}
+.diag .pie-d{font-size:12.5px;color:var(--muted);margin:10px 0 0;line-height:1.5}
+.flujo{display:grid;grid-template-columns:1fr 24px 1fr 24px 1fr;gap:8px;align-items:center}
+.flujo .b{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:9px 11px;font-size:13px;line-height:1.4}
+.flujo .b b{display:block;font-size:13.5px;margin-bottom:2px}
+.flujo .f{color:var(--muted);text-align:center;font-size:18px}
+.flujo .fin{border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent)}
+.flujo .fila{display:contents}
+.arbol{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;font-size:13px;line-height:1.4}
+.arbol .n{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.arbol .n b{display:block}
+.arbol .raiz{grid-column:1 / 6;text-align:center}
+.arbol .deg{grid-column:1 / 4;border-top:3px solid #ccffcc;text-align:center}
+.arbol .con{grid-column:4 / 6;border-top:3px solid var(--accent2);text-align:center}
+.arbol .hoja{font-size:12.5px;color:var(--muted)}
+.arbol .hoja b{color:var(--ink);font-size:13px}
+.arbol .sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:middle}
+.barras{display:grid;grid-template-columns:minmax(150px,220px) 1fr;gap:6px 12px;align-items:center;font-size:13px}
+.barras .et{color:var(--ink);line-height:1.3}
+.barras .et small{display:block;color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+.barras .pista{position:relative;height:20px;background:var(--panel2);border-radius:5px}
+.barras .val{position:absolute;left:0;top:0;bottom:0;border-radius:5px}
+.barras .err{position:absolute;top:9px;height:2px;background:var(--ink);opacity:.75}
+.barras .err::before,.barras .err::after{content:"";position:absolute;top:-5px;width:2px;height:12px;background:var(--ink)}
+.barras .err::before{left:0}.barras .err::after{right:0}
+.barras .na{color:var(--muted);font-style:italic;font-size:12.5px}
+.barras .sep{grid-column:1 / 3;font-size:12px;color:var(--accent2);text-transform:uppercase;letter-spacing:.05em;margin-top:6px}
+.sec-g{display:grid;gap:12px;max-width:820px}.sec-f{display:grid;grid-template-columns:230px 1fr;gap:12px;align-items:center}.sec-f b{display:block;font-size:13.5px}.sec-f small{color:var(--muted);font-size:12.5px}.sec-f svg{width:100%;height:auto;display:block}
+.refs{font-size:13px;line-height:1.55;color:var(--muted);padding-left:0;list-style:none}
+.refs li{margin:0 0 8px;padding-left:22px;text-indent:-22px}
+.refs li:target{color:var(--ink);background:var(--panel2);border-radius:6px}
+@media(max-width:720px){.flujo{grid-template-columns:1fr}.flujo .f{transform:rotate(90deg)}.arbol{grid-template-columns:1fr 1fr}.arbol .raiz,.arbol .deg,.arbol .con{grid-column:1 / 3}.barras{grid-template-columns:1fr}.barras .sep{grid-column:1}.sec-f{grid-template-columns:1fr;gap:4px}}
 @media(max-width:720px){.modelo{grid-template-columns:1fr 1fr}.modelo .ori{grid-row:auto;grid-column:1 / 3}.modelo .reg{grid-column:1 / 3}.paso{grid-template-columns:1fr}.paso .num{display:none}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
@@ -56,6 +92,7 @@
       <li><a href="#p2">2 · Qué formas toma la pérdida</a></li>
       <li><a href="#p3">3 · ¿Cambio donde no debe?</a></li>
       <li><a href="#p4">4 · Participar</a></li>
+      <li><a href="#referencias">Referencias</a></li>
     </ul>
   </section>
 
@@ -63,7 +100,8 @@
     <div class="paso"><div class="num">1</div><div>
       <p class="preg">¿Cómo se relaciona el crecimiento de las ciudades con la pérdida de bosque?</p>
       <h2>Por lo que demandan sus habitantes: vivienda y alimento</h2>
-      <p class="sub">Es un modelo de trabajo a partir de la literatura, no un resultado. La ciudad crece sobre su propio borde para dar vivienda. Y el bosque se pierde también por la demanda de alimento de otras ciudades y mercados: en el sur de Morelia, la huerta de aguacate. Entre la demanda y la pérdida está la regulación del suelo.</p>
+      <p class="sub">Es un modelo de trabajo que sale de una revisión integrativa de la literatura (<a class="cita" href="#ref-whittemore2005">Whittemore y Knafl, 2005</a>), no un resultado propio. La superficie urbana crece igual o más rápido que la población (<a class="cita" href="#ref-seto2011">Seto et al., 2011</a>), y la pérdida de bosque no tiene un factor único: los factores institucionales aparecen en la mayoría de los casos (<a class="cita" href="#ref-geist2002">Geist y Lambin, 2002</a>).</p>
+      <p class="sub">La ciudad crece sobre su propio borde para dar vivienda. Y el bosque se pierde también por la demanda de alimento de otras ciudades y mercados (<a class="cita" href="#ref-defries2010">DeFries et al., 2010</a>): en el sur de Morelia, la huerta de aguacate, que en Michoacán es más probable cerca de los caminos y lejos de las ciudades (<a class="cita" href="#ref-arima2022">Arima et al., 2022</a>). Entre la demanda y la pérdida está la regulación del suelo.</p>
       <div class="modelo" role="img" aria-label="Modelo de dos vías: los habitantes demandan vivienda, que lleva a la expansión urbana y a la pérdida por urbanización, y alimento, que lleva a la agroindustria y a la pérdida por huerta; la regulación del suelo media entre ambas">
         <div class="caja ori"><b>Habitantes de las ciudades</b>demandan bienes esenciales</div>
         <div class="caja viv"><b>Vivienda</b>necesidad propia de la ciudad</div>
@@ -74,8 +112,21 @@
         <div class="caja ali"><b>Pérdida por huerta</b>incluso en áreas protegidas</div>
         <div class="caja reg"><b>Regulación del suelo</b>decretos, programa municipal y actos de cabildo: pueden anteceder al cambio, regularizarlo o no intervenir</div>
       </div>
+      <p class="nota" style="margin-top:10px">Una tercera vía queda fuera del alcance de la investigación, y se declara: las ciudades dependen de lugares distantes, y buena parte del impacto de su expansión ocurre fuera del área que se vuelve urbana (<a class="cita" href="#ref-seto2012">Seto et al., 2012</a>; <a class="cita" href="#ref-allen2003">Allen, 2003</a>).</p>
       <figure class="figura"><img src="./img/recorrido-area.png" width="1100" height="1045" loading="lazy" alt="Mapa del municipio de Morelia con las cuatro unidades del Programa Municipal de Desarrollo Urbano: áreas protegidas, no urbanizable, urbanizable y urbano; rotulados Cerro del Quinceo, Cerro del Águila y Pico Azul-La Escalera">
-        <figcaption>Las cuatro unidades del Programa Municipal de Desarrollo Urbano 2022-2041 son las mismas para medir, estimar y publicar.</figcaption></figure>
+        <figcaption>Las cuatro unidades del Programa Municipal de Desarrollo Urbano 2022-2041 (<a class="cita" href="#ref-pmdu2023">zonificación primaria, ap. 7.4.2</a>) son las mismas para medir, estimar y publicar.</figcaption></figure>
+      <div class="diag" role="group" aria-label="Diagrama del método: el mapa dice dónde, la muestra dice cuánto">
+        <h3>Cómo se mide: el mapa dice dónde; la muestra, cuánto</h3>
+        <div class="flujo">
+          <div class="b"><b>Serie anual Landsat</b>imágenes de temporada seca, 2002 a 2025</div><div class="f" aria-hidden="true">→</div>
+          <div class="b"><b>LandTrendr</b>segmenta cada píxel de 30 m y fecha la caída de la cubierta (<a class="cita" href="#ref-kennedy2010">Kennedy et al., 2010</a>)</div><div class="f" aria-hidden="true">→</div>
+          <div class="b"><b>Mapa</b>dónde y cuándo; ve bien lo estable y poco de la conversión</div>
+          <div class="b"><b>Muestra</b><span data-n-puntos>706</span> lugares sorteados por unidad y revisados a ciegas en alta resolución</div><div class="f" aria-hidden="true">→</div>
+          <div class="b"><b>Estimador estratificado</b>los estratos no son las clases del mapa (<a class="cita" href="#ref-stehman2014">Stehman, 2014</a>)</div><div class="f" aria-hidden="true">→</div>
+          <div class="b fin"><b>Superficie con su error</b>cada cifra con su intervalo de 95 %; lo que no se acota no se publica</div>
+        </div>
+        <p class="pie-d">Contar los píxeles del mapa no es estimar: el área mapeada arrastra los errores del mapa, y por eso la superficie se toma de la muestra (<a class="cita" href="#ref-olofsson2014">Olofsson et al., 2014</a>).</p>
+      </div>
       <div class="btns" style="margin-top:14px"><a class="btn" href="./mapa.html">Ver las unidades en el mapa</a><a class="btn sec" href="./datos.html#metodo">Cómo se mide</a><a class="btn sec" href="./datos.html#distancia">A qué distancia de la ciudad</a></div>
     </div></div>
   </section>
@@ -84,7 +135,21 @@
     <div class="paso"><div class="num">2</div><div>
       <p class="preg">¿Cómo se diferencian los patrones de cambio de la cubierta forestal?</p>
       <h2>Sobre todo degradación; la conversión es huerta y urbanización</h2>
-      <p class="sub">El mapa dice dónde; la revisión de cientos de lugares, cuánto. En la mayor parte de la pérdida el bosque se abre pero no desaparece: es degradación. Cuando sí cambia, se vuelve huerta en el bosque o urbanización en el borde.</p>
+      <p class="sub">En la mayor parte de la pérdida el bosque se abre pero no desaparece: es degradación, la más difícil de ver desde el satélite (<a class="cita" href="#ref-gao2020">Gao et al., 2020</a>), y por eso cada lugar se revisa en imágenes de alta resolución. Cuando sí cambia, se vuelve huerta en el bosque o urbanización en el borde.</p>
+      <div class="diag" role="group" aria-label="Tipología de la pérdida: degradación y conversión">
+        <h3>Qué le sucede al bosque que se pierde</h3>
+        <div class="arbol">
+          <div class="n raiz"><b>Pérdida de cubierta leñosa, 2006–2024</b>primero por el desenlace; después, por lo que sucede al bosque</div>
+          <div class="n deg"><b>Degradación</b>la cubierta persiste o rebrota</div>
+          <div class="n con"><b>Conversión</b>la cubierta cambia</div>
+          <div class="n hoja"><b>Aclareo del bosque</b>el patrón mayor</div>
+          <div class="n hoja"><b>En fraccionamiento</b>degradación dentro de lo urbanizado</div>
+          <div class="n hoja"><b>Resto</b>sin patrón dominante</div>
+          <div class="n hoja"><b><span class="sw" style="background:#ffd000"></span>Cultivada</b>huerta por brechas y cultivo sin huerta</div>
+          <div class="n hoja"><b><span class="sw" style="background:#9b30ff"></span>Construida</b>habitacional, industrial y equipamiento</div>
+        </div>
+        <p class="pie-d">Tipología inductiva a partir de la ficha de fotointerpretación: las reglas se escribieron después de cerrar la revisión, y los procesos son candidatos, no causas verificadas. La urbanización reúne lo construido y la degradación en fraccionamiento.</p>
+      </div>
       <div class="trio">
         <div class="tarjeta"><h3>Aclareo del bosque</h3><p>El dosel se abre en parches, a menudo con incendio. Es el patrón mayor y crece en el periodo. Casi nunca tiene un uso vecino: es un proceso interno del bosque.</p></div>
         <div class="tarjeta"><h3>Huerta por brechas</h3><p>Aguacate en hileras, casi siempre con bordo u olla de agua. Se llega por caminos que se abren antes del desmonte, y la huerta nueva se pega a la anterior.</p></div>
@@ -92,7 +157,11 @@
       </div>
       <div class="cifras" id="cifrasP2" aria-live="polite"></div>
       <p class="sub">Una regularidad: la pérdida llega por donde ya se puede llegar. La mayor parte del área perdida tiene un camino junto o dentro, mucho más que el bosque que se conserva.</p>
-      <div class="cifras" id="cifrasCam" aria-live="polite" style="max-width:520px"></div>
+      <div class="diag" role="group" aria-label="Caminos junto a la pérdida y al bosque que se conserva">
+        <h3>Caminos junto al área perdida y al bosque que se conserva</h3>
+        <div class="barras" id="gCaminos" aria-live="polite"></div>
+        <p class="pie-d" id="pieCaminos">Proporción del área con cada tipo de camino, con su intervalo de 95 %. Un camino se ve mejor que un desmonte sin camino, así que su peso puede estar inflado a su favor.</p>
+      </div>
       <div class="btns"><a class="btn" href="./mapa.html#11/19.66000/-101.19000/2024/ac/clase">Ver la pérdida por tipo</a><a class="btn sec" href="./datos.html#tipo">Cuánto de cada tipo</a><a class="btn sec" href="./datos.html#caminos">Caminos</a></div>
     </div></div>
   </section>
@@ -103,6 +172,16 @@
       <h2>Sí, bajo decreto</h2>
       <p class="sub">Hay pérdida en las áreas naturales protegidas y en el suelo que el programa municipal no destina a la urbanización. En las áreas protegidas, casi toda ocurrió con su decreto ya vigente. En el suelo no urbanizable la comparación es con el programa de 2023, aplicado hacia atrás: el régimen de cada año es lo que sigue en la investigación, junto con cómo trata la administración ese cambio.</p>
       <div class="cifras" id="cifrasP3" aria-live="polite"></div>
+      <div class="diag" role="group" aria-label="Pérdida en áreas protegidas antes y después del decreto">
+        <h3>La pérdida en las áreas protegidas, respecto de su decreto</h3>
+        <div class="barras" id="gDecreto" aria-live="polite"></div>
+        <p class="pie-d">Fracción de la pérdida en las ocho áreas protegidas según ocurrió antes del decreto o con el decreto ya vigente, con su intervalo de 95 %.</p>
+      </div>
+      <div class="diag secs" role="group" aria-label="Tres secuencias posibles entre el acto administrativo y la pérdida">
+        <h3>Lo que sigue: tres secuencias posibles entre el acto y la pérdida</h3>
+        <div class="sec-g" role="img" aria-label="Tres secuencias: el acto antecede a la pérdida; la pérdida ocurre y un acto posterior la regulariza; la pérdida ocurre sin acto"><div class="sec-f"><div><b>1 · Antecede</b><small>el acto abre el paso</small></div><svg viewBox="0 0 460 24" aria-hidden="true"><line x1="0" y1="12" x2="460" y2="12" stroke="#2b3d4f" stroke-width="2"/><rect x="111" y="3" width="18" height="18" fill="#f0a020"/><circle cx="320" cy="12" r="9" fill="#ccffcc"/></svg></div><div class="sec-f"><div><b>2 · Regulariza</b><small>un acto posterior la vuelve conforme</small></div><svg viewBox="0 0 460 24" aria-hidden="true"><line x1="0" y1="12" x2="460" y2="12" stroke="#2b3d4f" stroke-width="2"/><circle cx="140" cy="12" r="9" fill="#ccffcc"/><rect x="351" y="3" width="18" height="18" fill="#f0a020"/></svg></div><div class="sec-f"><div><b>3 · No interviene</b><small>la pérdida ocurre sin acto</small></div><svg viewBox="0 0 460 24" aria-hidden="true"><line x1="0" y1="12" x2="460" y2="12" stroke="#2b3d4f" stroke-width="2"/><circle cx="240" cy="12" r="9" fill="#ccffcc"/></svg></div><div class="sec-f"><div></div><svg viewBox="0 0 460 14" aria-hidden="true"><defs><marker id="fl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#9fb2c4"/></marker></defs><line x1="0" y1="7" x2="452" y2="7" stroke="#9fb2c4" stroke-width="1" marker-end="url(#fl)"/></svg></div></div>
+        <p class="pie-d"><span style="color:var(--accent2)">■</span> acto administrativo · <span style="color:#ccffcc">●</span> pérdida · tiempo →. Medir si el cambio de cubierta es conforme con los planes municipales es un método ya probado (<a class="cita" href="#ref-abrantes2016">Abrantes et al., 2016</a>); aquí cada instrumento se fecha para no confundir la anomalía con la regularización. El Código de Desarrollo Urbano de Michoacán declara de utilidad pública la regularización de asentamientos irregulares y encarga a los ayuntamientos promoverla (<a class="cita" href="#ref-codigo2007">arts. 3, fr. VI, y 14, fr. VII</a>); en la Ciudad de México se ha descrito como una solución problemática para el suelo de conservación (<a class="cita" href="#ref-tellman2021">Tellman et al., 2021</a>). Son indicios, no hallazgos: casi toda esa evidencia habla de asentamientos, no de bosque.</p>
+      </div>
       <p class="sub">El observatorio registra cambios de cubierta y de uso del suelo. No califica su legalidad ni identifica responsables (<a href="./acerca.html#afirmar">qué se puede afirmar con estos datos</a>).</p>
       <div class="btns"><a class="btn" href="./mapa.html#12/19.60000/-101.13000/2024/ac/clase/cs">Ver un área protegida sobre la imagen</a><a class="btn sec" href="./datos.html#donde">Pérdida por tipo de suelo</a></div>
     </div></div>
@@ -113,9 +192,44 @@
       <p class="preg">¿Qué puede aportar un observatorio ciudadano a la gobernanza forestal?</p>
       <h2>Medir con error declarado y verificar entre muchos</h2>
       <p class="sub">El primer módulo, «Verificar», muestra lugares del mapa sobre la imagen de satélite más reciente y te pide decir qué hay hoy, después de un tutorial. Comparar esas respuestas con la revisión experta dice qué parte de la pérdida ve quien no es especialista, y con cuánta anticipación puede hacerse pública.</p>
+      <div class="diag" role="group" aria-label="Cómo funciona Verificar">
+        <h3>Cómo funciona «Verificar»</h3>
+        <div class="flujo">
+          <div class="b"><b>Un lugar del mapa</b>donde se detectó pérdida, o un lugar de control</div><div class="f" aria-hidden="true">→</div>
+          <div class="b"><b>La imagen más reciente</b>con su fecha y su fuente, de acervos públicos</div><div class="f" aria-hidden="true">→</div>
+          <div class="b"><b>Tu respuesta</b>qué hay hoy, después de un tutorial con ejemplos</div>
+          <div class="b"><b>Comparación</b>con la revisión experta del mismo lugar</div><div class="f" aria-hidden="true">→</div>
+          <div class="b"><b>Acuerdo entre intérpretes</b>parte del control de calidad de una referencia (<a class="cita" href="#ref-pengra2020">Pengra et al., 2020</a>)</div><div class="f" aria-hidden="true">→</div>
+          <div class="b fin"><b>Qué ve quien no es especialista</b>y con cuánta anticipación puede hacerse pública la pérdida</div>
+        </div>
+        <p class="pie-d">La transparencia se invoca para mejorar la rendición de cuentas, pero ese potencial se reduce cuando la divulgación se vuelve un asunto técnico o privado (<a class="cita" href="#ref-gupta2016">Gupta y Mason, 2016</a>). Por eso el observatorio publica su método, su margen de error y sus datos, y pregunta a quienes habitan la franja.</p>
+      </div>
       <div class="nota"><b>Para participar.</b> Crea tu cuenta y solicita participar; las solicitudes se aprueban en un plazo de 24 horas. Si llegas desde un curso, un coloquio u otro espacio académico, lo que hagas se registra aparte y no se mezcla con la evaluación del observatorio entre quienes habitan la franja. Solo se publican totales, nunca respuestas individuales (<a href="./privacidad.html">aviso de privacidad</a>).</div>
       <div class="btns" style="margin-top:14px"><a class="btn" href="./participacion.html">Solicitar participar</a><a class="btn sec" href="./mapa.html?modo=verificar">Ir a Verificar</a><a class="btn sec" href="./datos.html#confianza">Qué tan confiable es el mapa</a></div>
     </div></div>
+  </section>
+  <section class="seccion" id="referencias">
+    <h2>Referencias</h2>
+    <p class="sub">Cada cita se cotejó contra el texto de la fuente. Los diagramas y las cifras sin cita son elaboración propia, a partir de la revisión de la muestra; las cifras se actualizan con cada corrida y están en <a href="./datos.html">Datos</a>.</p>
+    <ul class="refs">
+      <li id="ref-abrantes2016">Abrantes, P., Fontes, I., Gomes, E., y Rocha, J. (2016). Compliance of land cover changes with municipal land use planning: Evidence from the Lisbon metropolitan region (1990–2007). <i>Land Use Policy, 51</i>, 120–134. <a href="https://doi.org/10.1016/j.landusepol.2015.10.023" rel="noopener">doi:10.1016/j.landusepol.2015.10.023</a></li>
+      <li id="ref-allen2003">Allen, A. (2003). Environmental planning and management of the peri-urban interface: perspectives on an emerging field. <i>Environment and Urbanization, 15</i>(1), 135–147. <a href="https://doi.org/10.1630/095624703101286402" rel="noopener">doi:10.1630/095624703101286402</a></li>
+      <li id="ref-arima2022">Arima, E. Y., Denvir, A., Young, K. R., González-Rodríguez, A., y García-Oliva, F. (2022). Modelling avocado-driven deforestation in Michoacán, Mexico. <i>Environmental Research Letters, 17</i>(3), 034015. <a href="https://doi.org/10.1088/1748-9326/ac5419" rel="noopener">doi:10.1088/1748-9326/ac5419</a></li>
+      <li id="ref-codigo2007">Código de Desarrollo Urbano del Estado de Michoacán de Ocampo (2007, última reforma 19-05-2025). Periódico Oficial del Estado de Michoacán. Arts. 3, fr. VI, y 14, fr. VII.</li>
+      <li id="ref-defries2010">DeFries, R. S., Rudel, T., Uriarte, M., y Hansen, M. (2010). Deforestation driven by urban population growth and agricultural trade in the twenty-first century. <i>Nature Geoscience, 3</i>(3), 178–181. <a href="https://doi.org/10.1038/NGEO756" rel="noopener">doi:10.1038/NGEO756</a></li>
+      <li id="ref-gao2020">Gao, Y., Skutsch, M., Paneque-Gálvez, J., y Ghilardi, A. (2020). Remote sensing of forest degradation: a review. <i>Environmental Research Letters, 15</i>(10), 103001. <a href="https://doi.org/10.1088/1748-9326/abaad7" rel="noopener">doi:10.1088/1748-9326/abaad7</a></li>
+      <li id="ref-geist2002">Geist, H. J., y Lambin, E. F. (2002). Proximate causes and underlying driving forces of tropical deforestation. <i>BioScience, 52</i>(2), 143–150. <a href="https://doi.org/10.1641/0006-3568(2002)052[0143:PCAUDF]2.0.CO;2" rel="noopener">doi:10.1641/0006-3568(2002)052[0143:PCAUDF]2.0.CO;2</a></li>
+      <li id="ref-gupta2016">Gupta, A., y Mason, M. (2016). Disclosing or obscuring? The politics of transparency in global climate governance. <i>Current Opinion in Environmental Sustainability, 18</i>, 82–90. <a href="https://doi.org/10.1016/j.cosust.2015.11.004" rel="noopener">doi:10.1016/j.cosust.2015.11.004</a></li>
+      <li id="ref-kennedy2010">Kennedy, R. E., Yang, Z., y Cohen, W. B. (2010). Detecting trends in forest disturbance and recovery using yearly Landsat time series: 1. LandTrendr — temporal segmentation algorithms. <i>Remote Sensing of Environment, 114</i>(12), 2897–2910. <a href="https://doi.org/10.1016/j.rse.2010.07.008" rel="noopener">doi:10.1016/j.rse.2010.07.008</a></li>
+      <li id="ref-olofsson2014">Olofsson, P., Foody, G. M., Herold, M., Stehman, S. V., Woodcock, C. E., y Wulder, M. A. (2014). Good practices for estimating area and assessing accuracy of land change. <i>Remote Sensing of Environment, 148</i>, 42–57. <a href="https://doi.org/10.1016/j.rse.2014.02.015" rel="noopener">doi:10.1016/j.rse.2014.02.015</a></li>
+      <li id="ref-pengra2020">Pengra, B. W., Stehman, S. V., Horton, J. A., Dockter, D. J., Schroeder, T. A., Yang, Z., Cohen, W. B., Healey, S. P., y Loveland, T. R. (2020). Quality control and assessment of interpreter consistency of annual land cover reference data in an operational national monitoring program. <i>Remote Sensing of Environment, 238</i>, 111261. <a href="https://doi.org/10.1016/j.rse.2019.111261" rel="noopener">doi:10.1016/j.rse.2019.111261</a></li>
+      <li id="ref-pmdu2023">Ayuntamiento de Morelia (2023). <i>Programa Municipal de Desarrollo Urbano de Morelia 2022-2041</i>. Periódico Oficial del Estado de Michoacán, 1 de septiembre de 2023. Ap. 7.4.2, zonificación primaria.</li>
+      <li id="ref-seto2011">Seto, K. C., Fragkias, M., Güneralp, B., y Reilly, M. K. (2011). A meta-analysis of global urban land expansion. <i>PLoS ONE, 6</i>(8), e23777. <a href="https://doi.org/10.1371/journal.pone.0023777" rel="noopener">doi:10.1371/journal.pone.0023777</a></li>
+      <li id="ref-seto2012">Seto, K. C., Güneralp, B., y Hutyra, L. R. (2012). Global forecasts of urban expansion to 2030 and direct impacts on biodiversity and carbon pools. <i>Proceedings of the National Academy of Sciences, 109</i>(40), 16083–16088. <a href="https://doi.org/10.1073/pnas.1211658109" rel="noopener">doi:10.1073/pnas.1211658109</a></li>
+      <li id="ref-stehman2014">Stehman, S. V. (2014). Estimating area and map accuracy for stratified random sampling when the strata are different from the map classes. <i>International Journal of Remote Sensing, 35</i>(13), 4923–4939. <a href="https://doi.org/10.1080/01431161.2014.930207" rel="noopener">doi:10.1080/01431161.2014.930207</a></li>
+      <li id="ref-tellman2021">Tellman, B., Eakin, H., Janssen, M. A., de Alba, F., y Turner II, B. L. (2021). The role of institutional entrepreneurs and informal land transactions in Mexico City’s urban expansion. <i>World Development, 140</i>, 105374. <a href="https://doi.org/10.1016/j.worlddev.2020.105374" rel="noopener">doi:10.1016/j.worlddev.2020.105374</a></li>
+      <li id="ref-whittemore2005">Whittemore, R., y Knafl, K. (2005). The integrative review: updated methodology. <i>Journal of Advanced Nursing, 52</i>(5), 546–553. <a href="https://doi.org/10.1111/j.1365-2648.2005.03621.x" rel="noopener">doi:10.1111/j.1365-2648.2005.03621.x</a></li>
+    </ul>
   </section>
 </main>
 <footer class="pie contenedor">
@@ -138,8 +252,21 @@ fetch('./data/estadisticas.json').then(r=>r.json()).then(e=>{
     ha(T.construida,'de conversión construida'+per+' Es la urbanización.');
   const C=e.caminos||[], cp=C.find(x=>x.grupo==='pérdida'&&x.indicador==='con camino junto o dentro'),
         cc=C.find(x=>x.grupo!=='pérdida'&&x.indicador==='con camino junto o dentro');
-  document.getElementById('cifrasCam').innerHTML=(cp&&cc&&cp.acotada&&cc.acotada)?
-    cifra(pct(cp.proporcion)+' %','± '+pct(cp.ic95)+' puntos','del área perdida tiene un camino junto o dentro; en el bosque que se conserva, el '+pct(cc.proporcion)+' ± '+pct(cc.ic95)+' %.'):'';
+  // Barras con intervalo: solo se dibuja lo acotado; lo demás se dice (D2, D20).
+  const barra=(et,sub,x,col)=>{ if(!x) return '';
+    if(!x.acotada) return '<div class="et">'+et+'</div><div class="na">todavía no se puede acotar</div>';
+    const v=100*x.proporcion, lo=Math.max(0,v-100*x.ic95), hi=Math.min(100,v+100*x.ic95);
+    return '<div class="et">'+et+'<small>'+pct(x.proporcion)+' ± '+pct(x.ic95)+' %</small></div><div class="pista" role="img" aria-label="'+et+': '+pct(x.proporcion)+' más menos '+pct(x.ic95)+' por ciento"><div class="val" style="width:'+v+'%;background:'+col+'"></div><div class="err" style="left:'+lo+'%;width:'+(hi-lo)+'%"></div></div>'; };
+  const P=i=>C.find(x=>x.grupo==='pérdida'&&x.indicador===i), K=i=>C.find(x=>x.grupo!=='pérdida'&&x.indicador===i);
+  let g='<div class="sep">Con camino junto o dentro</div>'+barra('Área perdida','',cp,'#f0a020')+barra('Bosque que se conserva','',cc,'#3fb27f');
+  [['caminos: red_ramificada','Red de brechas ramificada','la de la huerta'],['caminos: vialidad_formal','Vialidad formal','la de la lotificación'],['caminos: aislado','Camino aislado','']].forEach(([i,t,s])=>{
+    g+='<div class="sep">'+t+(s?' · '+s:'')+'</div>'+barra('Área perdida','',P(i),'#f0a020')+barra('Bosque que se conserva','',K(i),'#3fb27f'); });
+  const pv=P('secuencia: camino de acceso previo');
+  if(pv) g+='<div class="sep">Secuencia en el área perdida</div>'+barra('El camino ya estaba antes del desmonte','',pv,'#f0a020');
+  document.getElementById('gCaminos').innerHTML=g;
+  const n=e.puntos_evaluables; if(n) document.querySelectorAll('[data-n-puntos]').forEach(x=>x.textContent=miles(n));
+  const D=m=>(e.anp_decreto||[]).find(x=>x.anp==='todas'&&x.momento===m), fr=x=>x&&{acotada:x.acotada&&x.ic95_fraccion<x.fraccion,proporcion:x.fraccion,ic95:x.ic95_fraccion};
+  document.getElementById('gDecreto').innerHTML=barra('Antes del decreto','',fr(D('antes del decreto')),'#9fb2c4')+barra('Con el decreto vigente','',fr(D('con decreto vigente')),'#f0a020');
   const U=n=>(e.por_unidad||[]).find(u=>u.unidad===n);
   const dv=(e.anp_decreto||[]).find(x=>x.anp==='todas'&&x.momento==='con decreto vigente');
   let h=ha(U('Áreas protegidas')&&U('Áreas protegidas').perdida,'de pérdida en las áreas naturales protegidas'+per);
